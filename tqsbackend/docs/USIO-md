@@ -1,0 +1,137 @@
+# Plataforma de Aluguer de Material de Festas 🎉
+
+Este projeto é uma plataforma tipo “OLX de material de festas”, onde utilizadores podem **alugar e disponibilizar itens** como iluminação, som, mobiliário, máquinas de consumíveis, etc.
+
+Este README foca-se nas **user stories do Item Owner** (proprietário do item) organizadas pelos seguintes épicos:
+
+1. Descobrir itens para alugar  
+2. Comunicar com o proprietário do item (Owner)  
+3. Processo de aluguer  
+4. Avaliações  
+5. Suporte / Reports  
+
+---
+
+## Personas
+
+### Item Owner
+- Disponibiliza itens para aluguer (ex.: iluminação, som, mobiliário, etc.)
+- Gere o inventário de itens, preços e disponibilidade
+- Comunica com renters (clientes) e avalia-os após o aluguer
+
+### Renter
+- Procura e filtra itens por categoria / localização
+- Contacta o owner para esclarecer detalhes
+- Aluga os itens e avalia o owner após a utilização
+
+### Admin
+- Gere utilizadores e o catálogo global de categorias de itens
+- Dá suporte a conflitos e reports na plataforma
+
+---
+
+## Épico 1 – Descobrir itens para alugar
+
+User Stories (Item Owner):
+
+1. **Criar item com informação base**  
+   > Como *Item Owner*, quero **criar um novo item para aluguer** com nome, descrição, fotos e preço base, para que os renters o consigam encontrar e perceber o que estou a oferecer.
+
+2. **Associar item a categoria**  
+   > Como *Item Owner*, quero **associar o meu item a uma categoria** (Iluminação, Som, Máquinas de Pirotecnias/Visual, Geradores/Eletricidades, Cadeiras/Mesas/Balcões/Bar, Máquinas de Consumíveis), para que ele apareça nas pesquisas e filtros certos.
+
+3. **Definir localização do item**  
+   > Como *Item Owner*, quero **indicar a localização de entrega/levantamento do item**, para que os renters saibam se lhes compensa alugar com base na zona.
+
+4. **Ativar / desativar item**  
+   > Como *Item Owner*, quero **ativar ou desativar um item da listagem**, para controlar se está visível ou não quando não posso alugá-lo.
+
+5. **Ver lista dos meus itens**  
+   > Como *Item Owner*, quero **ver todos os meus itens numa lista**, com indicação de estado (ativo/inativo) e categoria, para gerir facilmente o meu inventário.
+
+---
+
+## Épico 2 – Comunicar com o proprietário do item (Owner)
+
+User Stories (Item Owner):
+
+1. **Chat com o renter antes de aceitar**  
+   > Como *Item Owner*, quero **trocar mensagens com o renter antes de aceitar o pedido**, para esclarecer detalhes do evento, horários e condições de utilização.
+
+2. **Chat durante a reserva**  
+   > Como *Item Owner*, quero **continuar a falar com o renter durante o período de aluguer**, para combinar entrega/devolução ou tratar de imprevistos.
+
+3. **Histórico de conversa por reserva**  
+   > Como *Item Owner*, quero **ver o histórico de mensagens associado a cada reserva**, para lembrar o que foi combinado caso depois haja dúvidas.
+
+4. **Notificações de novas mensagens**  
+   > Como *Item Owner*, quero **receber notificações quando o renter me envia uma mensagem**, para responder rapidamente e não perder pedidos.
+
+---
+
+## Épico 3 – Processo de aluguer
+
+User Stories (Item Owner):
+
+1. **Receber pedido de aluguer**  
+   > Como *Item Owner*, quero **ser notificado quando um renter faz um pedido para um dos meus itens**, para poder decidir se aceito ou recuso.
+
+2. **Ver detalhes do pedido**  
+   > Como *Item Owner*, quero **ver datas, item, valor estimado e informação básica do renter**, para avaliar se faz sentido aceitar o aluguer.
+
+3. **Aceitar pedido**  
+   > Como *Item Owner*, quero **aceitar o pedido de aluguer numa ação simples**, para confirmar a reserva do item para aquelas datas.
+
+4. **Recusar pedido**  
+   > Como *Item Owner*, quero **recusar um pedido de aluguer**, para evitar comprometer o item quando não me é conveniente.
+
+5. **Ver reservas ativas e futuras**  
+   > Como *Item Owner*, quero **ver todas as reservas ativas e futuras dos meus itens**, para saber quando é que o material está ocupado.
+
+6. **Confirmar entrega e devolução**  
+   > Como *Item Owner*, quero **marcar na app quando entrego e quando recebo o item de volta**, para fechar o aluguer e ter histórico do que já foi concluído.
+
+---
+
+## Épico 4 – Avaliações
+
+User Stories (Item Owner):
+
+1. **Avaliar renter no fim do aluguer**  
+   > Como *Item Owner*, quero **avaliar o renter no final da reserva (ex.: 1–5 estrelas + comentário)**, para ajudar outros owners a perceberem se é de confiança.
+
+2. **Ver avaliações que renters fazem aos meus itens**  
+   > Como *Item Owner*, quero **ver as avaliações e comentários que os renters deixam sobre os meus itens**, para perceber o que posso melhorar.
+
+3. **Ver reputação geral como Owner**  
+   > Como *Item Owner*, quero **ver uma média de avaliação associada ao meu perfil**, para ter noção da minha reputação na plataforma.
+
+---
+
+## Épico 5 – Suporte / Reports
+
+User Stories (Item Owner):
+
+1. **Reportar problema com um aluguer**  
+   > Como *Item Owner*, quero **assinalar que houve um problema num aluguer** (item devolvido em mau estado, atraso grave, no-show), para que a plataforma fique informada.
+
+2. **Reportar comportamento do renter**  
+   > Como *Item Owner*, quero **reportar um renter por comportamento inadequado**, para que a plataforma possa analisar e atuar se necessário.
+
+3. **Contactar suporte a partir da reserva**  
+   > Como *Item Owner*, quero **ter um botão de “Contactar suporte” dentro do detalhe da reserva**, para pedir ajuda rápida em casos de conflito ou dúvidas.
+
+4. **Acompanhar estado do pedido de suporte**  
+   > Como *Item Owner*, quero **ver o estado do meu pedido de suporte** (recebido, em análise, respondido), para saber se tenho de enviar mais informação ou esperar.
+
+---
+
+## Notas de MVP
+
+- Não há gestão complexa de **caução/seguros** no MVP – problemas com danos ou conflitos são tratados via **Suporte / Reports**.  
+- Foco principal:
+  - Owners conseguem **criar itens**,  
+  - Renters conseguem **descobrir e pedir aluguer**,  
+  - Ambos conseguem **comunicar**,  
+  - Há **avaliações** e um canal mínimo de **suporte**.
+
