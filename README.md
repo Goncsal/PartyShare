@@ -1,9 +1,8 @@
 # TQS Project
 
-[![CI/CD Pipeline](https://github.com/Goncsal/tqs_project/actions/workflows/ci.yml/badge.svg)](https://github.com/Goncsal/tqs_project/actions/workflows/ci.yml)
-[![Code Quality](https://github.com/Goncsal/tqs_project/actions/workflows/code-quality.yml/badge.svg)](https://github.com/Goncsal/tqs_project/actions/workflows/code-quality.yml)
+This is a TQS project.
 
-This is a TQS (Testing and Quality Software) project featuring a Spring Boot backend application.
+Below are instructions for the CI pipeline and how to run the tests (and proj structure)
 
 ## Project Structure
 
