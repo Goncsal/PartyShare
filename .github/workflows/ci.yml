@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+  actions: read
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -66,8 +72,22 @@ jobs:
         name: tqsbackend-jar
         path: tqsbackend/target/*.jar
         
-    - name: Comment Test Results
-      uses: EnricoMi/publish-unit-test-result-action@v2
+    - name: Test Report Summary
       if: always()
-      with:
-        files: tqsbackend/target/surefire-reports/*.xml
+      run: |
+        echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
+        if [ -f "tqsbackend/target/surefire-reports/TEST-*.xml" ]; then
+          echo "Tests completed - check artifacts for detailed reports" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "No test results found" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+    - name: Coverage Report Summary
+      if: always()
+      run: |
+        echo "## Coverage Report" >> $GITHUB_STEP_SUMMARY
+        if [ -f "tqsbackend/target/site/jacoco/index.html" ]; then
+          echo "Coverage report generated - check coverage-reports artifact" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "No coverage report found" >> $GITHUB_STEP_SUMMARY
+        fi
