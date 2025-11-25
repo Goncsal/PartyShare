@@ -1,52 +1,7 @@
-# Personas
-- Item Owner
-    - Alugar novo item
-    - Contacto com o cliente
-    - O meu item foi devolvido com defeito
-    - Avaliar clientes
-    - Suporte
-
-- Renter
-    - Pesquisar / Filtrar / Favoritos
-    - Contacto com o proprietário
-    - Após aluguer, avaliar o proprietário
-    - Suporte
-
-- Admin
-    - Gerir utilizadores
-    - Adicionar categorias de items
-
-
-## Categorias de itens
-- Iluminação
-- Máquinas de pirotecnia / Visual
-- Som
-- Geradores / Eletricidade
-- Cadeiras / Mesas / Balcões / Bar
-- Máquinas de consumíveis
-
-
-
-
-
-# Item Categories
-| Category Name               | Description                                       |
-|-----------------------------|---------------------------------------------------|
-| Lighting                    | Items related to lighting equipment               |
-| Special Effects             | Items for pyrotechnics and visual effects         |
-| Audio                       | Audio equipment and accessories                   |
-| Electricity                 | Power generators and electrical equipment         |
-| Furniture                   | Furniture items like chairs, tables, and counters |
-| Consumables Machines        | Machines for consumable items                     |
-|-----------------------------|---------------------------------------------------|
-
-
-
-# Epics
+# Features
 ## 1. Search and Browse Items
 ## 2. Renting Process
 ## 3. Post-Rental Actions
-## 4. Communication & Support
 
 ---
 
