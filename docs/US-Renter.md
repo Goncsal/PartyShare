@@ -1,175 +1,163 @@
-# Features
-## 1. Search and Browse Items
-## 2. Renting Process
-## 3. Post-Rental Actions
+✅ EPIC 1 — Renter Experience
 
----
+(Everything the Renter can do in the platform)
 
-# 1. Search and Browse Items
+This epic includes searching, renting, messaging, favorites, ratings, reporting issues and support.
 
-## 1.1 Search Items
-| Renter - Search Items
-As a Renter, I want to search items by keywords to find what I'm looking for.
+1. Search & Browse Items
+US 1.1 — Search Items
 
-Test Cases:
-  1. Search by keyword
-       - Input: "Portable Energy Generator"
-          - Expected Output: List of items related to the keyword
-       1. Search with no results
-       - Input: "NonExistentItem"
-          - Expected Output: "No items found" message
-     
-## 1.2 Filter Search Results
-| Renter - Filter Search Results
-As a Renter, I want to filter results by category, price, rating, and location.
+As a Renter, I want to search items by keywords.
 
-Test Cases:
-  1. Filter by category
-       - Input: Category = "Lighting"
-          - Expected Output: Items in "Lighting"
-       2. Filter by price range
-       - Input: Price Range = "€50–€200"
-          - Expected Output: Items within range
-       3. Filter by rating
-       - Input: Minimum rating = 4
-          - Expected Output: Items rated ≥ 4
-       4. Filter by location
-       - Input: "Lisbon"
-          - Expected Output: Items available in Lisbon
-     
-## 1.3 View Item Details
-| Renter - View Item Details
-As a Renter, I want full item details before deciding to rent.
+Tests
 
-Test Cases:
-  1. View item details
-       - Input: Select an item
-          - Expected Output: Photos, description, rules, price, location, reviews, availability
-     
-## 1.4 Save Favorite Items
-| Renter - Save Favorite Items
-As a Renter, I want to save items as favorites to revisit and compare options.
+Search “Generator” → Items returned
 
-Test Cases:
-  1. Save an item
-       - Input: Click "Add to Favorites"
-          - Expected Output: Item stored in favorites
-       2. Remove an item
-       - Input: Click "Remove from Favorites"
-          - Expected Output: Item removed from favorites
-  3. View Favorites List
-       - Input: Navigate to favorites
-          - Expected Output: Display all saved items
+Search “NonExistentItem” → “No items found”
 
----
+US 1.2 — Filter Results
 
-# 2. Renting Process
+As a Renter, I want to filter by category, price, rating, location.
 
-## 2.1 Message Owner
-| Renter - Message Owner
-As a Renter, I want to message the owner to ask questions and discuss details before renting.
+Tests
 
-Test Cases:
-  1. Send a message
-     - Input: Compose message + Send
-     - Expected Output: Message delivered & stored
+Category = Lighting
 
----
+Price range €50–€200
 
-## 2.2 Rent an Item
-| Renter - Rent an Item
-As a Renter, I want to rent an item.
+Min rating = 4
 
-Test Cases:
-  1. Successful rental
-       - Input: Choose dates + pay
-          - Expected Output: Rental confirmed
-       2. Unavailable dates
-       - Input: Select blocked dates
-          - Expected Output: Error message
-     
----
+Location = Lisbon
 
-## 2.3 Cancel a Rental
-| Renter - Cancel Rental
-As a Renter, I want to cancel a rental.
+US 1.3 — View Item Details
 
-Test Cases:
-  1. Cancel within policy
-       - Input: Cancel before deadline
-          - Expected Output: Rental cancelled + refund if applicable
-       2. Outside policy
-       - Input: Cancel after deadline
-          - Expected Output: Error message
-     
----
+As a Renter, I want to see full item details (photos, location, rules, availability).
 
-## 2.4 View Active and Past Bookings
-| Renter - View Bookings
-As a Renter, I want to view active and past bookings.
+2. Favorites
+US 1.4 — Save Favorite Items
 
-Test Cases:
-  1. View active
-       - Input: Navigate to bookings
-          - Expected Output: List of active rentals
-       2. View past
-       - Input: Navigate to bookings
-          - Expected Output: Past rentals list
+Add, remove and list favorites.
 
----
+3. Messaging & Pre-Rental
+US 1.5 — Message Owner
 
-# 3. Post-Rental Actions
+As a Renter, I want to message the owner before renting.
 
-## 3.1 Rate Owner
-| Renter - Rate Owner
-As a Renter, I want to rate the owner.
+Test
 
-Test Cases:
-  1. Submit rating
-       - Input: Score fields
-          - Expected Output: Rating stored
-       2. View rating
-       - Input: Past rentals
-          - Expected Output: Display rating
-     
----
+Message delivered & stored
 
-## 3.2 Rate Item
-| Renter - Rate Item
-As a Renter, I want to rate the item after using it.
+4. Booking & Payment
+US 1.6 — Rent an Item
 
-Test Cases:
-  1. Submit rating
-       - Input: Item quality rating
-          - Expected Output: Stored
-       2. View submitted rating
-       - Input: Past rentals
-          - Expected Output: Display rating
-     
----
+Select rental dates and pay.
 
-## 3.3 Report an Issue (Item or Owner)
-| Renter - Report Issue
-As a Renter, I want to report an issue related to my rental experience.
+Tests
 
-Test Cases:
-  1. Report item
-       - Input: Select issue + Submit
-          - Expected Output: Report logged
-       2. Report owner
-       - Input: Select owner + Submit
-          - Expected Output: Report logged
-     
----
+Successful rental
 
-## 3.4 Contact Support
-| Renter - Support Request
-As a Renter, I want to contact support for help.
+Dates unavailable → error
 
-Test Cases:
-  1. Submit request
-       - Input: Fill support form
-          - Expected Output: Support ticket created
-       2. View support response
-       - Input: Check inbox
-          - Expected Output: Display response
+US 1.7 — Cancel Rental
+
+Cancel a rental depending on rules.
+
+Tests
+
+Cancel within policy → refund
+
+Cancel outside policy → error
+
+US 1.8 — View My Bookings
+
+View past and active bookings.
+
+5. Post-Rental
+US 1.9 — Rate Owner
+US 1.10 — Rate Item
+6. Report Issues
+US 1.11 — Report Item/Owner Issue
+
+As a Renter, I want to report any problem.
+
+7. Support
+US 1.12 — Contact Support
+
+Create a support ticket and view replies.
+
+✅ EPIC 2 — Item Owner Experience
+
+(Everything Owners do to manage items and rentals)
+
+This includes publishing items, managing bookings, evaluating renters, and reporting damage.
+
+1. Item Management
+US 2.1 — Add New Item
+
+Add items with photos, rules, pricing.
+
+US 2.2 — Edit/Activate/Deactivate Item
+
+Update info and control availability.
+
+2. Booking Management
+US 2.3 — View Booking Requests
+
+As an Owner, I want to approve or decline rental requests.
+
+US 2.4 — Owner Dashboard
+
+See all upcoming rentals, past rentals, item activity.
+
+3. Communication
+US 2.5 — Message Renter
+
+Respond to renter questions.
+
+4. Quality & Issues
+US 2.6 — Item Returned Damaged
+
+Report item condition problems.
+
+US 2.7 — Rate Renter
+
+Owner reviews renter behavior.
+
+5. Support
+US 2.8 — Contact Support
+
+Get help when issues arise.
+
+✅ EPIC 3 — Admin & Platform Management
+
+(Admin-only operations ensuring platform governance)
+
+1. User Administration
+US 3.1 — Manage Users
+
+Activate, deactivate or review accounts.
+
+2. Category Management
+US 3.2 — Manage Item Categories
+
+Add/edit categories (Lighting, Audio, etc.).
+
+3. Issue & Support Oversight
+US 3.3 — View Reports / Issues
+
+Admin evaluates disputes and damage claims.
+
+4. Platform KPIs
+US 3.4 — View Metrics Dashboard
+
+Track:
+
+number of bookings
+
+active users
+
+item count
+
+business performance
+
+(Required in MVP according to enunciado)
