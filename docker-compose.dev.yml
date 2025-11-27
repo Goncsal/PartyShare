@@ -1,0 +1,54 @@
+services:
+  # Development version with hot reload and debugging
+  tqs-backend-dev:
+    build:
+      context: ./tqsbackend
+      dockerfile: Dockerfile.dev
+    container_name: tqs-backend-dev
+    restart: unless-stopped
+    environment:
+      # Database Configuration (using H2 for development)
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.h2.Driver
+      SPRING_DATASOURCE_USERNAME: sa
+      SPRING_DATASOURCE_PASSWORD: password
+      
+      # H2 Console
+      SPRING_H2_CONSOLE_ENABLED: 'true'
+      SPRING_H2_CONSOLE_PATH: /h2-console
+      
+      # JPA Configuration
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+      SPRING_JPA_SHOW_SQL: 'true'
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.H2Dialect
+      
+      # Actuator Configuration
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: '*'
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: always
+      
+      # Thymeleaf Configuration (no caching for development)
+      SPRING_THYMELEAF_CACHE: 'false'
+      SPRING_THYMELEAF_MODE: HTML
+      SPRING_THYMELEAF_ENCODING: UTF-8
+      
+      # Development Settings
+      SPRING_DEVTOOLS_RESTART_ENABLED: 'true'
+      SPRING_DEVTOOLS_LIVERELOAD_ENABLED: 'true'
+      
+      # Remove debug from environment - will be set in CMD
+    ports:
+      - "8080:8080"
+      - "5005:5005"  # Debug port
+    volumes:
+      - ./tqsbackend/src:/app/src
+      - ./tqsbackend/target:/app/target
+    networks:
+      - tqs-dev-network
+
+volumes:
+  # Removed SonarQube volumes - using SonarCloud instead
+
+networks:
+  tqs-dev-network:
+    driver: bridge

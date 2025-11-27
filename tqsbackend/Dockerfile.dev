@@ -1,0 +1,29 @@
+# Development Dockerfile with hot reload capabilities
+FROM eclipse-temurin:21-jdk-alpine
+
+# Install curl for health checks (Alpine uses apk)
+RUN apk add --no-cache curl
+
+# Set working directory
+WORKDIR /app
+
+# Copy Maven wrapper and pom.xml
+COPY mvnw .
+COPY mvnw.cmd .
+COPY .mvn .mvn
+COPY pom.xml .
+
+# Make Maven wrapper executable
+RUN chmod +x ./mvnw
+
+# Download dependencies
+RUN ./mvnw dependency:go-offline -B
+
+# Copy source code
+COPY src src
+
+# Expose ports
+EXPOSE 8080 5005
+
+# Run in development mode with hot reload and debug
+CMD ["./mvnw", "spring-boot:run", "-Dspring-boot.run.jvmArguments=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"]

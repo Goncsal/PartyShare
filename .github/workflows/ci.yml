@@ -45,6 +45,7 @@ jobs:
       run: |
         cd tqsbackend
         ./mvnw test jacoco:report
+
         
     - name: Package application
       run: |
