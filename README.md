@@ -8,6 +8,10 @@ Below are instructions for the CI pipeline and how to run the tests (and proj st
 
 - `tqsbackend/` - Spring Boot backend application
 - `docs/` - Project documentation
+## SonarCloud:
+
+https://sonarcloud.io/project/roles?id=Goncsal_PartyShare
+
 
 ## Backend (Spring Boot)
 
