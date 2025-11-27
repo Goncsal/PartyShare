@@ -19,6 +19,6 @@ if [ $? -eq 0 ]; then
     echo "Coverage report generated at: target/site/jacoco/index.html"
     echo "Test reports available at: target/surefire-reports/"
 else
-    echo "Some tests failed"
+    echo "Some tests failed."
     exit 1
 fi
