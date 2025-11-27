@@ -46,7 +46,7 @@ jobs:
         if [ "${{ github.event_name }}" = "pull_request" ]; then
           echo "Running SonarCloud analysis for PR..."
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=tqsbackend \
+            -Dsonar.projectKey=Goncsal_PartyShare \
             -Dsonar.organization=goncsal \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.token=$SONAR_TOKEN \
@@ -56,7 +56,7 @@ jobs:
         else
           echo "Running SonarCloud analysis for branch push..."
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=tqsbackend \
+            -Dsonar.projectKey=Goncsal_PartyShare \
             -Dsonar.organization=goncsal \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.token=$SONAR_TOKEN \
