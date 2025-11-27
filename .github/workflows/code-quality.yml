@@ -38,20 +38,31 @@ jobs:
         cd tqsbackend
         ./mvnw -B clean verify
 
-    - name: SonarCloud / SonarQube analysis
+    - name: Build and analyze with SonarCloud
+      working-directory: ./tqsbackend
       env:
-
-        SONAR_ORG: ${{ secrets.SONAR_ORG }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: |
-        cd tqsbackend
-        ./mvnw -B sonar:sonar \
-          -Dsonar.organization=${SONAR_ORG} \
-          -Dsonar.host.url=${SONAR_HOST_URL:-https://sonarcloud.io} \
-          -Dsonar.login=${SONAR_TOKEN} \
-          -Dsonar.qualitygate.wait=true
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          echo "Running SonarCloud analysis for PR..."
+          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.projectKey=tqsbackend \
+            -Dsonar.organization=goncsal \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token=$SONAR_TOKEN \
+            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
+            -Dsonar.pullrequest.branch=${{ github.head_ref }} \
+            -Dsonar.pullrequest.base=${{ github.base_ref }}
+        else
+          echo "Running SonarCloud analysis for branch push..."
+          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.projectKey=tqsbackend \
+            -Dsonar.organization=goncsal \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token=$SONAR_TOKEN \
+            -Dsonar.branch.name=${{ github.ref_name }}
+        fi
 
     - name: Quality Gate Status
       if: always()
-      run: |
-        echo "Sonar analysis completed. If this step failed the job will have already exited with non-zero due to quality gate."
+      run: echo "Sonar analysis completed."
