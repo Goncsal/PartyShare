@@ -54,7 +54,7 @@ jobs:
 
 
     - name: "Import results to Xray"
-      uses: mikepenz/xray-action@v2 
+      uses: mikepenz/xray-action@{latest-release}
       #check here for more info: https://github.com/mikepenz/xray-action
       with:
         # 1. Use client-id and client-secret for API authentication
