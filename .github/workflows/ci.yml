@@ -62,7 +62,7 @@ jobs:
         echo "Starting Xray report upload..."
 
         # Paths
-        JUNIT_REPORT_PATH="tqsbackend/target/surefire-reports/*.xml"
+        JUNIT_REPORT_PATH="tqsbackend/target/surefire-reports/TEST-tqs.backend.tqsbackend.controller.HomeControllerIntegrationTest.xml"
         XRAY_AUTH_URL="$XRAY_BASE_URL/authenticate"
         XRAY_IMPORT_URL="$XRAY_BASE_URL/import/execution/junit?projectKey=$JIRA_PROJECT_KEY"
 
