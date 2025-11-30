@@ -59,7 +59,7 @@ jobs:
         # These are references to your GitHub Secrets
         XRAY_CLIENT_ID: ${{ secrets.XRAY_CLIENT_ID }}
         XRAY_CLIENT_SECRET: ${{ secrets.XRAY_CLIENT_SECRET }}
-        JIRA_BASE_URL: https://ua-team-pjkn2g78.atlassian.net
+        XRAY_BASE_URL: "https://xray.cloud.getxray.app/api/v2"
         JIRA_PROJECT_KEY: PS
       run: |
         echo "Starting Xray report upload..."
