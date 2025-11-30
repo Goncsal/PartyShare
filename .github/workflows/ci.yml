@@ -55,10 +55,11 @@ jobs:
 
     - name: "Import results to Xray"
       uses: mikepenz/xray-action@v2 
+      #check here for more info: https://github.com/mikepenz/xray-action
       with:
         # 1. Use client-id and client-secret for API authentication
-        client-id: ${{ secrets.XRAY_CLIENT_ID }}
-        client-secret: ${{ secrets.XRAY_CLIENT_SECRET }}
+        username: ${{ secrets.XRAY_CLIENT_ID }}
+        password: ${{ secrets.XRAY_CLIENT_SECRET }}
         
         # 2. Specify the test report format (JUnit is correct)
         testFormat: "junit"
