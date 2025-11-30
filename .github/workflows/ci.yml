@@ -66,11 +66,11 @@ jobs:
         
         # Define paths and URLs
         XRAY_AUTH_URL="https://xray.cloud.getxray.app/api/v2/authenticate"
-        REPORT_FILE="tqsbackend/target/surefire-reports/TEST-*.xml"
+        JUNIT_REPORT_PATH="tqsbackend/target/surefire-reports/TEST-tqs.backend.tqsbackend.TqsbackendApplicationTests.xml"
         
         # Check if the report file exists (Optional but good practice)
-        if [ ! -f "$REPORT_FILE" ]; then
-          echo "WARNING: JUnit report file not found at $REPORT_FILE. Skipping Xray import."
+        if [ ! -f "$JUNIT_REPORT_PATH" ]; then
+          echo "WARNING: JUnit report file not found at $JUNIT_REPORT_PATH. Skipping Xray import."
           exit 0
         fi
         
