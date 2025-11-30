@@ -98,7 +98,7 @@ jobs:
           -H "Content-Type: text/xml" \
           -H "Authorization: Bearer $XRAY_TOKEN" \
           "$IMPORT_URL" \
-          --data-binary "@$REPORT_FILE")
+          --data-binary "@$JUNIT_REPORT_PATH")
 
         # Output the response for verification
         echo "Xray Import Response: $IMPORT_RESPONSE"
