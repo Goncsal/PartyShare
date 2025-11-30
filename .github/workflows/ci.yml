@@ -59,7 +59,7 @@ jobs:
       with:
         # 1. Use client-id and client-secret for API authentication
         username: ${{ secrets.XRAY_CLIENT_ID }}
-        password: ${{ secrets.XRAY_CLIENT_SECRET }}
+        password: ${{ secrets.XRAY_SECRET }}
         
         # 2. Specify the test report format (JUnit is correct)
         testFormat: "junit"
