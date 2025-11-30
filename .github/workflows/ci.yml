@@ -51,64 +51,53 @@ jobs:
       run: |
         cd tqsbackend
         ./mvnw test jacoco:report
-        
-    # --- START of Xray Integration Step ---
     - name: Post JUnit Report to Xray
-      if: always() # Run even if tests fail, so you can see failed test executions in Jira
+      if: always()
       env:
-        # These are references to your GitHub Secrets
         XRAY_CLIENT_ID: ${{ secrets.XRAY_CLIENT_ID }}
         XRAY_CLIENT_SECRET: ${{ secrets.XRAY_CLIENT_SECRET }}
         XRAY_BASE_URL: "https://xray.cloud.getxray.app/api/v2"
         JIRA_PROJECT_KEY: PS
       run: |
         echo "Starting Xray report upload..."
-        
-        # Define paths and URLs
-        XRAY_AUTH_URL="https://xray.cloud.getxray.app/api/v2/authenticate"
-        JUNIT_REPORT_PATH="tqsbackend/target/surefire-reports/TEST-tqs.backend.tqsbackend.TqsbackendApplicationTests.xml"
-        
-        # Check if the report file exists (Optional but good practice)
-        if [ ! -f "$JUNIT_REPORT_PATH" ]; then
-          echo "WARNING: JUnit report file not found at $JUNIT_REPORT_PATH. Skipping Xray import."
+
+        # Paths
+        JUNIT_REPORT_PATH="tqsbackend/target/surefire-reports/*.xml"
+        XRAY_AUTH_URL="$XRAY_BASE_URL/authenticate"
+        XRAY_IMPORT_URL="$XRAY_BASE_URL/import/execution/junit?projectKey=$JIRA_PROJECT_KEY"
+
+        # Ensure at least one test report exists
+        if ! ls $JUNIT_REPORT_PATH 1> /dev/null 2>&1; then
+          echo "WARNING: No JUnit XML files found. Skipping Xray import."
           exit 0
         fi
-        
-        # 1. Obtain Authentication Token
-        echo "1/2: Obtaining Xray API Token..."
-        # Note: The 'jq' command is used here to safely parse the JSON output and extract the token. 
-        # Since 'jq' might not be available, we can stick to the 'tr' method, but 'jq' is cleaner.
-        # Assuming 'curl' is the primary tool:
+
+        echo "1/2: Authenticating with Xray..."
         XRAY_TOKEN=$(curl -s -X POST \
           -H "Content-Type: application/json" \
           --data "{ \"client_id\": \"$XRAY_CLIENT_ID\", \"client_secret\": \"$XRAY_CLIENT_SECRET\" }" \
-          $XRAY_AUTH_URL | tr -d '\"')
+          $XRAY_AUTH_URL | tr -d '"')
 
         if [ -z "$XRAY_TOKEN" ]; then
-          echo "ERROR: Failed to obtain Xray Token. Check Client ID/Secret."
+          echo "ERROR: Failed to obtain Xray Token"
           exit 1
         fi
-        echo "Token successfully obtained."
-        
-        # 2. POST the JUnit Report to Xray
-        echo "2/2: Importing JUnit results to Xray..."
-        IMPORT_URL="$JIRA_BASE_URL/api/v2/import/execution/junit?projectKey=$JIRA_PROJECT_KEY"
-        
+
+        echo "2/2: Uploading test results to Xray..."
         IMPORT_RESPONSE=$(curl -s -X POST \
           -H "Content-Type: text/xml" \
           -H "Authorization: Bearer $XRAY_TOKEN" \
-          "$IMPORT_URL" \
-          --data-binary "@$JUNIT_REPORT_PATH")
+          --data-binary "@$JUNIT_REPORT_PATH" \
+          "$XRAY_IMPORT_URL")
 
-        # Output the response for verification
         echo "Xray Import Response: $IMPORT_RESPONSE"
-        # Optional: Check for successful import (response contains 'id' or 'key')
+
         if echo "$IMPORT_RESPONSE" | grep -q '"key":'; then
-          echo "Successfully created Test Execution issue: $(echo "$IMPORT_RESPONSE" | grep -o '"key":"[^"]*"' | cut -d: -f2 | tr -d '\"')"
+          echo "Xray Test Execution created successfully."
         else
-          echo "WARNING: Xray import may have failed. Response was not a standard success message."
+          echo "WARNING: Xray import may have failed."
         fi
-    # --- END of Xray Integration Step ---
+
 
     # ... existing steps for artifacts and summary ...
         
