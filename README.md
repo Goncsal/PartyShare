@@ -1,6 +1,6 @@
 # TQS Project
 
-This is a TQS project.
+This is a TQS project.,
 
 Below are instructions for the CI pipeline and how to run the tests (and proj structure)
 
