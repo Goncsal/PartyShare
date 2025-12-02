@@ -12,6 +12,7 @@ import tqs.backend.tqsbackend.entity.Item;
 import tqs.backend.tqsbackend.service.CategoryService;
 import tqs.backend.tqsbackend.service.ItemService;
 
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 @Controller
@@ -32,7 +33,7 @@ public class ItemController {
             @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) Double minRating,
             @RequestParam(required = false) String location,
-            Model model) {
+            Model model, HttpSession session) {
 
         Category cat = null;
         if (category != null && !category.isEmpty()) {
@@ -50,6 +51,9 @@ public class ItemController {
         model.addAttribute("maxPrice", maxPrice);
         model.addAttribute("minRating", minRating);
         model.addAttribute("location", location);
+
+        model.addAttribute("isLoggedIn", session.getAttribute("userId") != null);
+        model.addAttribute("userName", session.getAttribute("userName"));
 
         return "search";
     }

@@ -8,6 +8,7 @@ import tqs.backend.tqsbackend.entity.Item;
 import tqs.backend.tqsbackend.service.FavoriteService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
@@ -18,17 +19,27 @@ public class FavoriteController {
     @Autowired
     private FavoriteService favoriteService;
 
-    @GetMapping("/{userId}")
-    public String getFavorites(@PathVariable Long userId, Model model) {
+    @GetMapping("")
+    public String getFavorites(HttpSession session, Model model) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+
         List<Item> favorites = favoriteService.getFavorites(userId);
         model.addAttribute("favorites", favorites);
         model.addAttribute("userId", userId);
         return "favorites";
     }
 
-    @PostMapping("/{userId}/{itemId}")
-    public String addFavorite(@PathVariable Long userId, @PathVariable Long itemId,
-            HttpServletRequest request, RedirectAttributes redirectAttributes) {
+    @PostMapping("/{itemId}")
+    public String addFavorite(@PathVariable Long itemId,
+            HttpSession session, HttpServletRequest request, RedirectAttributes redirectAttributes) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+
         favoriteService.addFavorite(userId, itemId);
         redirectAttributes.addFlashAttribute("successMessage", "Item added to favorites!");
 
@@ -36,13 +47,18 @@ public class FavoriteController {
         return "redirect:" + (referer != null ? referer : "/items/search");
     }
 
-    @PostMapping("/{userId}/{itemId}/remove")
-    public String removeFavorite(@PathVariable Long userId, @PathVariable Long itemId,
-            HttpServletRequest request, RedirectAttributes redirectAttributes) {
+    @PostMapping("/{itemId}/remove")
+    public String removeFavorite(@PathVariable Long itemId,
+            HttpSession session, HttpServletRequest request, RedirectAttributes redirectAttributes) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+
         favoriteService.removeFavorite(userId, itemId);
         redirectAttributes.addFlashAttribute("successMessage", "Item removed from favorites!");
 
         String referer = request.getHeader("Referer");
-        return "redirect:" + (referer != null ? referer : "/favorites/" + userId);
+        return "redirect:" + (referer != null ? referer : "/favorites");
     }
 }
