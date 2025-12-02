@@ -40,7 +40,7 @@ class BookingRestControllerTest {
 
         mockMvc.perform(post("/api/bookings")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonPayload(LocalDate.now().plusDays(1), LocalDate.now().plusDays(3))))
+                .content(BookingTestFixtures.bookingRequestJson(10L, 70L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("CONFIRMED"))
                 .andExpect(jsonPath("$.paymentStatus").value("PAID"))
@@ -54,7 +54,7 @@ class BookingRestControllerTest {
 
         mockMvc.perform(post("/api/bookings")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonPayload(LocalDate.now().plusDays(1), LocalDate.now().plusDays(3))))
+                .content(BookingTestFixtures.bookingRequestJson(10L, 70L, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3))))
                         .andExpect(status().isPaymentRequired());
     }
 
@@ -81,14 +81,4 @@ class BookingRestControllerTest {
         verify(bookingService).getBooking(15L);
     }
 
-    private String jsonPayload(LocalDate startDate, LocalDate endDate) {
-        return """
-                {
-                  \"itemId\": 10,
-                  \"renterId\": 70,
-                  \"startDate\": \"%s\",
-                  \"endDate\": \"%s\"
-                }
-                """.formatted(startDate, endDate);
-    }
 }

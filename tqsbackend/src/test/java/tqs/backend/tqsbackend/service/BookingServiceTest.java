@@ -60,7 +60,7 @@ class BookingServiceTest {
     @Test
     @DisplayName("When payment succeeds the booking is confirmed and paid")
     void createBooking_paymentSuccess_confirmsBooking() {
-        BookingCreateRequest request = buildRequest();
+    BookingCreateRequest request = BookingTestFixtures.sampleRequest(10L, 70L);
 
         when(itemService.getItemById(request.getItemId())).thenReturn(sampleItem);
         when(bookingRepository.existsByItemIdAndStatusInAndStartDateLessThanAndEndDateGreaterThan(anyLong(), any(), any(), any()))
@@ -90,7 +90,7 @@ class BookingServiceTest {
     @Test
     @DisplayName("Payment failure marks booking rejected and raises exception")
     void createBooking_paymentFailure_rejectsBooking() {
-        BookingCreateRequest request = buildRequest();
+    BookingCreateRequest request = BookingTestFixtures.sampleRequest(10L, 70L);
 
         when(itemService.getItemById(request.getItemId())).thenReturn(sampleItem);
         when(bookingRepository.existsByItemIdAndStatusInAndStartDateLessThanAndEndDateGreaterThan(anyLong(), any(), any(), any()))
@@ -119,7 +119,7 @@ class BookingServiceTest {
     @Test
     @DisplayName("Overlapping booking triggers availability exception")
     void createBooking_overlappingDates_throws() {
-        BookingCreateRequest request = buildRequest();
+    BookingCreateRequest request = BookingTestFixtures.sampleRequest(10L, 70L);
 
         when(itemService.getItemById(request.getItemId())).thenReturn(sampleItem);
         when(bookingRepository.existsByItemIdAndStatusInAndStartDateLessThanAndEndDateGreaterThan(anyLong(), any(), any(), any()))
@@ -137,7 +137,7 @@ class BookingServiceTest {
 
         @Test
         void startDateInPast_throwsValidation() {
-            BookingCreateRequest request = buildRequest();
+            BookingCreateRequest request = BookingTestFixtures.sampleRequest(10L, 70L);
             request.setStartDate(LocalDate.now().minusDays(1));
 
             when(itemService.getItemById(request.getItemId())).thenReturn(sampleItem);
@@ -149,7 +149,7 @@ class BookingServiceTest {
 
         @Test
         void endDateNotAfterStart_throwsValidation() {
-            BookingCreateRequest request = buildRequest();
+            BookingCreateRequest request = BookingTestFixtures.sampleRequest(10L, 70L);
             request.setEndDate(request.getStartDate());
 
             when(itemService.getItemById(request.getItemId())).thenReturn(sampleItem);
@@ -161,7 +161,7 @@ class BookingServiceTest {
 
         @Test
         void renterMissing_throwsValidation() {
-            BookingCreateRequest request = buildRequest();
+            BookingCreateRequest request = BookingTestFixtures.sampleRequest(10L, 70L);
             request.setRenterId(null);
 
             when(itemService.getItemById(request.getItemId())).thenReturn(sampleItem);
@@ -173,7 +173,7 @@ class BookingServiceTest {
 
         @Test
         void renterIsOwner_throwsValidation() {
-            BookingCreateRequest request = buildRequest();
+            BookingCreateRequest request = BookingTestFixtures.sampleRequest(10L, 70L);
             sampleItem.setOwnerId(request.getRenterId());
 
             when(itemService.getItemById(request.getItemId())).thenReturn(sampleItem);
@@ -185,7 +185,7 @@ class BookingServiceTest {
 
         @Test
         void itemMissing_throwsValidation() {
-            BookingCreateRequest request = buildRequest();
+            BookingCreateRequest request = BookingTestFixtures.sampleRequest(10L, 70L);
 
             when(itemService.getItemById(request.getItemId())).thenReturn(null);
 
@@ -196,7 +196,7 @@ class BookingServiceTest {
 
         @Test
         void itemWithNonPositivePrice_throwsValidation() {
-            BookingCreateRequest request = buildRequest();
+            BookingCreateRequest request = BookingTestFixtures.sampleRequest(10L, 70L);
             sampleItem.setPrice(0.0);
 
             when(itemService.getItemById(request.getItemId())).thenReturn(sampleItem);
@@ -228,12 +228,4 @@ class BookingServiceTest {
         verify(bookingRepository).findByRenterId(70L);
     }
 
-    private BookingCreateRequest buildRequest() {
-        BookingCreateRequest request = new BookingCreateRequest();
-        request.setItemId(10L);
-        request.setRenterId(70L);
-        request.setStartDate(LocalDate.now().plusDays(3));
-        request.setEndDate(LocalDate.now().plusDays(6));
-        return request;
-    }
 }

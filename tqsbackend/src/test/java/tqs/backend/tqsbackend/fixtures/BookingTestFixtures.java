@@ -38,6 +38,10 @@ public final class BookingTestFixtures {
         return booking;
     }
 
+    public static LocalDate futureDate(int daysAhead) {
+        return LocalDate.now().plusDays(daysAhead);
+    }
+
     public static BookingCreateRequest sampleRequest(long itemId, long renterId, LocalDate start, LocalDate end) {
         BookingCreateRequest request = new BookingCreateRequest();
         request.setItemId(itemId);
@@ -45,5 +49,20 @@ public final class BookingTestFixtures {
         request.setStartDate(start);
         request.setEndDate(end);
         return request;
+    }
+
+    public static BookingCreateRequest sampleRequest(long itemId, long renterId) {
+        return sampleRequest(itemId, renterId, futureDate(3), futureDate(6));
+    }
+
+    public static String bookingRequestJson(long itemId, long renterId, LocalDate start, LocalDate end) {
+        return """
+                {
+                  \"itemId\": %d,
+                  \"renterId\": %d,
+                  \"startDate\": \"%s\",
+                  \"endDate\": \"%s\"
+                }
+                """.formatted(itemId, renterId, start, end);
     }
 }
