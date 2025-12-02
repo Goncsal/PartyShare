@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import tqs.backend.tqsbackend.entity.Item;
 import tqs.backend.tqsbackend.service.FavoriteService;
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
 @Controller
@@ -25,14 +27,22 @@ public class FavoriteController {
     }
 
     @PostMapping("/{userId}/{itemId}")
-    public String addFavorite(@PathVariable Long userId, @PathVariable Long itemId) {
+    public String addFavorite(@PathVariable Long userId, @PathVariable Long itemId,
+            HttpServletRequest request, RedirectAttributes redirectAttributes) {
         favoriteService.addFavorite(userId, itemId);
-        return "redirect:/items/search";
+        redirectAttributes.addFlashAttribute("successMessage", "Item added to favorites!");
+
+        String referer = request.getHeader("Referer");
+        return "redirect:" + (referer != null ? referer : "/items/search");
     }
 
     @PostMapping("/{userId}/{itemId}/remove")
-    public String removeFavorite(@PathVariable Long userId, @PathVariable Long itemId) {
+    public String removeFavorite(@PathVariable Long userId, @PathVariable Long itemId,
+            HttpServletRequest request, RedirectAttributes redirectAttributes) {
         favoriteService.removeFavorite(userId, itemId);
-        return "redirect:/favorites/" + userId;
+        redirectAttributes.addFlashAttribute("successMessage", "Item removed from favorites!");
+
+        String referer = request.getHeader("Referer");
+        return "redirect:" + (referer != null ? referer : "/favorites/" + userId);
     }
 }
