@@ -3,6 +3,9 @@ package tqs.backend.tqsbackend.entity;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 public class EntityTest {
 
     @Test
@@ -60,6 +63,28 @@ public class EntityTest {
 
         assertThat(favorite.getUserId()).isEqualTo(2L);
         assertThat(favorite.getItem()).isEqualTo(newItem);
+    }
+
+    @Test
+    public void testBookingEntity() {
+        Item item = new Item();
+        Booking booking = new Booking(item, 5L, LocalDate.now(), LocalDate.now().plusDays(2),
+                BigDecimal.TEN, BigDecimal.valueOf(20), BookingStatus.PENDING, PaymentStatus.PENDING);
+        booking.setId(7L);
+        booking.setPaymentReference("ref-123");
+        booking.setStatus(BookingStatus.CONFIRMED);
+        booking.setPaymentStatus(PaymentStatus.PAID);
+
+        assertThat(booking.getId()).isEqualTo(7L);
+        assertThat(booking.getItem()).isEqualTo(item);
+        assertThat(booking.getRenterId()).isEqualTo(5L);
+        assertThat(booking.getStartDate()).isNotNull();
+        assertThat(booking.getEndDate()).isNotNull();
+        assertThat(booking.getDailyPrice()).isEqualByComparingTo(BigDecimal.TEN);
+        assertThat(booking.getTotalPrice()).isEqualByComparingTo(BigDecimal.valueOf(20));
+        assertThat(booking.getStatus()).isEqualTo(BookingStatus.CONFIRMED);
+        assertThat(booking.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
+        assertThat(booking.getPaymentReference()).isEqualTo("ref-123");
     }
 
     @Test
