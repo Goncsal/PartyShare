@@ -20,69 +20,69 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(FavoriteController.class)
 class FavoriteControllerTest {
 
-    @Autowired
-    private MockMvc mvc;
+        @Autowired
+        private MockMvc mvc;
 
-    @MockitoBean
-    private FavoriteService favoriteService;
+        @MockitoBean
+        private FavoriteService favoriteService;
 
-    @Test
-    void getFavorites_LoggedIn() throws Exception {
-        Item item = new Item();
-        item.setName("Test Item");
-        List<Item> favorites = Arrays.asList(item);
+        @Test
+        void getFavorites_LoggedIn() throws Exception {
+                Item item = new Item();
+                item.setName("Test Item");
+                List<Item> favorites = Arrays.asList(item);
 
-        when(favoriteService.getFavorites(1L)).thenReturn(favorites);
+                when(favoriteService.getFavorites(1L)).thenReturn(favorites);
 
-        mvc.perform(get("/favorites").sessionAttr("userId", 1L))
-                .andExpect(status().isOk())
-                .andExpect(view().name("favorites"))
-                .andExpect(model().attribute("favorites", favorites))
-                .andExpect(model().attribute("userId", 1L));
-    }
+                mvc.perform(get("/favorites").sessionAttr("userId", 1L))
+                                .andExpect(status().isOk())
+                                .andExpect(view().name("favorites"))
+                                .andExpect(model().attribute("favorites", favorites))
+                                .andExpect(model().attribute("userId", 1L));
+        }
 
-    @Test
-    void getFavorites_LoggedOut() throws Exception {
-        mvc.perform(get("/favorites"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/users/login"));
-    }
+        @Test
+        void getFavorites_LoggedOut() throws Exception {
+                mvc.perform(get("/favorites"))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrl("/users/login"));
+        }
 
-    @Test
-    void addFavorite_LoggedIn() throws Exception {
-        mvc.perform(post("/favorites/10")
-                .sessionAttr("userId", 1L)
-                .header("Referer", "/items/search"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/items/search"))
-                .andExpect(flash().attribute("successMessage", "Item added to favorites!"));
+        @Test
+        void addFavorite_LoggedIn() throws Exception {
+                mvc.perform(post("/favorites/10")
+                                .sessionAttr("userId", 1L)
+                                .header("Referer", "/items/search"))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrl("/items/search"))
+                                .andExpect(flash().attribute("successMessage", "Item added to favorites!"));
 
-        verify(favoriteService).addFavorite(1L, 10L);
-    }
+                verify(favoriteService).addFavorite(1L, 10L);
+        }
 
-    @Test
-    void addFavorite_LoggedOut() throws Exception {
-        mvc.perform(post("/favorites/10"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/users/login"));
-    }
+        @Test
+        void addFavorite_LoggedOut() throws Exception {
+                mvc.perform(post("/favorites/10"))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrl("/users/login"));
+        }
 
-    @Test
-    void removeFavorite_LoggedIn() throws Exception {
-        mvc.perform(post("/favorites/10/remove")
-                .sessionAttr("userId", 1L)
-                .header("Referer", "/favorites"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/favorites"))
-                .andExpect(flash().attribute("successMessage", "Item removed from favorites!"));
+        @Test
+        void removeFavorite_LoggedIn() throws Exception {
+                mvc.perform(post("/favorites/10/remove")
+                                .sessionAttr("userId", 1L)
+                                .header("Referer", "/favorites"))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrl("/favorites"))
+                                .andExpect(flash().attribute("successMessage", "Item removed from favorites!"));
 
-        verify(favoriteService).removeFavorite(1L, 10L);
-    }
+                verify(favoriteService).removeFavorite(1L, 10L);
+        }
 
-    @Test
-    void removeFavorite_LoggedOut() throws Exception {
-        mvc.perform(post("/favorites/10/remove"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/users/login"));
-    }
+        @Test
+        void removeFavorite_LoggedOut() throws Exception {
+                mvc.perform(post("/favorites/10/remove"))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrl("/users/login"));
+        }
 }

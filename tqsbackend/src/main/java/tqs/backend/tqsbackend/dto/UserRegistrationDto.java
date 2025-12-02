@@ -12,5 +12,5 @@ public class UserRegistrationDto {
     private String name;
     private String email;
     private String password;
-    private UserRoles role;
+    private UserRoles role = UserRoles.RENTER;
 }

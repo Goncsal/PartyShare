@@ -1,5 +1,6 @@
 package tqs.backend.tqsbackend.service;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,11 +14,14 @@ import tqs.backend.tqsbackend.entity.UserRoles;
 import tqs.backend.tqsbackend.repository.UserRepository;
 
 @Service
+
 @RequiredArgsConstructor
 public class UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
+
+    private static final EnumSet<UserRoles> SELF_REGISTER_ROLES = EnumSet.of(UserRoles.RENTER, UserRoles.OWNER);
 
     public User registerUser(String name, String email, String password, UserRoles role) {
         if (name.isBlank()) {
@@ -33,12 +37,24 @@ public class UserService {
             throw new IllegalArgumentException("Failed to register user: Password too short.");
         }
 
+        UserRoles sanitizedRole = resolveSelfServiceRole(role);
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
-        User user = new User(name, email, hashedPassword, role);
+        User user = new User(name, email, hashedPassword, sanitizedRole);
         User savedUser = userRepository.save(user);
 
         logger.info("User registered successfully with ID {}", savedUser.getId());
         return savedUser;
+    }
+
+    private UserRoles resolveSelfServiceRole(UserRoles requestedRole) {
+        if (requestedRole == null) {
+            return UserRoles.RENTER;
+        }
+        if (!SELF_REGISTER_ROLES.contains(requestedRole)) {
+            logger.warn("Failed to register user: Role {} is not self-assignable.", requestedRole);
+            throw new IllegalArgumentException("Failed to register user: Role is not permitted.");
+        }
+        return requestedRole;
     }
 
     public boolean authenticate(String email, String password) {

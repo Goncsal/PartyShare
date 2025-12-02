@@ -24,10 +24,14 @@ public class UserRestController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserDto> register(@RequestBody UserRegistrationDto userDto) {
-        User created = userService.registerUser(userDto.getName(), userDto.getEmail(), userDto.getPassword(),
-                userDto.getRole());
-        return new ResponseEntity<>(convertToDto(created), HttpStatus.CREATED);
+    public ResponseEntity<?> register(@RequestBody UserRegistrationDto userDto) {
+        try {
+            User created = userService.registerUser(userDto.getName(), userDto.getEmail(), userDto.getPassword(),
+                    userDto.getRole());
+            return new ResponseEntity<>(convertToDto(created), HttpStatus.CREATED);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
     }
 
     @PostMapping("/login")

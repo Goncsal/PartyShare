@@ -19,205 +19,215 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserRestController.class)
 class UserRestControllerTest {
 
-    @Autowired
-    private MockMvc mvc;
+        @Autowired
+        private MockMvc mvc;
 
-    @MockitoBean
-    private UserService userService;
+        @MockitoBean
+        private UserService userService;
 
-    private final ObjectMapper mapper = new ObjectMapper();
+        private final ObjectMapper mapper = new ObjectMapper();
 
-    @Test
-    void registerUser_Success() throws Exception {
-        User input = new User("John", "john@ua.pt", "pass", UserRoles.RENTER);
-        User saved = new User("John", "john@ua.pt", "hash", UserRoles.RENTER);
-        saved.setId(1L);
+        @Test
+        void registerUser_Success() throws Exception {
+                User saved = new User("John", "john@ua.pt", "hash", UserRoles.RENTER);
+                saved.setId(1L);
 
-        when(userService.registerUser(any(), any(), any(), any())).thenReturn(saved);
+                when(userService.registerUser(any(), any(), any(), any())).thenReturn(saved);
 
-        mvc.perform(post("/api/users/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(input)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.email").value("john@ua.pt"));
-    }
+                Map<String, Object> request = new HashMap<>();
+                request.put("name", "John");
+                request.put("email", "john@ua.pt");
+                request.put("password", "password1");
+                request.put("role", "RENTER");
 
-    @Test
-    void registerUser_Invalid() throws Exception {
-        when(userService.registerUser(any(), any(), any(), any()))
-                .thenThrow(new IllegalArgumentException("Invalid Email"));
+                mvc.perform(post("/api/users/register")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(mapper.writeValueAsString(request)))
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.id").value(1))
+                                .andExpect(jsonPath("$.email").value("john@ua.pt"));
+        }
 
-        User input = new User("John", "", "pass", UserRoles.RENTER);
+        @Test
+        void registerUser_Invalid() throws Exception {
+                when(userService.registerUser(any(), any(), any(), any()))
+                                .thenThrow(new IllegalArgumentException("Invalid Email"));
 
-        mvc.perform(post("/api/users/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(input)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$").value("Invalid Email"));
-    }
+                Map<String, Object> request = new HashMap<>();
+                request.put("name", "John");
+                request.put("email", "");
+                request.put("password", "password1");
+                request.put("role", "RENTER");
 
-    @Test
-    void login_Success() throws Exception {
-        when(userService.authenticate("john@ua.pt", "pass")).thenReturn(true);
+                mvc.perform(post("/api/users/register")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(mapper.writeValueAsString(request)))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(content().string("Invalid Email"));
+        }
 
-        Map<String, String> creds = new HashMap<>();
-        creds.put("email", "john@ua.pt");
-        creds.put("password", "pass");
+        @Test
+        void login_Success() throws Exception {
+                when(userService.authenticate("john@ua.pt", "pass")).thenReturn(true);
 
-        mvc.perform(post("/api/users/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(creds)))
-                .andExpect(status().isOk());
-    }
+                Map<String, String> creds = new HashMap<>();
+                creds.put("email", "john@ua.pt");
+                creds.put("password", "pass");
 
-    @Test
-    void getUserById_Found() throws Exception {
-        User u = new User("John", "j@ua.pt", "h", UserRoles.RENTER);
-        when(userService.getUserById(1L)).thenReturn(Optional.of(u));
+                mvc.perform(post("/api/users/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(mapper.writeValueAsString(creds)))
+                                .andExpect(status().isOk());
+        }
 
-        mvc.perform(get("/api/users/id/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("John"));
-    }
+        @Test
+        void getUserById_Found() throws Exception {
+                User u = new User("John", "j@ua.pt", "h", UserRoles.RENTER);
+                when(userService.getUserById(1L)).thenReturn(Optional.of(u));
 
-    @Test
-    void login_Failure() throws Exception {
-        when(userService.authenticate("john@ua.pt", "wrongpass")).thenReturn(false);
+                mvc.perform(get("/api/users/id/1"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.name").value("John"));
+        }
 
-        Map<String, String> creds = new HashMap<>();
-        creds.put("email", "john@ua.pt");
-        creds.put("password", "wrongpass");
+        @Test
+        void login_Failure() throws Exception {
+                when(userService.authenticate("john@ua.pt", "wrongpass")).thenReturn(false);
 
-        mvc.perform(post("/api/users/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(creds)))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$").value("Invalid credentials"));
-    }
+                Map<String, String> creds = new HashMap<>();
+                creds.put("email", "john@ua.pt");
+                creds.put("password", "wrongpass");
 
-    @Test
-    void getUserById_NotFound() throws Exception {
-        when(userService.getUserById(99L)).thenReturn(Optional.empty());
+                mvc.perform(post("/api/users/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(mapper.writeValueAsString(creds)))
+                                .andExpect(status().isUnauthorized())
+                                .andExpect(jsonPath("$").value("Invalid credentials"));
+        }
 
-        mvc.perform(get("/api/users/id/99"))
-                .andExpect(status().isNotFound());
-    }
+        @Test
+        void getUserById_NotFound() throws Exception {
+                when(userService.getUserById(99L)).thenReturn(Optional.empty());
 
-    @Test
-    void getUserByEmail_Found() throws Exception {
-        User u = new User("John", "j@ua.pt", "h", UserRoles.RENTER);
-        when(userService.getUserByEmail("j@ua.pt")).thenReturn(Optional.of(u));
+                mvc.perform(get("/api/users/id/99"))
+                                .andExpect(status().isNotFound());
+        }
 
-        mvc.perform(get("/api/users/email/j@ua.pt"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("John"));
-    }
+        @Test
+        void getUserByEmail_Found() throws Exception {
+                User u = new User("John", "j@ua.pt", "h", UserRoles.RENTER);
+                when(userService.getUserByEmail("j@ua.pt")).thenReturn(Optional.of(u));
 
-    @Test
-    void getUserByEmail_NotFound() throws Exception {
-        when(userService.getUserByEmail("unknown@ua.pt")).thenReturn(Optional.empty());
+                mvc.perform(get("/api/users/email/j@ua.pt"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.name").value("John"));
+        }
 
-        mvc.perform(get("/api/users/email/unknown@ua.pt"))
-                .andExpect(status().isNotFound());
-    }
+        @Test
+        void getUserByEmail_NotFound() throws Exception {
+                when(userService.getUserByEmail("unknown@ua.pt")).thenReturn(Optional.empty());
 
-    @Test
-    void searchUsers_All() throws Exception {
-        User u1 = new User("John", "j@ua.pt", "h", UserRoles.RENTER);
-        User u2 = new User("Jane", "jane@ua.pt", "h", UserRoles.OWNER);
-        when(userService.getAllUsers()).thenReturn(java.util.List.of(u1, u2));
+                mvc.perform(get("/api/users/email/unknown@ua.pt"))
+                                .andExpect(status().isNotFound());
+        }
 
-        mvc.perform(get("/api/users/search"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2));
-    }
+        @Test
+        void searchUsers_All() throws Exception {
+                User u1 = new User("John", "j@ua.pt", "h", UserRoles.RENTER);
+                User u2 = new User("Jane", "jane@ua.pt", "h", UserRoles.OWNER);
+                when(userService.getAllUsers()).thenReturn(java.util.List.of(u1, u2));
 
-    @Test
-    void searchUsers_ByName() throws Exception {
-        User u1 = new User("John", "j@ua.pt", "h", UserRoles.RENTER);
-        when(userService.getUsersByName("John")).thenReturn(java.util.List.of(u1));
+                mvc.perform(get("/api/users/search"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.length()").value(2));
+        }
 
-        mvc.perform(get("/api/users/search").param("name", "John"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].name").value("John"));
-    }
+        @Test
+        void searchUsers_ByName() throws Exception {
+                User u1 = new User("John", "j@ua.pt", "h", UserRoles.RENTER);
+                when(userService.getUsersByName("John")).thenReturn(java.util.List.of(u1));
 
-    @Test
-    void searchUsers_ByRole() throws Exception {
-        User u2 = new User("Jane", "jane@ua.pt", "h", UserRoles.OWNER);
-        when(userService.getUsersByRole(UserRoles.OWNER)).thenReturn(java.util.List.of(u2));
+                mvc.perform(get("/api/users/search").param("name", "John"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.length()").value(1))
+                                .andExpect(jsonPath("$[0].name").value("John"));
+        }
 
-        mvc.perform(get("/api/users/search").param("role", "OWNER"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].role").value("OWNER"));
-    }
+        @Test
+        void searchUsers_ByRole() throws Exception {
+                User u2 = new User("Jane", "jane@ua.pt", "h", UserRoles.OWNER);
+                when(userService.getUsersByRole(UserRoles.OWNER)).thenReturn(java.util.List.of(u2));
 
-    @Test
-    void searchUsers_ByStatus() throws Exception {
-        User u1 = new User("John", "j@ua.pt", "h", UserRoles.RENTER);
-        when(userService.getUsersByStatus(true)).thenReturn(java.util.List.of(u1));
+                mvc.perform(get("/api/users/search").param("role", "OWNER"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.length()").value(1))
+                                .andExpect(jsonPath("$[0].role").value("OWNER"));
+        }
 
-        mvc.perform(get("/api/users/search").param("active", "true"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
-    }
+        @Test
+        void searchUsers_ByStatus() throws Exception {
+                User u1 = new User("John", "j@ua.pt", "h", UserRoles.RENTER);
+                when(userService.getUsersByStatus(true)).thenReturn(java.util.List.of(u1));
 
-    @Test
-    void searchUsers_ByNameAndRole() throws Exception {
-        User u1 = new User("John", "j@ua.pt", "h", UserRoles.RENTER);
-        when(userService.getUsersByNameAndRole("John", UserRoles.RENTER)).thenReturn(java.util.List.of(u1));
+                mvc.perform(get("/api/users/search").param("active", "true"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.length()").value(1));
+        }
 
-        mvc.perform(get("/api/users/search")
-                .param("name", "John")
-                .param("role", "RENTER"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
-    }
+        @Test
+        void searchUsers_ByNameAndRole() throws Exception {
+                User u1 = new User("John", "j@ua.pt", "h", UserRoles.RENTER);
+                when(userService.getUsersByNameAndRole("John", UserRoles.RENTER)).thenReturn(java.util.List.of(u1));
 
-    @Test
-    void searchUsers_ByNameAndStatus() throws Exception {
-        User u1 = new User("John", "j@ua.pt", "h", UserRoles.RENTER);
-        when(userService.getUsersByNameAndStatus("John", true)).thenReturn(java.util.List.of(u1));
+                mvc.perform(get("/api/users/search")
+                                .param("name", "John")
+                                .param("role", "RENTER"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.length()").value(1));
+        }
 
-        mvc.perform(get("/api/users/search")
-                .param("name", "John")
-                .param("active", "true"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
-    }
+        @Test
+        void searchUsers_ByNameAndStatus() throws Exception {
+                User u1 = new User("John", "j@ua.pt", "h", UserRoles.RENTER);
+                when(userService.getUsersByNameAndStatus("John", true)).thenReturn(java.util.List.of(u1));
 
-    @Test
-    void searchUsers_ByRoleAndStatus() throws Exception {
-        User u1 = new User("John", "j@ua.pt", "h", UserRoles.RENTER);
-        when(userService.getUsersByRoleAndStatus(UserRoles.RENTER, true)).thenReturn(java.util.List.of(u1));
+                mvc.perform(get("/api/users/search")
+                                .param("name", "John")
+                                .param("active", "true"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.length()").value(1));
+        }
 
-        mvc.perform(get("/api/users/search")
-                .param("role", "RENTER")
-                .param("active", "true"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
-    }
+        @Test
+        void searchUsers_ByRoleAndStatus() throws Exception {
+                User u1 = new User("John", "j@ua.pt", "h", UserRoles.RENTER);
+                when(userService.getUsersByRoleAndStatus(UserRoles.RENTER, true)).thenReturn(java.util.List.of(u1));
 
-    @Test
-    void searchUsers_ByNameAndRoleAndStatus() throws Exception {
-        User u1 = new User("John", "j@ua.pt", "h", UserRoles.RENTER);
-        when(userService.getUsersByNameAndRoleAndStatus("John", UserRoles.RENTER, true))
-                .thenReturn(java.util.List.of(u1));
+                mvc.perform(get("/api/users/search")
+                                .param("role", "RENTER")
+                                .param("active", "true"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.length()").value(1));
+        }
 
-        mvc.perform(get("/api/users/search")
-                .param("name", "John")
-                .param("role", "RENTER")
-                .param("active", "true"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
-    }
+        @Test
+        void searchUsers_ByNameAndRoleAndStatus() throws Exception {
+                User u1 = new User("John", "j@ua.pt", "h", UserRoles.RENTER);
+                when(userService.getUsersByNameAndRoleAndStatus("John", UserRoles.RENTER, true))
+                                .thenReturn(java.util.List.of(u1));
+
+                mvc.perform(get("/api/users/search")
+                                .param("name", "John")
+                                .param("role", "RENTER")
+                                .param("active", "true"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.length()").value(1));
+        }
 }

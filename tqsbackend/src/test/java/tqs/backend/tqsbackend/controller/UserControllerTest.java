@@ -6,10 +6,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.web.servlet.MockMvc;
 
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import tqs.backend.tqsbackend.dto.UserRegistrationDto;
 import tqs.backend.tqsbackend.entity.User;
 import tqs.backend.tqsbackend.entity.UserRoles;
 import tqs.backend.tqsbackend.service.UserService;
 
+import static org.hamcrest.Matchers.instanceOf;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -71,7 +73,8 @@ class UserControllerTest {
         mvc.perform(get("/users/register"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("users/register"))
-                .andExpect(model().attributeExists("user"));
+            .andExpect(model().attributeExists("user"))
+            .andExpect(model().attribute("user", instanceOf(UserRegistrationDto.class)));
     }
 
     @Test

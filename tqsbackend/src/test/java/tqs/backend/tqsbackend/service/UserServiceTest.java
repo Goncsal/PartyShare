@@ -33,12 +33,12 @@ class UserServiceTest {
 
     private User validUser;
     private User inactiveUser;
-    
+
     private final String plainPassword = "password1";
 
     @BeforeEach
     void setUp() {
-        String encodedPassword = BCrypt.hashpw(plainPassword, BCrypt.gensalt());        
+        String encodedPassword = BCrypt.hashpw(plainPassword, BCrypt.gensalt());
         validUser = new User("John Doe", "john@ua.pt", encodedPassword, UserRoles.RENTER);
         validUser.setId(1L);
         validUser.setActive(true);
@@ -51,16 +51,38 @@ class UserServiceTest {
     @Test
     void testRegisterUser() {
         when(userRepository.save(any(User.class))).thenReturn(validUser);
-        
+
         User result = userService.registerUser("John Doe", "john@ua.pt", plainPassword, UserRoles.RENTER);
-        
+
         assertThat(result).isNotNull();
         assertThat(result.getEmail()).isEqualTo("john@ua.pt");
         assertThat(result.getName()).isEqualTo("John Doe");
 
-        assertThrows(IllegalArgumentException.class, () -> userService.registerUser("", "email@ua.pt", "pass1234", UserRoles.RENTER));
-        assertThrows(IllegalArgumentException.class, () -> userService.registerUser("John", "invalid-email", "pass1234", UserRoles.RENTER));
-        assertThrows(IllegalArgumentException.class, () -> userService.registerUser("John", "email@ua.pt", "short", UserRoles.RENTER));
+        assertThrows(IllegalArgumentException.class,
+                () -> userService.registerUser("", "email@ua.pt", "pass1234", UserRoles.RENTER));
+        assertThrows(IllegalArgumentException.class,
+                () -> userService.registerUser("John", "invalid-email", "pass1234", UserRoles.RENTER));
+        assertThrows(IllegalArgumentException.class,
+                () -> userService.registerUser("John", "email@ua.pt", "short", UserRoles.RENTER));
+    }
+
+    @Test
+    void testRegisterUserDefaultsToRenterWhenRoleMissing() {
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            user.setId(5L);
+            return user;
+        });
+
+        User registered = userService.registerUser("Jane Doe", "jane@ua.pt", plainPassword, null);
+
+        assertThat(registered.getRole()).isEqualTo(UserRoles.RENTER);
+    }
+
+    @Test
+    void testRegisterUserRejectsAdminRole() {
+        assertThrows(IllegalArgumentException.class,
+                () -> userService.registerUser("Admin", "admin@ua.pt", plainPassword, UserRoles.ADMIN));
     }
 
     @Test
@@ -103,11 +125,12 @@ class UserServiceTest {
         when(userRepository.findByNameContainingIgnoreCase("John")).thenReturn(userList);
         when(userRepository.findByRole(UserRoles.RENTER)).thenReturn(userList);
         when(userRepository.findByIsActive(true)).thenReturn(userList);
-        
+
         when(userRepository.findByNameContainingIgnoreCaseAndIsActive("John", true)).thenReturn(userList);
         when(userRepository.findByNameContainingIgnoreCaseAndRole("John", UserRoles.RENTER)).thenReturn(userList);
         when(userRepository.findByRoleAndIsActive(UserRoles.RENTER, true)).thenReturn(userList);
-        when(userRepository.findByNameContainingIgnoreCaseAndRoleAndIsActive("John", UserRoles.RENTER, true)).thenReturn(userList);
+        when(userRepository.findByNameContainingIgnoreCaseAndRoleAndIsActive("John", UserRoles.RENTER, true))
+                .thenReturn(userList);
 
         assertThat(userService.getAllUsers()).hasSize(1);
         assertThat(userService.getUsersByName("John")).hasSize(1);

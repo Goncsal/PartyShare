@@ -19,47 +19,47 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class FavoriteRestControllerIntegrationTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @Autowired
-    private ItemRepository itemRepository;
+        @Autowired
+        private ItemRepository itemRepository;
 
-    @Test
-    public void testAddAndGetFavorites() throws Exception {
-        Item item = itemRepository.findAll().get(0);
-        Long userId = 1L;
+        @Test
+        public void testAddAndGetFavorites() throws Exception {
+                Item item = itemRepository.findAll().get(0);
+                Long userId = 1L;
 
-        // Add favorite
-        mockMvc.perform(post("/api/favorites/" + userId + "/" + item.getId())
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                // Add favorite
+                mockMvc.perform(post("/api/favorites/" + userId + "/" + item.getId())
+                                .contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
 
-        // Get favorites
-        mockMvc.perform(get("/api/favorites/" + userId)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(greaterThan(0))))
-                .andExpect(jsonPath("$[0].id", is(item.getId().intValue())));
-    }
+                // Get favorites
+                mockMvc.perform(get("/api/favorites/" + userId)
+                                .contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$", hasSize(greaterThan(0))))
+                                .andExpect(jsonPath("$[0].id", is(item.getId().intValue())));
+        }
 
-    @Test
-    public void testRemoveFavorite() throws Exception {
-        Item item = itemRepository.findAll().get(0);
-        Long userId = 1L;
+        @Test
+        public void testRemoveFavorite() throws Exception {
+                Item item = itemRepository.findAll().get(0);
+                Long userId = 1L;
 
-        // Add favorite first
-        mockMvc.perform(post("/api/favorites/" + userId + "/" + item.getId()));
+                // Add favorite first
+                mockMvc.perform(post("/api/favorites/" + userId + "/" + item.getId()));
 
-        // Remove favorite
-        mockMvc.perform(delete("/api/favorites/" + userId + "/" + item.getId())
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                // Remove favorite
+                mockMvc.perform(delete("/api/favorites/" + userId + "/" + item.getId())
+                                .contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk());
 
-        // Verify it's gone
-        mockMvc.perform(get("/api/favorites/" + userId)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", not(hasItem(hasProperty("id", is(item.getId()))))));
-    }
+                // Verify it's gone
+                mockMvc.perform(get("/api/favorites/" + userId)
+                                .contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$", not(hasItem(hasProperty("id", is(item.getId()))))));
+        }
 }

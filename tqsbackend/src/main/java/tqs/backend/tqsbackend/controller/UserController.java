@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.HttpSession;
+import tqs.backend.tqsbackend.dto.UserRegistrationDto;
 import tqs.backend.tqsbackend.entity.User;
 import tqs.backend.tqsbackend.service.UserService;
 
@@ -53,12 +54,13 @@ public class UserController {
 
     @GetMapping("/register")
     public String register(Model model) {
-        model.addAttribute("user", new User());
+        model.addAttribute("user", new UserRegistrationDto());
         return "users/register";
     }
 
     @PostMapping("/register")
-    public String register(@ModelAttribute User user, RedirectAttributes redirectAttributes, Model model) {
+    public String register(@ModelAttribute("user") UserRegistrationDto user,
+            RedirectAttributes redirectAttributes, Model model) {
         try {
             userService.registerUser(user.getName(), user.getEmail(), user.getPassword(), user.getRole());
             redirectAttributes.addFlashAttribute("success", "Registration successful! Please login.");
