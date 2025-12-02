@@ -1,7 +1,7 @@
 package tqs.backend.tqsbackend.controller;
 
 import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -21,15 +21,16 @@ import tqs.backend.tqsbackend.exception.PaymentException;
 import tqs.backend.tqsbackend.service.BookingService;
 import tqs.backend.tqsbackend.service.ItemService;
 
+import lombok.RequiredArgsConstructor;
+
 @Controller
 @RequestMapping("/bookings")
+@RequiredArgsConstructor
 public class BookingController {
 
-    @Autowired
-    private BookingService bookingService;
+    private final BookingService bookingService;
 
-    @Autowired
-    private ItemService itemService;
+    private final ItemService itemService;
 
     @GetMapping("/rent/{itemId}")
     public String showRentForm(@PathVariable Long itemId, Model model, HttpSession session) {
@@ -53,8 +54,7 @@ public class BookingController {
         return "bookings/rent_item";
     }
 
-    @Autowired
-    private org.springframework.validation.SmartValidator validator;
+    private final org.springframework.validation.SmartValidator validator;
 
     @PostMapping
     public String createBooking(@ModelAttribute("bookingRequest") BookingCreateRequest request,

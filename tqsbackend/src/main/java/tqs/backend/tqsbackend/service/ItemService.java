@@ -1,6 +1,6 @@
 package tqs.backend.tqsbackend.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import tqs.backend.tqsbackend.entity.Category;
@@ -10,10 +10,10 @@ import tqs.backend.tqsbackend.repository.ItemRepository;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ItemService {
 
-    @Autowired
-    private ItemRepository itemRepository;
+    private final ItemRepository itemRepository;
 
     public List<Item> searchItems(String keyword, Category category, Double minPrice, Double maxPrice, Double minRating,
             String location) {

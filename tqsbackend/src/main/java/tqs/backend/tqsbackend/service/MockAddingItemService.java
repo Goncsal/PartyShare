@@ -1,7 +1,7 @@
 package tqs.backend.tqsbackend.service;
 
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import tqs.backend.tqsbackend.entity.Category;
 import tqs.backend.tqsbackend.entity.Item;
@@ -11,13 +11,12 @@ import tqs.backend.tqsbackend.repository.ItemRepository;
 import java.util.Arrays;
 
 @Service
+@RequiredArgsConstructor
 public class MockAddingItemService {
 
-    @Autowired
-    private ItemRepository itemRepository;
+    private final ItemRepository itemRepository;
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
 
     @PostConstruct
     public void init() {

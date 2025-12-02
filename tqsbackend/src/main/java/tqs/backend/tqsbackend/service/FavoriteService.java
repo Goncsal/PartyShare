@@ -1,6 +1,6 @@
 package tqs.backend.tqsbackend.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tqs.backend.tqsbackend.entity.Favorite;
@@ -12,13 +12,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class FavoriteService {
 
-    @Autowired
-    private FavoriteRepository favoriteRepository;
+    private final FavoriteRepository favoriteRepository;
 
-    @Autowired
-    private ItemRepository itemRepository;
+    private final ItemRepository itemRepository;
 
     public List<Item> getFavorites(Long userId) {
         return favoriteRepository.findByUserId(userId).stream()
