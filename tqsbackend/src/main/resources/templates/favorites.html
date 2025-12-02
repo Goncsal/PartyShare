@@ -63,6 +63,11 @@
 
     <h1>My Favorites</h1>
 
+    <div th:if="${successMessage}"
+        style="padding: 10px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 5px; margin-bottom: 20px;">
+        <span th:text="${successMessage}">Success message</span>
+    </div>
+
     <div class="item-list">
         <div th:each="item : ${favorites}" class="item-card">
             <h3 th:text="${item.name}">Item Name</h3>
