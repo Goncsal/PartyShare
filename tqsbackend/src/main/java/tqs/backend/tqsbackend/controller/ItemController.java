@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import tqs.backend.tqsbackend.entity.Category;
@@ -51,5 +52,12 @@ public class ItemController {
         model.addAttribute("location", location);
 
         return "search";
+    }
+
+    @GetMapping("/{id}")
+    public String getItemDetails(@PathVariable Long id, Model model) {
+        Item item = itemService.getItemById(id);
+        model.addAttribute("item", item);
+        return "item_details";
     }
 }
