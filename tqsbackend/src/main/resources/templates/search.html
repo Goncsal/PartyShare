@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Item Search</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .filter-section { margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .item-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .item-card { border: 1px solid #ccc; padding: 15px; border-radius: 5px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
+        .item-card h3 { margin-top: 0; }
+        .price { font-weight: bold; color: #2c3e50; }
+        .rating { color: #f39c12; }
+        .actions { margin-top: 10px; }
+        button { cursor: pointer; padding: 5px 10px; background-color: #3498db; color: white; border: none; border-radius: 3px; }
+        button:hover { background-color: #2980b9; }
+        input, select { padding: 5px; margin-right: 10px; }
+        label { margin-right: 5px; }
+    </style>
+</head>
+<body>
+
+    <h1>Find Items</h1>
+
+    <div class="filter-section">
+        <form action="/items/search" method="get">
+            <input type="text" name="q" placeholder="Search..." th:value="${q}">
+            
+            <label>Category:</label>
+            <select name="category">
+                <option value="">All Categories</option>
+                <option th:each="cat : ${categories}" 
+                        th:value="${cat.name}" 
+                        th:text="${cat.name}"
+                        th:selected="${cat.name == selectedCategory}"></option>
+            </select>
+
+            <label>Min Price:</label>
+            <input type="number" name="minPrice" step="0.01" th:value="${minPrice}" style="width: 80px;">
+
+            <label>Max Price:</label>
+            <input type="number" name="maxPrice" step="0.01" th:value="${maxPrice}" style="width: 80px;">
+
+            <label>Min Rating:</label>
+            <input type="number" name="minRating" step="0.1" max="5" th:value="${minRating}" style="width: 60px;">
+
+            <label>Location:</label>
+            <input type="text" name="location" th:value="${location}">
+
+            <button type="submit">Filter</button>
+            <a href="/items/search" style="margin-left: 10px;">Clear</a>
+        </form>
+    </div>
+
+    <div>
+        <a href="/favorites/1">View Favorites (User 1)</a>
+    </div>
+
+    <div class="item-list">
+        <div th:each="item : ${items}" class="item-card">
+            <h3 th:text="${item.name}">Item Name</h3>
+            <p th:text="${item.description}">Description</p>
+            <p>Category: <span th:text="${item.category.name}">Category</span></p>
+            <p class="price" th:text="'€' + ${item.price}">€0.00</p>
+            <p class="rating" th:text="'Rating: ' + ${item.averageRating} + '/5.0'">Rating: 0.0</p>
+            <p>Location: <span th:text="${item.location}">Location</span></p>
+            
+            <div class="actions">
+                <form action="#" th:action="@{/favorites/1/{itemId}(itemId=${item.id})}" method="post">
+                    <button type="submit">Add to Favorites</button>
+                </form>
+            </div>
+        </div>
+        <div th:if="${items.empty}">
+            <p>No items found matching your criteria.</p>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,26 +1,4 @@
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
-    container_name: tqs-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: tqsdb
-      POSTGRES_USER: tqsuser
-      POSTGRES_PASSWORD: tqspass
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init-scripts:/docker-entrypoint-initdb.d
-    networks:
-      - tqs-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tqsuser -d tqsdb"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # TQS Backend Application
   tqs-backend:
     build:
@@ -30,44 +8,37 @@ services:
     restart: unless-stopped
     environment:
       # Database Configuration
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tqsdb
-      SPRING_DATASOURCE_USERNAME: tqsuser
-      SPRING_DATASOURCE_PASSWORD: tqspass
-      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
-      
+      SPRING_DATASOURCE_URL: jdbc:sqlite:/app/tqs.db
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.sqlite.JDBC
+
       # JPA Configuration
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: 'false'
-      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
-      
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.community.dialect.SQLiteDialect
+
       # Actuator Configuration
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics
       MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: when_authorized
-      
+
       # Server Configuration
       SERVER_PORT: 8080
-      
+
       # Thymeleaf Configuration
       SPRING_THYMELEAF_CACHE: 'false'
       SPRING_THYMELEAF_MODE: HTML
       SPRING_THYMELEAF_ENCODING: UTF-8
     ports:
       - "8080:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
+    volumes:
+      - ./data:/app/data
     networks:
       - tqs-network
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
-
-volumes:
-  postgres_data:
-    driver: local
 
 networks:
   tqs-network:
