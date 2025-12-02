@@ -5,15 +5,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import tqs.backend.tqsbackend.entity.Category;
 import tqs.backend.tqsbackend.entity.Item;
 import tqs.backend.tqsbackend.repository.CategoryRepository;
 import tqs.backend.tqsbackend.repository.ItemRepository;
 
-import java.util.List;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import org.mockito.Mockito;
 
 @ExtendWith(MockitoExtension.class)
 public class MockAddingItemServiceTest {
@@ -36,7 +34,7 @@ public class MockAddingItemServiceTest {
         mockAddingItemService.init();
 
         // Assert
-        verify(categoryRepository).saveAll(any(List.class));
+        verify(categoryRepository).saveAll(Mockito.<Iterable<tqs.backend.tqsbackend.entity.Category>>any());
         verify(itemRepository, times(10)).save(any(Item.class));
     }
 
@@ -49,7 +47,7 @@ public class MockAddingItemServiceTest {
         mockAddingItemService.init();
 
         // Assert
-        verify(categoryRepository, never()).saveAll(any(List.class));
+        verify(categoryRepository, never()).saveAll(Mockito.<Iterable<tqs.backend.tqsbackend.entity.Category>>any());
         verify(itemRepository, never()).save(any(Item.class));
     }
 }

@@ -12,7 +12,10 @@ import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.mockito.Mockito;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import tqs.backend.tqsbackend.fixtures.BookingTestFixtures;
@@ -22,14 +25,22 @@ import tqs.backend.tqsbackend.exception.PaymentException;
 import tqs.backend.tqsbackend.service.BookingService;
 
 @WebMvcTest(BookingRestController.class)
-@SuppressWarnings("removal")
+@Import(BookingRestControllerTest.TestConfig.class)
 class BookingRestControllerTest {
 
         @Autowired
         private MockMvc mockMvc;
 
-        @MockBean
+        @Autowired
         private BookingService bookingService;
+
+        @TestConfiguration
+        static class TestConfig {
+                @Bean
+                public BookingService bookingService() {
+                        return Mockito.mock(BookingService.class);
+                }
+        }
 
         @Test
         void createBooking_returnsCreatedPayload() throws Exception {

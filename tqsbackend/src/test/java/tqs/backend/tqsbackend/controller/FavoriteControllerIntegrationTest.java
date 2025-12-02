@@ -9,8 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import tqs.backend.tqsbackend.entity.Item;
 import tqs.backend.tqsbackend.repository.ItemRepository;
 
-import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+// removed unused hamcrest and GET imports
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 

@@ -17,7 +17,7 @@ public class ItemService {
 
     public List<Item> searchItems(String keyword, Category category, Double minPrice, Double maxPrice, Double minRating,
             String location) {
-        Specification<Item> spec = Specification.where((root, query, cb) -> cb.conjunction());
+        Specification<Item> spec = (root, query, cb) -> cb.conjunction();
 
         if (keyword != null && !keyword.isEmpty()) {
             String likePattern = "%" + keyword.toLowerCase() + "%";

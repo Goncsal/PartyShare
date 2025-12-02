@@ -1,11 +1,13 @@
 package tqs.backend.tqsbackend.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import tqs.backend.tqsbackend.entity.UserRoles;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserRegistrationDto {
