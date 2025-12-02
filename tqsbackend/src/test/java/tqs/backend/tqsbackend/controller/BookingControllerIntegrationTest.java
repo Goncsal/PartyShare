@@ -46,7 +46,8 @@ class BookingControllerIntegrationTest {
     void shouldRenderRentForm() throws Exception {
         Item item = itemRepository.findAll().get(0);
 
-        mockMvc.perform(get("/bookings/rent/" + item.getId()))
+        mockMvc.perform(get("/bookings/rent/" + item.getId())
+                .sessionAttr("userId", 1L))
                 .andExpect(status().isOk())
                 .andExpect(view().name("bookings/rent_item"))
                 .andExpect(model().attributeExists("bookingRequest"))
@@ -61,6 +62,7 @@ class BookingControllerIntegrationTest {
                 .thenReturn(PaymentResult.success("ref-ui-1"));
 
         mockMvc.perform(post("/bookings")
+                .sessionAttr("userId", 1L)
                 .param("itemId", item.getId().toString())
                 .param("renterId", "999")
                 .param("startDate", LocalDate.now().plusDays(1).toString())
