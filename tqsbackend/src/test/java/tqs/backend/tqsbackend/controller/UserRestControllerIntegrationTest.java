@@ -9,12 +9,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.http.MediaType;
 
 import org.springframework.test.web.servlet.MockMvc;
+import tqs.backend.tqsbackend.dto.UserLoginRequest;
+import tqs.backend.tqsbackend.dto.UserRegistrationDto;
 import tqs.backend.tqsbackend.entity.User;
 import tqs.backend.tqsbackend.entity.UserRoles;
 import tqs.backend.tqsbackend.repository.UserRepository;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -40,14 +39,15 @@ class UserRestControllerIntegrationTest {
 
     @Test
     void whenValidInput_thenCreateUser() throws Exception {
-        User user = new User("John", "john@ua.pt", "password123", UserRoles.RENTER);
+        UserRegistrationDto userDto = new UserRegistrationDto("John", "john@ua.pt", "password123", UserRoles.RENTER);
 
         mvc.perform(post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtil.toJson(user)))
+                .content(JsonUtil.toJson(userDto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("John"))
-                .andExpect(jsonPath("$.email").value("john@ua.pt"));
+                .andExpect(jsonPath("$.email").value("john@ua.pt"))
+                .andExpect(jsonPath("$.password").doesNotExist());
 
         assertThat(userRepository.findAll()).hasSize(1);
     }
@@ -60,7 +60,8 @@ class UserRestControllerIntegrationTest {
         mvc.perform(get("/api/users/search")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].name").value("John"));
+                .andExpect(jsonPath("$[0].name").value("John"))
+                .andExpect(jsonPath("$[0].password").doesNotExist());
     }
 
     @Test
@@ -70,13 +71,11 @@ class UserRestControllerIntegrationTest {
         User user = new User("John", "john@ua.pt", hashedPassword, UserRoles.RENTER);
         userRepository.save(user);
 
-        Map<String, String> creds = new HashMap<>();
-        creds.put("email", "john@ua.pt");
-        creds.put("password", password);
+        UserLoginRequest loginRequest = new UserLoginRequest("john@ua.pt", password);
 
         mvc.perform(post("/api/users/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtil.toJson(creds)))
+                .content(JsonUtil.toJson(loginRequest)))
                 .andExpect(status().isOk());
     }
 }
