@@ -19,6 +19,9 @@ public class Item {
     @Column(nullable = false)
     private Double price;
 
+    @Column(name = "owner_id")
+    private Long ownerId;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
@@ -31,13 +34,19 @@ public class Item {
     }
 
     public Item(String name, String description, Double price, Category category, Double averageRating,
-            String location) {
+            String location, Long ownerId) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.category = category;
         this.averageRating = averageRating;
         this.location = location;
+        this.ownerId = ownerId;
+    }
+
+    public Item(String name, String description, Double price, Category category, Double averageRating,
+            String location) {
+        this(name, description, price, category, averageRating, location, null);
     }
 
     public Long getId() {
@@ -70,6 +79,14 @@ public class Item {
 
     public void setPrice(Double price) {
         this.price = price;
+    }
+
+    public Long getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(Long ownerId) {
+        this.ownerId = ownerId;
     }
 
     public Category getCategory() {

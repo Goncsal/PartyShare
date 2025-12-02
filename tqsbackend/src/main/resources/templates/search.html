@@ -68,6 +68,9 @@
                 <form action="#" th:action="@{/favorites/1/{itemId}(itemId=${item.id})}" method="post">
                     <button type="submit">Add to Favorites</button>
                 </form>
+                <div style="margin-top:8px;">
+                    <a th:href="@{/bookings/rent/{itemId}(itemId=${item.id})}">Rent this item</a>
+                </div>
             </div>
         </div>
         <div th:if="${items.empty}">

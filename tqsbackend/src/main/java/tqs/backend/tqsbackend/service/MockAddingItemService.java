@@ -28,17 +28,46 @@ public class MockAddingItemService {
 
             categoryRepository.saveAll(Arrays.asList(electronics, lighting, furniture));
 
-            itemRepository.save(new Item("Vintage Lamp", "A beautiful vintage lamp", 55.0, lighting, 4.5, "Lisbon"));
-            itemRepository.save(new Item("Modern Desk", "Sleek modern desk", 150.0, furniture, 4.0, "Porto"));
-            itemRepository
-                    .save(new Item("Gaming Laptop", "High performance laptop", 1200.0, electronics, 4.8, "Lisbon"));
-            itemRepository.save(new Item("Chandelier", "Crystal chandelier", 250.0, lighting, 4.9, "Porto"));
-            itemRepository.save(new Item("Office Chair", "Ergonomic chair", 80.0, furniture, 3.5, "Lisbon"));
-            itemRepository.save(new Item("Bluetooth Speaker", "Portable speaker", 40.0, electronics, 4.2, "Porto"));
-            itemRepository.save(new Item("Floor Lamp", "Minimalist floor lamp", 60.0, lighting, 3.8, "Lisbon"));
-            itemRepository.save(new Item("Bookshelf", "Wooden bookshelf", 90.0, furniture, 4.1, "Porto"));
-            itemRepository.save(new Item("Smart Watch", "Fitness tracker", 120.0, electronics, 4.6, "Lisbon"));
-            itemRepository.save(new Item("Table Lamp", "Small table lamp", 25.0, lighting, 3.0, "Porto"));
+            Item vintageLamp = new Item("Vintage Lamp", "A beautiful vintage lamp", 55.0, lighting, 4.5, "Lisbon");
+            vintageLamp.setOwnerId(100L);
+            itemRepository.save(vintageLamp);
+
+            Item modernDesk = new Item("Modern Desk", "Sleek modern desk", 150.0, furniture, 4.0, "Porto");
+            modernDesk.setOwnerId(101L);
+            itemRepository.save(modernDesk);
+
+            Item gamingLaptop = new Item("Gaming Laptop", "High performance laptop", 1200.0, electronics, 4.8,
+                    "Lisbon");
+            gamingLaptop.setOwnerId(102L);
+            itemRepository.save(gamingLaptop);
+
+            Item chandelier = new Item("Chandelier", "Crystal chandelier", 250.0, lighting, 4.9, "Porto");
+            chandelier.setOwnerId(103L);
+            itemRepository.save(chandelier);
+
+            Item officeChair = new Item("Office Chair", "Ergonomic chair", 80.0, furniture, 3.5, "Lisbon");
+            officeChair.setOwnerId(104L);
+            itemRepository.save(officeChair);
+
+            Item speaker = new Item("Bluetooth Speaker", "Portable speaker", 40.0, electronics, 4.2, "Porto");
+            speaker.setOwnerId(105L);
+            itemRepository.save(speaker);
+
+            Item floorLamp = new Item("Floor Lamp", "Minimalist floor lamp", 60.0, lighting, 3.8, "Lisbon");
+            floorLamp.setOwnerId(106L);
+            itemRepository.save(floorLamp);
+
+            Item bookshelf = new Item("Bookshelf", "Wooden bookshelf", 90.0, furniture, 4.1, "Porto");
+            bookshelf.setOwnerId(107L);
+            itemRepository.save(bookshelf);
+
+            Item smartWatch = new Item("Smart Watch", "Fitness tracker", 120.0, electronics, 4.6, "Lisbon");
+            smartWatch.setOwnerId(108L);
+            itemRepository.save(smartWatch);
+
+            Item tableLamp = new Item("Table Lamp", "Small table lamp", 25.0, lighting, 3.0, "Porto");
+            tableLamp.setOwnerId(109L);
+            itemRepository.save(tableLamp);
         }
     }
 }
