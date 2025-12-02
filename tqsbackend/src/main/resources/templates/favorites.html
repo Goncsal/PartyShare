@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>My Favorites</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+
+        .item-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .item-card {
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .item-card h3 {
+            margin-top: 0;
+        }
+
+        .price {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .actions {
+            margin-top: 10px;
+        }
+
+        button {
+            cursor: pointer;
+            padding: 5px 10px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 3px;
+        }
+
+        button:hover {
+            background-color: #c0392b;
+        }
+
+        a.back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: #3498db;
+        }
+    </style>
+</head>
+
+<body>
+
+    <a href="/items/search" class="back-link">← Back to Search</a>
+
+    <h1>My Favorites</h1>
+
+    <div class="item-list">
+        <div th:each="item : ${favorites}" class="item-card">
+            <h3 th:text="${item.name}">Item Name</h3>
+            <p th:text="${item.description}">Description</p>
+            <p class="price" th:text="'€' + ${item.price}">€0.00</p>
+
+            <div class="actions">
+                <form action="#" th:action="@{/favorites/{userId}/{itemId}/remove(userId=${userId}, itemId=${item.id})}"
+                    method="post">
+                    <button type="submit">Remove</button>
+                </form>
+            </div>
+        </div>
+        <div th:if="${favorites.empty}">
+            <p>You have no favorites yet.</p>
+        </div>
+    </div>
+
+</body>
+
+</html>
