@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tqs.backend.tqsbackend.fixtures.BookingTestFixtures;
 import tqs.backend.tqsbackend.entity.Booking;
 import tqs.backend.tqsbackend.entity.BookingStatus;
 import tqs.backend.tqsbackend.entity.Item;
@@ -39,10 +40,7 @@ class BookingControllerTest {
 
     @Test
     void showRentForm_populatesModel() throws Exception {
-    Item item = new Item();
-    item.setId(11L);
-    item.setName("Lamp");
-    item.setCategory(new tqs.backend.tqsbackend.entity.Category("Lighting"));
+        Item item = BookingTestFixtures.sampleItem(11L);
 
         when(itemService.getItemById(11L)).thenReturn(item);
 
@@ -55,10 +53,7 @@ class BookingControllerTest {
 
     @Test
     void createBooking_successRedirectsWithFlash() throws Exception {
-    Item item = new Item();
-    item.setId(11L);
-    item.setName("Lamp");
-    item.setCategory(new tqs.backend.tqsbackend.entity.Category("Lighting"));
+        Item item = BookingTestFixtures.sampleItem(11L);
         when(itemService.getItemById(11L)).thenReturn(item);
 
         Booking booking = new Booking();
@@ -80,10 +75,7 @@ class BookingControllerTest {
 
     @Test
     void createBooking_availabilityIssuesAddsErrorFlash() throws Exception {
-    Item item = new Item();
-    item.setId(11L);
-    item.setName("Lamp");
-    item.setCategory(new tqs.backend.tqsbackend.entity.Category("Lighting"));
+        Item item = BookingTestFixtures.sampleItem(11L);
         when(itemService.getItemById(11L)).thenReturn(item);
 
         when(bookingService.createBooking(any())).thenThrow(new AvailabilityException("conflict"));

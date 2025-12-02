@@ -12,6 +12,8 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -22,6 +24,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tqs.backend.tqsbackend.dto.BookingCreateRequest;
+import tqs.backend.tqsbackend.fixtures.BookingTestFixtures;
 import tqs.backend.tqsbackend.entity.Booking;
 import tqs.backend.tqsbackend.entity.BookingStatus;
 import tqs.backend.tqsbackend.entity.PaymentStatus;
@@ -50,9 +53,7 @@ class BookingServiceTest {
 
     @BeforeEach
     void setUp() {
-        sampleItem = new Item();
-        sampleItem.setId(10L);
-        sampleItem.setOwnerId(20L);
+        sampleItem = BookingTestFixtures.sampleItem(10L);
         sampleItem.setPrice(55.0);
     }
 
@@ -192,6 +193,39 @@ class BookingServiceTest {
                     .isInstanceOf(BookingValidationException.class)
                     .hasMessageContaining("Item not found");
         }
+
+        @Test
+        void itemWithNonPositivePrice_throwsValidation() {
+            BookingCreateRequest request = buildRequest();
+            sampleItem.setPrice(0.0);
+
+            when(itemService.getItemById(request.getItemId())).thenReturn(sampleItem);
+
+            assertThatThrownBy(() -> bookingService.createBooking(request))
+                    .isInstanceOf(BookingValidationException.class)
+                    .hasMessageContaining("greater than zero");
+        }
+    }
+
+    @Test
+    void getBooking_returnsEntityWhenPresent() {
+        Booking stored = new Booking();
+        when(bookingRepository.findById(22L)).thenReturn(Optional.of(stored));
+
+        assertThat(bookingService.getBooking(22L)).isEqualTo(stored);
+
+        verify(bookingRepository).findById(22L);
+    }
+
+    @Test
+    void getBookingsForRenter_returnsListFromRepository() {
+        Booking first = new Booking();
+        Booking second = new Booking();
+        when(bookingRepository.findByRenterId(70L)).thenReturn(List.of(first, second));
+
+        assertThat(bookingService.getBookingsForRenter(70L)).containsExactly(first, second);
+
+        verify(bookingRepository).findByRenterId(70L);
     }
 
     private BookingCreateRequest buildRequest() {
