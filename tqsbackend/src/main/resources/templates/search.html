@@ -1,41 +1,94 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <title>Item Search</title>
     <style>
-        body { font-family: sans-serif; margin: 20px; }
-        .filter-section { margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-        .item-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .item-card { border: 1px solid #ccc; padding: 15px; border-radius: 5px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
-        .item-card h3 { margin-top: 0; }
-        .price { font-weight: bold; color: #2c3e50; }
-        .rating { color: #f39c12; }
-        .actions { margin-top: 10px; }
-        button { cursor: pointer; padding: 5px 10px; background-color: #3498db; color: white; border: none; border-radius: 3px; }
-        button:hover { background-color: #2980b9; }
-        input, select { padding: 5px; margin-right: 10px; }
-        label { margin-right: 5px; }
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+
+        .filter-section {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .item-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .item-card {
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .item-card h3 {
+            margin-top: 0;
+        }
+
+        .price {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .rating {
+            color: #f39c12;
+        }
+
+        .actions {
+            margin-top: 10px;
+        }
+
+        button {
+            cursor: pointer;
+            padding: 5px 10px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 3px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        input,
+        select {
+            padding: 5px;
+            margin-right: 10px;
+        }
+
+        label {
+            margin-right: 5px;
+        }
     </style>
 </head>
+
 <body>
 
     <h1>Find Items</h1>
 
-    <div th:if="${successMessage}" style="padding: 10px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 5px; margin-bottom: 20px;">
+    <div th:if="${successMessage}"
+        style="padding: 10px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 5px; margin-bottom: 20px;">
         <span th:text="${successMessage}">Success message</span>
     </div>
 
     <div class="filter-section">
         <form action="/items/search" method="get">
             <input type="text" name="q" placeholder="Search..." th:value="${q}">
-            
+
             <label>Category:</label>
             <select name="category">
                 <option value="">All Categories</option>
-                <option th:each="cat : ${categories}" 
-                        th:value="${cat.name}" 
-                        th:text="${cat.name}"
-                        th:selected="${cat.name == selectedCategory}"></option>
+                <option th:each="cat : ${categories}" th:value="${cat.name}" th:text="${cat.name}"
+                    th:selected="${cat.name == selectedCategory}"></option>
             </select>
 
             <label>Min Price:</label>
@@ -67,13 +120,14 @@
             <p class="price" th:text="'€' + ${item.price}">€0.00</p>
             <p class="rating" th:text="'Rating: ' + ${item.averageRating} + '/5.0'">Rating: 0.0</p>
             <p>Location: <span th:text="${item.location}">Location</span></p>
-            
+
             <div class="actions">
                 <form action="#" th:action="@{/favorites/1/{itemId}(itemId=${item.id})}" method="post">
                     <button type="submit">Add to Favorites</button>
                 </form>
                 <div style="margin-top:8px;">
                     <a th:href="@{/bookings/rent/{itemId}(itemId=${item.id})}">Rent this item</a>
+                    <a th:href="@{/items/{itemId}(itemId=${item.id})}" style="margin-left: 10px;">View Details</a>
                 </div>
             </div>
         </div>
@@ -83,4 +137,5 @@
     </div>
 
 </body>
+
 </html>
