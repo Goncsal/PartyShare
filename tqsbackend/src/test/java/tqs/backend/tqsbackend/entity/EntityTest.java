@@ -87,6 +87,29 @@ public class EntityTest {
         assertThat(booking.getPaymentReference()).isEqualTo("ref-123");
     }
 
+     @Test
+    public void testUserEntity() {
+        User user = new User("UserName", "example@ua.pt", "secret", UserRoles.RENTER);
+        user.setId(42L);
+
+        assertThat(user.getId()).isEqualTo(42L);
+        assertThat(user.getName()).isEqualTo("UserName");
+        assertThat(user.getEmail()).isEqualTo("example@ua.pt");
+        assertThat(user.getPassword()).isEqualTo("secret");
+        assertThat(user.getRole()).isEqualTo(UserRoles.RENTER);
+        assertThat(user.isActive()).isTrue();
+
+        user.setName("Outra");
+        user.setEmail("outra@example.com");
+        user.setPassword("nova");
+        user.setActive(false);
+
+        assertThat(user.getName()).isEqualTo("Outra");
+        assertThat(user.getEmail()).isEqualTo("outra@example.com");
+        assertThat(user.getPassword()).isEqualTo("nova");
+        assertThat(user.isActive()).isFalse();
+    }   
+
     @Test
     public void testNoArgsConstructor() {
         Category category = new Category();
@@ -97,5 +120,8 @@ public class EntityTest {
 
         Favorite favorite = new Favorite();
         assertThat(favorite).isNotNull();
+        
+        User user = new User();
+        assertThat(user).isNotNull();
     }
 }

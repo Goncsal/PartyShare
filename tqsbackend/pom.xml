@@ -32,6 +32,13 @@
 		<sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     	<sonar.organization>goncsal</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		<!-- <sonar.exclusions>
+			src/main/java/tqs/backend/tqsbackend/controller/UserController.java,
+			src/main/java/tqs/backend/tqsbackend/controller/UserRestController.java,
+			src/main/java/tqs/backend/tqsbackend/service/UserService.java,
+			src/main/java/tqs/backend/tqsbackend/dto/UserLoginRequest.java,
+			src/main/java/tqs/backend/tqsbackend/dto/UserRegistrationDto.java
+		</sonar.exclusions> -->
 
 	</properties>
 	<dependencies>
@@ -90,6 +97,11 @@
 			<artifactId>lombok</artifactId>
 			<version>1.18.32</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mindrot</groupId>
+			<artifactId>jbcrypt</artifactId>
+			<version>0.4</version>
 		</dependency>
 	</dependencies>
 

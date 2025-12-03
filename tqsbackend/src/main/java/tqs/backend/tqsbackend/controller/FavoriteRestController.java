@@ -1,6 +1,6 @@
 package tqs.backend.tqsbackend.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import tqs.backend.tqsbackend.entity.Item;
 import tqs.backend.tqsbackend.service.FavoriteService;
@@ -9,10 +9,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/favorites")
+@RequiredArgsConstructor
 public class FavoriteRestController {
 
-    @Autowired
-    private FavoriteService favoriteService;
+    private final FavoriteService favoriteService;
 
     @GetMapping("/{userId}")
     public List<Item> getFavorites(@PathVariable Long userId) {

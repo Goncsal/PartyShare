@@ -9,8 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import tqs.backend.tqsbackend.entity.Item;
 import tqs.backend.tqsbackend.repository.ItemRepository;
 
-import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+// removed unused hamcrest and GET imports
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -31,7 +30,8 @@ public class FavoriteControllerIntegrationTest {
                 Long userId = 1L;
                 String referer = "http://localhost:8080/custom-referer";
 
-                mockMvc.perform(post("/favorites/" + userId + "/" + item.getId())
+                mockMvc.perform(post("/favorites/" + item.getId())
+                                .sessionAttr("userId", userId)
                                 .header("Referer", referer))
                                 .andExpect(status().is3xxRedirection())
                                 .andExpect(redirectedUrl(referer))
@@ -43,7 +43,8 @@ public class FavoriteControllerIntegrationTest {
                 Item item = itemRepository.findAll().get(0);
                 Long userId = 1L;
 
-                mockMvc.perform(post("/favorites/" + userId + "/" + item.getId()))
+                mockMvc.perform(post("/favorites/" + item.getId())
+                                .sessionAttr("userId", userId))
                                 .andExpect(status().is3xxRedirection())
                                 .andExpect(redirectedUrl("/items/search"))
                                 .andExpect(flash().attribute("successMessage", "Item added to favorites!"));
@@ -55,12 +56,14 @@ public class FavoriteControllerIntegrationTest {
                 Long userId = 1L;
 
                 // Add favorite first
-                mockMvc.perform(post("/favorites/" + userId + "/" + item.getId()));
+                mockMvc.perform(post("/favorites/" + item.getId())
+                                .sessionAttr("userId", userId));
 
                 String referer = "http://localhost:8080/custom-referer";
 
                 // Remove favorite
-                mockMvc.perform(post("/favorites/" + userId + "/" + item.getId() + "/remove")
+                mockMvc.perform(post("/favorites/" + item.getId() + "/remove")
+                                .sessionAttr("userId", userId)
                                 .header("Referer", referer))
                                 .andExpect(status().is3xxRedirection())
                                 .andExpect(redirectedUrl(referer))
@@ -76,9 +79,10 @@ public class FavoriteControllerIntegrationTest {
                 mockMvc.perform(post("/favorites/" + userId + "/" + item.getId()));
 
                 // Remove favorite
-                mockMvc.perform(post("/favorites/" + userId + "/" + item.getId() + "/remove"))
+                mockMvc.perform(post("/favorites/" + item.getId() + "/remove")
+                                .sessionAttr("userId", userId))
                                 .andExpect(status().is3xxRedirection())
-                                .andExpect(redirectedUrl("/favorites/" + userId))
+                                .andExpect(redirectedUrl("/favorites"))
                                 .andExpect(flash().attribute("successMessage", "Item removed from favorites!"));
         }
 }

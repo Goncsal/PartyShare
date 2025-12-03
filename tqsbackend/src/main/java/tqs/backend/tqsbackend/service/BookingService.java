@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tqs.backend.tqsbackend.dto.BookingCreateRequest;
@@ -18,17 +18,17 @@ import tqs.backend.tqsbackend.exception.BookingValidationException;
 import tqs.backend.tqsbackend.exception.PaymentException;
 import tqs.backend.tqsbackend.repository.BookingRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class BookingService {
 
-    @Autowired
-    private BookingRepository bookingRepository;
+    private final BookingRepository bookingRepository;
 
-    @Autowired
-    private ItemService itemService;
+    private final ItemService itemService;
 
-    @Autowired
-    private PaymentService paymentService;
+    private final PaymentService paymentService;
 
     @Transactional
     public Booking createBooking(BookingCreateRequest request) {

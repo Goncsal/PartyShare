@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
+import org.mockito.Mockito;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,7 +35,7 @@ public class ItemServiceTest {
         Item item2 = new Item("Chair", "Office Chair", 50.0, new Category("Furniture"), 4.0, "Porto");
         List<Item> expectedItems = Arrays.asList(item1, item2);
 
-        when(itemRepository.findAll(any(Specification.class))).thenReturn(expectedItems);
+        when(itemRepository.findAll(Mockito.<Specification<Item>>any())).thenReturn(expectedItems);
 
         // Act
         List<Item> result = itemService.searchItems("Lamp", null, null, null, null, null);
@@ -43,7 +43,7 @@ public class ItemServiceTest {
         // Assert
         assertThat(result).hasSize(2);
         assertThat(result).contains(item1, item2);
-        verify(itemRepository).findAll(any(Specification.class));
+        verify(itemRepository).findAll(Mockito.<Specification<Item>>any());
     }
 
     @Test

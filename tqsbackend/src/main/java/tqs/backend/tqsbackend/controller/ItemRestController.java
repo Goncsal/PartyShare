@@ -1,6 +1,6 @@
 package tqs.backend.tqsbackend.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import tqs.backend.tqsbackend.entity.Category;
 import tqs.backend.tqsbackend.entity.Item;
@@ -11,13 +11,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/items")
+@RequiredArgsConstructor
 public class ItemRestController {
 
-    @Autowired
-    private ItemService itemService;
+    private final ItemService itemService;
 
-    @Autowired
-    private CategoryService categoryService;
+    private final CategoryService categoryService;
 
     @GetMapping("/search")
     public List<Item> searchItems(

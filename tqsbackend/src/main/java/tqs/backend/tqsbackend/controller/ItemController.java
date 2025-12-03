@@ -1,6 +1,6 @@
 package tqs.backend.tqsbackend.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,17 +12,17 @@ import tqs.backend.tqsbackend.entity.Item;
 import tqs.backend.tqsbackend.service.CategoryService;
 import tqs.backend.tqsbackend.service.ItemService;
 
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 @Controller
 @RequestMapping("/items")
+@RequiredArgsConstructor
 public class ItemController {
 
-    @Autowired
-    private ItemService itemService;
+    private final ItemService itemService;
 
-    @Autowired
-    private CategoryService categoryService;
+    private final CategoryService categoryService;
 
     @GetMapping("/search")
     public String searchItems(
@@ -32,7 +32,7 @@ public class ItemController {
             @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) Double minRating,
             @RequestParam(required = false) String location,
-            Model model) {
+            Model model, HttpSession session) {
 
         Category cat = null;
         if (category != null && !category.isEmpty()) {
@@ -50,6 +50,9 @@ public class ItemController {
         model.addAttribute("maxPrice", maxPrice);
         model.addAttribute("minRating", minRating);
         model.addAttribute("location", location);
+
+        model.addAttribute("isLoggedIn", session.getAttribute("userId") != null);
+        model.addAttribute("userName", session.getAttribute("userName"));
 
         return "search";
     }

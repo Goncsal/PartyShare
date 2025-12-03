@@ -1,7 +1,7 @@
 package tqs.backend.tqsbackend.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,12 +15,14 @@ import tqs.backend.tqsbackend.dto.BookingResponse;
 import tqs.backend.tqsbackend.entity.Booking;
 import tqs.backend.tqsbackend.service.BookingService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api/bookings")
+@RequiredArgsConstructor
 public class BookingRestController {
 
-    @Autowired
-    private BookingService bookingService;
+    private final BookingService bookingService;
 
     @PostMapping
     public ResponseEntity<BookingResponse> createBooking(@RequestBody @Valid BookingCreateRequest request) {

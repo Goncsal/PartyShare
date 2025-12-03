@@ -73,43 +73,21 @@
 
 <body>
 
-    <h1>Find Items</h1>
-
-    <div th:if="${successMessage}"
-        style="padding: 10px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 5px; margin-bottom: 20px;">
-        <span th:text="${successMessage}">Success message</span>
-    </div>
-
-    <div class="filter-section">
-        <form action="/items/search" method="get">
-            <input type="text" name="q" placeholder="Search..." th:value="${q}">
-
-            <label>Category:</label>
-            <select name="category">
-                <option value="">All Categories</option>
-                <option th:each="cat : ${categories}" th:value="${cat.name}" th:text="${cat.name}"
-                    th:selected="${cat.name == selectedCategory}"></option>
-            </select>
-
-            <label>Min Price:</label>
-            <input type="number" name="minPrice" step="0.01" th:value="${minPrice}" style="width: 80px;">
-
-            <label>Max Price:</label>
-            <input type="number" name="maxPrice" step="0.01" th:value="${maxPrice}" style="width: 80px;">
-
-            <label>Min Rating:</label>
-            <input type="number" name="minRating" step="0.1" max="5" th:value="${minRating}" style="width: 60px;">
-
-            <label>Location:</label>
-            <input type="text" name="location" th:value="${location}">
-
-            <button type="submit">Filter</button>
-            <a href="/items/search" style="margin-left: 10px;">Clear</a>
-        </form>
-    </div>
-
-    <div>
-        <a href="/favorites/1">View Favorites (User 1)</a>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1>Find Items</h1>
+        <div>
+            <span th:if="${isLoggedIn}">
+                Welcome, <span th:text="${userName}">User</span>! |
+                <a href="/favorites">My Favorites</a> |
+                <a href="/bookings">My Bookings</a> |
+                <a href="/users/profile">Profile</a> |
+                <a href="/users/logout" style="color: #c0392b;">Logout</a>
+            </span>
+            <span th:unless="${isLoggedIn}">
+                <a href="/users/login">Login</a> |
+                <a href="/users/register">Register</a>
+            </span>
+        </div>
     </div>
 
     <div class="item-list">
@@ -122,7 +100,7 @@
             <p>Location: <span th:text="${item.location}">Location</span></p>
 
             <div class="actions">
-                <form action="#" th:action="@{/favorites/1/{itemId}(itemId=${item.id})}" method="post">
+                <form action="#" th:action="@{/favorites/{itemId}(itemId=${item.id})}" method="post">
                     <button type="submit">Add to Favorites</button>
                 </form>
                 <div style="margin-top:8px;">

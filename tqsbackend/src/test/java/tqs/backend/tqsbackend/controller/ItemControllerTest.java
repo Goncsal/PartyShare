@@ -3,7 +3,10 @@ package tqs.backend.tqsbackend.controller;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Import;
+import org.mockito.Mockito;
 import org.springframework.test.web.servlet.MockMvc;
 import tqs.backend.tqsbackend.entity.Item;
 import tqs.backend.tqsbackend.service.CategoryService;
@@ -14,16 +17,27 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ItemController.class)
+@Import(ItemControllerTest.TestConfig.class)
 public class ItemControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Autowired
     private ItemService itemService;
 
-    @MockBean
-    private CategoryService categoryService;
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public ItemService itemService() {
+            return Mockito.mock(ItemService.class);
+        }
+
+        @Bean
+        public CategoryService categoryService() {
+            return Mockito.mock(CategoryService.class);
+        }
+    }
 
     @Test
     public void testGetItemDetails() throws Exception {

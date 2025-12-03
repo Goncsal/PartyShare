@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>My Bookings</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background: #f7f9fb;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f4f6f8;
+            font-weight: 600;
+            color: #555;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-PENDING {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-CONFIRMED {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-REJECTED {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-CANCELLED {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/items/search" class="back-link">&larr; Back to Search</a>
+        <h1>My Bookings</h1>
+
+        <div th:if="${bookings.empty}">
+            <p>You have no bookings yet.</p>
+        </div>
+
+        <table th:if="${!bookings.empty}">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Dates</th>
+                    <th>Daily Price</th>
+                    <th>Total Price</th>
+                    <th>Status</th>
+                    <th>Reference</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="booking : ${bookings}">
+                    <td th:text="${booking.item.name}">Item Name</td>
+                    <td th:text="${booking.startDate} + ' to ' + ${booking.endDate}">Dates</td>
+                    <td th:text="'€' + ${booking.dailyPrice}">Daily Price</td>
+                    <td th:text="'€' + ${booking.totalPrice}">Total Price</td>
+                    <td>
+                        <span class="status-badge" th:classappend="'status-' + ${booking.status}"
+                            th:text="${booking.status}">Status</span>
+                    </td>
+                    <td th:text="${booking.paymentReference}">Reference</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>

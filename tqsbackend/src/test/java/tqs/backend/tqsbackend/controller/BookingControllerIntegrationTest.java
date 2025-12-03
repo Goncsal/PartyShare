@@ -18,7 +18,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.mockito.Mockito;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,40 +35,50 @@ import tqs.backend.tqsbackend.service.PaymentService;
 @ActiveProfiles("dev")
 class BookingControllerIntegrationTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @Autowired
-    private ItemRepository itemRepository;
+        @Autowired
+        private ItemRepository itemRepository;
 
-    @MockBean
-    private PaymentService paymentService;
+        @Autowired
+        private PaymentService paymentService;
 
-    @Test
-    void shouldRenderRentForm() throws Exception {
-        Item item = itemRepository.findAll().get(0);
+        @TestConfiguration
+        static class TestConfig {
+                @Bean
+                public PaymentService paymentService() {
+                        return Mockito.mock(PaymentService.class);
+                }
+        }
 
-        mockMvc.perform(get("/bookings/rent/" + item.getId()))
-                .andExpect(status().isOk())
-                .andExpect(view().name("bookings/rent_item"))
-                .andExpect(model().attributeExists("bookingRequest"))
-                .andExpect(model().attribute("item", hasProperty("id", is(item.getId()))));
-    }
+        @Test
+        void shouldRenderRentForm() throws Exception {
+                Item item = itemRepository.findAll().get(0);
 
-    @Test
-    void shouldCreateBookingFromForm() throws Exception {
-        Item item = itemRepository.findAll().get(0);
+                mockMvc.perform(get("/bookings/rent/" + item.getId())
+                                .sessionAttr("userId", 1L))
+                                .andExpect(status().isOk())
+                                .andExpect(view().name("bookings/rent_item"))
+                                .andExpect(model().attributeExists("bookingRequest"))
+                                .andExpect(model().attribute("item", hasProperty("id", is(item.getId()))));
+        }
 
-        when(paymentService.charge(anyLong(), any(Item.class), any(), anyLong()))
-                .thenReturn(PaymentResult.success("ref-ui-1"));
+        @Test
+        void shouldCreateBookingFromForm() throws Exception {
+                Item item = itemRepository.findAll().get(0);
 
-        mockMvc.perform(post("/bookings")
-                .param("itemId", item.getId().toString())
-                .param("renterId", "999")
-                .param("startDate", LocalDate.now().plusDays(1).toString())
-                .param("endDate", LocalDate.now().plusDays(3).toString()))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/bookings/rent/" + item.getId()))
-                .andExpect(flash().attributeExists("success"));
-    }
+                when(paymentService.charge(anyLong(), any(Item.class), any(), anyLong()))
+                                .thenReturn(PaymentResult.success("ref-ui-1"));
+
+                mockMvc.perform(post("/bookings")
+                                .sessionAttr("userId", 1L)
+                                .param("itemId", item.getId().toString())
+                                .param("renterId", "999")
+                                .param("startDate", LocalDate.now().plusDays(1).toString())
+                                .param("endDate", LocalDate.now().plusDays(3).toString()))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrl("/bookings/rent/" + item.getId()))
+                                .andExpect(flash().attributeExists("success"));
+        }
 }
