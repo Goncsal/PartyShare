@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import tqs.backend.tqsbackend.dto.UserRegistrationDto;
 import tqs.backend.tqsbackend.entity.User;
 import tqs.backend.tqsbackend.service.UserService;
@@ -30,13 +31,16 @@ public class UserController {
 
     @PostMapping("/login")
     public String login(@RequestParam String email, @RequestParam String password, Model model,
-            RedirectAttributes redirectAttributes, HttpSession session) {
+            RedirectAttributes redirectAttributes, HttpSession session , HttpServletRequest request) {
         if (userService.authenticate(email, password)) {
             User user = userService.getUserByEmail(email).orElseThrow();
-            session.setAttribute("userId", user.getId());
-            session.setAttribute("userRole", user.getRole());
-            session.setAttribute("userName", user.getName());
+            session.invalidate();
+            HttpSession newSession = request.getSession(true);
 
+            newSession.setAttribute("userId", user.getId());
+            newSession.setAttribute("userRole", user.getRole());
+            newSession.setAttribute("userName", user.getName());
+            
             redirectAttributes.addFlashAttribute("success", "Login successful!");
             return "redirect:/items/search";
         } else {

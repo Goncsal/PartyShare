@@ -29,8 +29,9 @@ public class UserService {
             throw new IllegalArgumentException("Failed to register user: Invalid Name.");
         }
         if (email.isBlank() || !email.contains("@")) {
-            logger.warn("Failed to register user: Invalid Email {}.", email);
-            throw new IllegalArgumentException("Failed to register user: Invalid Email " + email + ".");
+            String safeEmail = email.replaceAll("[\\n\\r]", "_");
+            logger.warn("Failed to register user: Invalid Email {}.", safeEmail);
+            throw new IllegalArgumentException("Failed to register user: Invalid Email.");
         }
         if (password.length() < 8) {
             logger.warn("Failed to register user: Password too short.");
@@ -58,18 +59,18 @@ public class UserService {
     }
 
     public boolean authenticate(String email, String password) {
+        String safeEmail = email.replaceAll("[\\n\\r]", "_");
         Optional<User> userOpt = userRepository.findByEmail(email);
         if (userOpt.isEmpty()) {
-            logger.warn("Authentication failed: User with email {} not found.", email);
+            logger.warn("Authentication failed: User with email {} not found.", safeEmail);
             return false;
         }
-
         User user = userOpt.get();
         if (BCrypt.checkpw(password, user.getPassword())) {
-            logger.info("User with email {} authenticated successfully.", email);
+            logger.info("User with email {} authenticated successfully.", safeEmail);
             return true;
         } else {
-            logger.warn("Authentication failed: Incorrect password for email {}.", email);
+            logger.warn("Authentication failed: Incorrect password for email {}.", safeEmail);
             return false;
         }
     }
