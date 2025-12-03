@@ -32,13 +32,13 @@
 		<sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     	<sonar.organization>goncsal</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
-		<sonar.exclusions>
+		<!-- <sonar.exclusions>
 			src/main/java/tqs/backend/tqsbackend/controller/UserController.java,
 			src/main/java/tqs/backend/tqsbackend/controller/UserRestController.java,
 			src/main/java/tqs/backend/tqsbackend/service/UserService.java,
 			src/main/java/tqs/backend/tqsbackend/dto/UserLoginRequest.java,
 			src/main/java/tqs/backend/tqsbackend/dto/UserRegistrationDto.java
-		</sonar.exclusions>
+		</sonar.exclusions> -->
 
 	</properties>
 	<dependencies>
