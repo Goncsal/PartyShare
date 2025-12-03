@@ -52,4 +52,8 @@ public class ItemService {
     public Item getItemById(Long id) {
         return itemRepository.findById(id).orElse(null);
     }
+
+    public Item saveItem(Item item) {
+        return itemRepository.save(item);
+    }
 }

@@ -32,6 +32,9 @@ class RatingServiceTest {
     @Mock
     private UserService userService;
 
+    @Mock
+    private ItemService itemService;
+
     @InjectMocks
     private RatingService ratingService;
 
@@ -58,6 +61,33 @@ class RatingServiceTest {
         assertThat(created).isNotNull();
         assertThat(created.getRate()).isEqualTo(5);
         verify(ratingRepository).save(any(Rating.class));
+    }
+
+    @Test
+    void createRating_Product_UpdatesAverage() {
+        Long senderId = 1L;
+        Long itemId = 10L;
+        User sender = new User();
+        sender.setId(senderId);
+        sender.setRole(UserRoles.RENTER);
+
+        tqs.backend.tqsbackend.entity.Item item = new tqs.backend.tqsbackend.entity.Item();
+        item.setId(itemId);
+
+        when(userService.getUserById(senderId)).thenReturn(Optional.of(sender));
+        when(itemService.getItemById(itemId)).thenReturn(item);
+
+        Rating rating = new Rating(senderId, RatingType.PRODUCT, itemId, 5, "Great item!");
+        when(ratingRepository.save(any(Rating.class))).thenReturn(rating);
+
+        Rating r1 = new Rating(senderId, RatingType.PRODUCT, itemId, 5, "Great!");
+        Rating r2 = new Rating(senderId, RatingType.PRODUCT, itemId, 3, "Okay.");
+        when(ratingRepository.findByRatingTypeAndRatedId(RatingType.PRODUCT, itemId)).thenReturn(Arrays.asList(r1, r2));
+
+        ratingService.createRating(senderId, RatingType.PRODUCT, itemId, 5, "Great item!");
+
+        verify(itemService).saveItem(any(tqs.backend.tqsbackend.entity.Item.class));
+        assertThat(item.getAverageRating()).isEqualTo(4.0);
     }
 
     @Test
@@ -118,6 +148,22 @@ class RatingServiceTest {
         assertThatThrownBy(() -> ratingService.createRating(senderId, RatingType.OWNER, ratedId, 5, "Comment"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Rated owner with ID " + ratedId + " does not exist");
+    }
+
+    @Test
+    void createRating_InvalidRatedItem_ThrowsException() {
+        Long senderId = 1L;
+        Long itemId = 10L;
+        User sender = new User();
+        sender.setId(senderId);
+        sender.setRole(UserRoles.RENTER);
+
+        when(userService.getUserById(senderId)).thenReturn(Optional.of(sender));
+        when(itemService.getItemById(itemId)).thenReturn(null);
+
+        assertThatThrownBy(() -> ratingService.createRating(senderId, RatingType.PRODUCT, itemId, 5, "Comment"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Rated item with ID " + itemId + " does not exist");
     }
 
     @Test

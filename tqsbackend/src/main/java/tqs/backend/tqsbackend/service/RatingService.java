@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import tqs.backend.tqsbackend.entity.Item;
 import tqs.backend.tqsbackend.entity.Rating;
 import tqs.backend.tqsbackend.entity.RatingType;
 import tqs.backend.tqsbackend.entity.User;
@@ -20,11 +21,13 @@ public class RatingService {
 
     private final RatingRepository ratingRepository;
     private final UserService userService;
+    private final ItemService itemService;
 
     @Autowired
-    public RatingService(RatingRepository ratingRepository, UserService userService) {
+    public RatingService(RatingRepository ratingRepository, UserService userService, ItemService itemService) {
         this.ratingRepository = ratingRepository;
         this.userService = userService;
+        this.itemService = itemService;
     }
 
     public Rating createRating(Long senderId, RatingType ratingType, Long ratedId, Integer rate, String comment) {
@@ -35,8 +38,34 @@ public class RatingService {
         Rating rating = new Rating(senderId, ratingType, ratedId, rate, comment);
         Rating savedRating = ratingRepository.save(rating);
 
+        if (ratingType == RatingType.PRODUCT) {
+            updateItemAverageRating(ratedId);
+        }
+
         logger.info("Rating created successfully with ID {}", savedRating.getId());
         return savedRating;
+    }
+
+    private void updateItemAverageRating(Long itemId) {
+        List<Rating> ratings = ratingRepository.findByRatingTypeAndRatedId(RatingType.PRODUCT, itemId);
+        if (ratings.isEmpty()) {
+            return;
+        }
+
+        double average = ratings.stream()
+                .mapToInt(Rating::getRate)
+                .average()
+                .orElse(0.0);
+
+        // Round to 1 decimal place
+        average = Math.round(average * 10.0) / 10.0;
+
+        Item item = itemService.getItemById(itemId);
+        if (item != null) {
+            item.setAverageRating(average);
+            itemService.saveItem(item);
+            logger.info("Updated average rating for item {} to {}", itemId, average);
+        }
     }
 
     private void validateSender(Long senderId) {
@@ -67,8 +96,12 @@ public class RatingService {
                         "Failed to create rating: Rated owner with ID " + ratedId + " does not exist.");
             }
         } else if (ratingType == RatingType.PRODUCT) {
-            logger.info("Rating type is PRODUCT: To MERGE when product service is ready.");
-            // TODO: Product rating validation
+            Item item = itemService.getItemById(ratedId);
+            if (item == null) {
+                logger.warn("Failed to create rating: Rated item with ID {} does not exist.", ratedId);
+                throw new IllegalArgumentException(
+                        "Failed to create rating: Rated item with ID " + ratedId + " does not exist.");
+            }
         } else {
             logger.warn("Failed to create rating: Unknown RatingType {}.", ratingType);
             throw new IllegalArgumentException("Failed to create rating: Unknown RatingType " + ratingType + ".");
@@ -87,15 +120,25 @@ public class RatingService {
         }
     }
 
-    public List<Rating> getAllRatings() { return ratingRepository.findAll(); }
+    public List<Rating> getAllRatings() {
+        return ratingRepository.findAll();
+    }
 
-    public Optional<Rating> getRatingById(Long id) { return ratingRepository.findById(id); }
+    public Optional<Rating> getRatingById(Long id) {
+        return ratingRepository.findById(id);
+    }
 
-    public List<Rating> getRatingBySenderId(Long senderId) { return ratingRepository.findBySenderId(senderId); }
+    public List<Rating> getRatingBySenderId(Long senderId) {
+        return ratingRepository.findBySenderId(senderId);
+    }
 
-    public List<Rating> getRatingByRatedInfo(RatingType ratingType, Long ratedId) { return ratingRepository.findByRatingTypeAndRatedId(ratingType, ratedId); }
+    public List<Rating> getRatingByRatedInfo(RatingType ratingType, Long ratedId) {
+        return ratingRepository.findByRatingTypeAndRatedId(ratingType, ratedId);
+    }
 
-    public Optional<Rating> getRatingBySenderIdAndRatedInfo(Long senderId, RatingType ratingType, Long ratedId) { return ratingRepository.findBySenderIdAndRatingTypeAndRatedId(senderId, ratingType, ratedId); }
+    public Optional<Rating> getRatingBySenderIdAndRatedInfo(Long senderId, RatingType ratingType, Long ratedId) {
+        return ratingRepository.findBySenderIdAndRatingTypeAndRatedId(senderId, ratingType, ratedId);
+    }
 
     public boolean deleteRating(Long id) {
         if (ratingRepository.existsById(id)) {
