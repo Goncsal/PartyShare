@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Item Search</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+
+        .filter-section {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .item-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .item-card {
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .item-card h3 {
+            margin-top: 0;
+        }
+
+        .price {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .rating {
+            color: #f39c12;
+        }
+
+        .actions {
+            margin-top: 10px;
+        }
+
+        button {
+            cursor: pointer;
+            padding: 5px 10px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 3px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        input,
+        select {
+            padding: 5px;
+            margin-right: 10px;
+        }
+
+        label {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1>Find Items</h1>
+        <div>
+            <span th:if="${isLoggedIn}">
+                Welcome, <span th:text="${userName}">User</span>! |
+                <a href="/favorites">My Favorites</a> |
+                <a href="/bookings">My Bookings</a> |
+                <a href="/users/profile">Profile</a> |
+                <a href="/users/logout" style="color: #c0392b;">Logout</a>
+            </span>
+            <span th:unless="${isLoggedIn}">
+                <a href="/users/login">Login</a> |
+                <a href="/users/register">Register</a>
+            </span>
+        </div>
+    </div>
+
+    <div class="item-list">
+        <div th:each="item : ${items}" class="item-card">
+            <h3 th:text="${item.name}">Item Name</h3>
+            <p th:text="${item.description}">Description</p>
+            <p>Category: <span th:text="${item.category.name}">Category</span></p>
+            <p class="price" th:text="'€' + ${item.price}">€0.00</p>
+            <p class="rating" th:text="'Rating: ' + ${item.averageRating} + '/5.0'">Rating: 0.0</p>
+            <p>Location: <span th:text="${item.location}">Location</span></p>
+
+            <div class="actions">
+                <form action="#" th:action="@{/favorites/{itemId}(itemId=${item.id})}" method="post">
+                    <button type="submit">Add to Favorites</button>
+                </form>
+                <div style="margin-top:8px;">
+                    <a th:href="@{/bookings/rent/{itemId}(itemId=${item.id})}">Rent this item</a>
+                    <a th:href="@{/items/{itemId}(itemId=${item.id})}" style="margin-left: 10px;">View Details</a>
+                </div>
+            </div>
+        </div>
+        <div th:if="${items.empty}">
+            <p>No items found matching your criteria.</p>
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -68,7 +68,7 @@ start_prod() {
     docker compose up --build -d
     print_success "Production environment started!"
     print_status "Application will be available at: http://localhost:8080"
-    print_status "PostgreSQL available at: localhost:5432"
+
 }
 
 # Build images
