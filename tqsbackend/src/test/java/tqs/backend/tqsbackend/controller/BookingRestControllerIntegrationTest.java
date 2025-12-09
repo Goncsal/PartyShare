@@ -17,11 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.mockito.Mockito;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import tqs.backend.tqsbackend.entity.Booking;
@@ -36,7 +33,6 @@ import tqs.backend.tqsbackend.service.PaymentService;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-@ActiveProfiles("dev")
 class BookingRestControllerIntegrationTest {
 
   @Autowired
@@ -48,16 +44,8 @@ class BookingRestControllerIntegrationTest {
   @Autowired
   private BookingRepository bookingRepository;
 
-  @Autowired
+  @MockBean
   private PaymentService paymentService;
-
-  @TestConfiguration
-  static class TestConfig {
-    @Bean
-    public PaymentService paymentService() {
-      return Mockito.mock(PaymentService.class);
-    }
-  }
 
   @Test
   void shouldCreateBookingViaApi() throws Exception {
@@ -133,9 +121,10 @@ class BookingRestControllerIntegrationTest {
             """.formatted(item.getId(), start, end)))
         .andExpect(status().isPaymentRequired());
 
-    List<Booking> bookings = bookingRepository.findAll();
+    List<Booking> bookings = bookingRepository.findByRenterId(999L);
     assertThat(bookings).isNotEmpty();
-    assertThat(bookings.get(0).getStatus()).isEqualTo(BookingStatus.REJECTED);
+    Booking createdBooking = bookings.get(bookings.size() - 1);
+    assertThat(createdBooking.getStatus()).isEqualTo(BookingStatus.REJECTED);
   }
 
   @Test

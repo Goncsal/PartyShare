@@ -78,8 +78,8 @@ public class BookingController {
 
         try {
             Booking booking = bookingService.createBooking(request);
-            redirectAttributes.addFlashAttribute("success",
-                    "Booking confirmed! Ref: " + booking.getPaymentReference());
+            // Redirect to payment page instead of showing success immediately
+            return "redirect:/payment/" + booking.getId();
         } catch (AvailabilityException e) {
             redirectAttributes.addFlashAttribute("error", "Dates unavailable for this item");
         } catch (PaymentException | BookingValidationException e) {
@@ -99,5 +99,22 @@ public class BookingController {
         List<Booking> bookings = bookingService.getBookingsForRenter(userId);
         model.addAttribute("bookings", bookings);
         return "bookings/list";
+    }
+
+    @PostMapping("/{id}/cancel")
+    public String cancelBooking(@PathVariable Long id, HttpSession session, RedirectAttributes redirectAttributes) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+
+        try {
+            bookingService.cancelBooking(id, userId);
+            redirectAttributes.addFlashAttribute("success", "Booking cancelled successfully");
+        } catch (BookingValidationException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/bookings";
     }
 }
