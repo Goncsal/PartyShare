@@ -4,7 +4,7 @@
 [![Code Quality](https://github.com/Goncsal/PartyShare/actions/workflows/code-quality.yml/badge.svg)](https://github.com/Goncsal/PartyShare/actions/workflows/code-quality.yml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Goncsal_PartyShare&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Goncsal_PartyShare)
 
-
+ 
 This is a TQS project.
 
 Below are instructions for the CI pipeline and how to run the tests (and proj structure)
