@@ -36,7 +36,7 @@ import tqs.backend.tqsbackend.service.PaymentService;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-@ActiveProfiles("dev")
+@ActiveProfiles("test")
 class BookingRestControllerIntegrationTest {
 
   @Autowired

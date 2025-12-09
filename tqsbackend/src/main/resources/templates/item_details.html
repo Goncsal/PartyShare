@@ -130,6 +130,10 @@
                 style="display: inline;">
                 <button type="submit" class="btn-primary">Add to Favorites</button>
             </form>
+
+            <!-- Message Owner Button -->
+            <a th:href="@{/messages/new(receiverId=${item.ownerId}, itemId=${item.id})}"
+                class="button btn-secondary">Message Owner</a>
         </div>
 
         <div class="ratings-section" style="margin-top: 40px; border-top: 1px solid #ddd; padding-top: 20px;">

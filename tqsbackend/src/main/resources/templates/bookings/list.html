@@ -11,12 +11,30 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
         }
 
         h1 {
             color: #2c3e50;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
 
         table {
@@ -82,6 +100,25 @@
         .back-link:hover {
             text-decoration: underline;
         }
+
+        .btn-cancel {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+
+        .btn-cancel:hover {
+            background: #c82333;
+        }
+
+        .btn-cancel:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 
@@ -89,6 +126,9 @@
     <div class="container">
         <a href="/items/search" class="back-link">&larr; Back to Search</a>
         <h1>My Bookings</h1>
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
 
         <div th:if="${bookings.empty}">
             <p>You have no bookings yet.</p>
@@ -103,6 +143,7 @@
                     <th>Total Price</th>
                     <th>Status</th>
                     <th>Reference</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -116,6 +157,16 @@
                             th:text="${booking.status}">Status</span>
                     </td>
                     <td th:text="${booking.paymentReference}">Reference</td>
+                    <td>
+                        <form th:if="${booking.status.name() == 'PENDING' or booking.status.name() == 'CONFIRMED'}"
+                              th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post" style="display:inline;">
+                            <button type="submit" class="btn-cancel" 
+                                    onclick="return confirm('Are you sure you want to cancel this booking?')">
+                                Cancel
+                            </button>
+                        </form>
+                        <span th:if="${booking.status.name() == 'CANCELLED' or booking.status.name() == 'REJECTED'}">-</span>
+                    </td>
                 </tr>
             </tbody>
         </table>

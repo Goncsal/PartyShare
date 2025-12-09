@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import tqs.backend.tqsbackend.dto.BookingCreateRequest;
 import tqs.backend.tqsbackend.dto.BookingResponse;
@@ -50,5 +51,19 @@ public class BookingRestController {
                 booking.getStatus(),
                 booking.getPaymentStatus(),
                 booking.getPaymentReference());
+    }
+
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<BookingResponse> cancelBooking(
+            @PathVariable Long id,
+            @RequestParam Long renterId) {
+        Booking booking = bookingService.cancelBooking(id, renterId);
+        return ResponseEntity.ok(toResponse(booking));
+    }
+
+    @GetMapping("/unavailable/{itemId}")
+    public ResponseEntity<java.util.List<tqs.backend.tqsbackend.dto.DateRangeDto>> getUnavailableDates(
+            @PathVariable Long itemId) {
+        return ResponseEntity.ok(bookingService.getUnavailableDates(itemId));
     }
 }
