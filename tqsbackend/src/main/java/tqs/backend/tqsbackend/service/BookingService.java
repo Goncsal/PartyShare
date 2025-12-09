@@ -115,4 +115,28 @@ public class BookingService {
         }
         return dailyPrice.multiply(BigDecimal.valueOf(days));
     }
+
+    @Transactional
+    public Booking cancelBooking(Long bookingId, Long renterId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new BookingValidationException("Booking not found"));
+
+        if (!booking.getRenterId().equals(renterId)) {
+            throw new BookingValidationException("You can only cancel your own bookings");
+        }
+
+        if (booking.getStatus() != BookingStatus.PENDING && booking.getStatus() != BookingStatus.CONFIRMED) {
+            throw new BookingValidationException("This booking cannot be cancelled");
+        }
+
+        booking.setStatus(BookingStatus.CANCELLED);
+        return bookingRepository.save(booking);
+    }
+
+    public List<tqs.backend.tqsbackend.dto.DateRangeDto> getUnavailableDates(Long itemId) {
+        return bookingRepository.findActiveBookingsByItemId(itemId)
+                .stream()
+                .map(b -> new tqs.backend.tqsbackend.dto.DateRangeDto(b.getStartDate(), b.getEndDate()))
+                .toList();
+    }
 }

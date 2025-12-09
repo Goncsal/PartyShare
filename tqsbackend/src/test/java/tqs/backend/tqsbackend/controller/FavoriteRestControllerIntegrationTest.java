@@ -35,12 +35,12 @@ public class FavoriteRestControllerIntegrationTest {
                                 .contentType(MediaType.APPLICATION_JSON))
                                 .andExpect(status().isOk());
 
-                // Get favorites
+                // Get favorites - verify the added item is in the list
                 mockMvc.perform(get("/api/favorites/" + userId)
                                 .contentType(MediaType.APPLICATION_JSON))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$", hasSize(greaterThan(0))))
-                                .andExpect(jsonPath("$[0].id", is(item.getId().intValue())));
+                                .andExpect(jsonPath("$[*].id", hasItem(item.getId().intValue())));
         }
 
         @Test
