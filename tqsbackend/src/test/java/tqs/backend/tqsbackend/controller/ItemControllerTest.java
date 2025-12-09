@@ -161,4 +161,103 @@ public class ItemControllerTest {
                 .andExpect(view().name("items/my_items"))
                 .andExpect(model().attributeExists("items"));
     }
+
+    @Test
+    void searchItems_ReturnsViewAndModel() throws Exception {
+        given(categoryService.getAllCategories()).willReturn(Collections.emptyList());
+        given(itemService.searchItems(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+                .willReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/items/search"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("search"))
+                .andExpect(model().attributeExists("items", "categories"));
+    }
+
+    @Test
+    void getItemDetails_CanRate_True() throws Exception {
+        Item item = new Item();
+        item.setId(1L);
+        tqs.backend.tqsbackend.entity.Category category = new tqs.backend.tqsbackend.entity.Category();
+        category.setName("Test Category");
+        item.setCategory(category);
+        
+        given(itemService.getItemById(1L)).willReturn(item);
+        
+        tqs.backend.tqsbackend.entity.User user = new tqs.backend.tqsbackend.entity.User();
+        user.setRole(tqs.backend.tqsbackend.entity.UserRoles.RENTER);
+        given(userService.getUserById(1L)).willReturn(java.util.Optional.of(user));
+
+        given(bookingRepository.existsByRenterIdAndItem_IdAndStatusAndEndDateBefore(
+                Mockito.anyLong(), Mockito.anyLong(), Mockito.any(tqs.backend.tqsbackend.entity.BookingStatus.class), Mockito.any(java.time.LocalDate.class)))
+                .willReturn(true);
+
+        mockMvc.perform(get("/items/1")
+                .sessionAttr("userId", 1L))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("canRate", true));
+    }
+
+    @Test
+    void getItemDetails_CanRate_False() throws Exception {
+        Item item = new Item();
+        item.setId(1L);
+        tqs.backend.tqsbackend.entity.Category category = new tqs.backend.tqsbackend.entity.Category();
+        category.setName("Test Category");
+        item.setCategory(category);
+
+        given(itemService.getItemById(1L)).willReturn(item);
+        
+        tqs.backend.tqsbackend.entity.User user = new tqs.backend.tqsbackend.entity.User();
+        user.setRole(tqs.backend.tqsbackend.entity.UserRoles.RENTER);
+        given(userService.getUserById(1L)).willReturn(java.util.Optional.of(user));
+
+        given(bookingRepository.existsByRenterIdAndItem_IdAndStatusAndEndDateBefore(
+                Mockito.anyLong(), Mockito.anyLong(), Mockito.any(tqs.backend.tqsbackend.entity.BookingStatus.class), Mockito.any(java.time.LocalDate.class)))
+                .willReturn(false);
+
+        mockMvc.perform(get("/items/1")
+                .sessionAttr("userId", 1L))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("canRate", false));
+    }
+
+    @Test
+    void showNewItemForm_LoggedInButNotOwner_RedirectsToSearch() throws Exception {
+        tqs.backend.tqsbackend.entity.User renter = new tqs.backend.tqsbackend.entity.User();
+        renter.setRole(tqs.backend.tqsbackend.entity.UserRoles.RENTER);
+        given(userService.getUserById(1L)).willReturn(java.util.Optional.of(renter));
+
+        mockMvc.perform(get("/items/new")
+                .sessionAttr("userId", 1L))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/items/search"));
+    }
+
+    @Test
+    void createItem_LoggedInButNotOwner_RedirectsToSearch() throws Exception {
+        tqs.backend.tqsbackend.entity.User renter = new tqs.backend.tqsbackend.entity.User();
+        renter.setRole(tqs.backend.tqsbackend.entity.UserRoles.RENTER);
+        given(userService.getUserById(1L)).willReturn(java.util.Optional.of(renter));
+
+        mockMvc.perform(post("/items")
+                .sessionAttr("userId", 1L)
+                .param("name", "Test")
+                .param("price", "10.0")
+                .param("categoryId", "1"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/items/search"));
+    }
+
+    @Test
+    void getMyItems_LoggedInButNotOwner_RedirectsToSearch() throws Exception {
+        tqs.backend.tqsbackend.entity.User renter = new tqs.backend.tqsbackend.entity.User();
+        renter.setRole(tqs.backend.tqsbackend.entity.UserRoles.RENTER);
+        given(userService.getUserById(1L)).willReturn(java.util.Optional.of(renter));
+
+        mockMvc.perform(get("/items/my-items")
+                .sessionAttr("userId", 1L))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/items/search"));
+    }
 }
