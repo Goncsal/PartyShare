@@ -46,6 +46,24 @@
 </head>
 
 <body>
+    <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+        <a href="/items/search"
+            style="text-decoration: none; color: #333; font-size: 1.5em; font-weight: bold;">PartyShare</a>
+        <div>
+            <a href="/items/search">Search</a> |
+            <span th:if="${userRole == 'OWNER'}">
+                <a href="/items/new">Add Item</a> |
+                <a href="/items/my-items">My Items</a> |
+            </span>
+            <a href="/favorites">My Favorites</a> |
+            <a href="/bookings">My Bookings</a> |
+            <a href="/reports">My Reports</a> |
+            <a href="/users/profile">Profile</a> |
+            <a href="/users/logout" style="color: #c0392b;">Logout</a>
+        </div>
+    </div>
+
     <h1>Add New Item</h1>
 
     <form th:action="@{/items}" method="post" th:object="${item}">
@@ -78,8 +96,8 @@
         </div>
 
         <div class="form-group">
-            <label>Image URL</label>
-            <input type="url" field="*{imageUrl}" name="imageUrl" required />
+            <label>Image URL (Optional)</label>
+            <input type="url" field="*{imageUrl}" name="imageUrl" placeholder="https://example.com/image.jpg" />
         </div>
 
         <button type="submit">Create Item</button>

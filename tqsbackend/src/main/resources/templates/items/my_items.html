@@ -45,6 +45,24 @@
 </head>
 
 <body>
+    <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+        <a href="/items/search"
+            style="text-decoration: none; color: #333; font-size: 1.5em; font-weight: bold;">PartyShare</a>
+        <div>
+            <a href="/items/search">Search</a> |
+            <span th:if="${userRole == 'OWNER'}">
+                <a href="/items/new">Add Item</a> |
+                <a href="/items/my-items">My Items</a> |
+            </span>
+            <a href="/favorites">My Favorites</a> |
+            <a href="/bookings">My Bookings</a> |
+            <a href="/reports">My Reports</a> |
+            <a href="/users/profile">Profile</a> |
+            <a href="/users/logout" style="color: #c0392b;">Logout</a>
+        </div>
+    </div>
+
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h1>My Items</h1>
         <a href="/items/new" class="btn btn-primary">Add New Item</a>
@@ -55,7 +73,9 @@
     </div>
 
     <div th:each="item : ${items}" class="item-card">
-        <div class="item-info">
+        <img th:src="${item.imageUrl}" alt="Item Image"
+            style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; margin-right: 15px;">
+        <div class="item-info" style="flex-grow: 1;">
             <h3 th:text="${item.name}">Item Name</h3>
             <span th:text="${'€' + item.price + '/day'}">€10.00/day</span>
             <span th:if="${!item.isActive}" style="color: red; margin-left: 10px;">(Inactive)</span>
