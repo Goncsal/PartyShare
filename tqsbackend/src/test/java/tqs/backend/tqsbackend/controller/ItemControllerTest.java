@@ -1,20 +1,29 @@
 package tqs.backend.tqsbackend.controller;
 
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import java.util.Collections;
+
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.mockito.Mockito;
 import org.springframework.test.web.servlet.MockMvc;
+
 import tqs.backend.tqsbackend.entity.Item;
 import tqs.backend.tqsbackend.service.CategoryService;
 import tqs.backend.tqsbackend.service.ItemService;
-
-import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ItemController.class)
 @Import(ItemControllerTest.TestConfig.class)
@@ -25,6 +34,9 @@ public class ItemControllerTest {
 
     @Autowired
     private ItemService itemService;
+
+    @Autowired
+    private CategoryService categoryService;
 
     @TestConfiguration
     static class TestConfig {
@@ -54,5 +66,70 @@ public class ItemControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("item_details"))
                 .andExpect(model().attribute("item", item));
+    }
+
+    @Test
+    void showNewItemForm_NotLoggedIn_RedirectsToLogin() throws Exception {
+        mockMvc.perform(get("/items/new"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/login"));
+    }
+
+    @Test
+    void showNewItemForm_LoggedIn_ReturnsForm() throws Exception {
+        given(categoryService.getAllCategories()).willReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/items/new")
+                .sessionAttr("userId", 1L))
+                .andExpect(status().isOk())
+                .andExpect(view().name("items/new_item"))
+                .andExpect(model().attributeExists("item", "categories"));
+    }
+
+    @Test
+    void createItem_NotLoggedIn_RedirectsToLogin() throws Exception {
+        mockMvc.perform(post("/items")
+                .param("name", "Test")
+                .param("price", "10.0")
+                .param("categoryId", "1"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/login"));
+    }
+
+    @Test
+    void createItem_LoggedIn_CreatesItemAndRedirects() throws Exception {
+        Item item = new Item();
+        item.setId(1L);
+        item.setName("New Item");
+
+        given(itemService.saveItem(Mockito.any(Item.class))).willReturn(item);
+
+        mockMvc.perform(post("/items")
+                .sessionAttr("userId", 1L)
+                .param("name", "New Item")
+                .param("price", "10.0")
+                .param("categoryId", "1"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/items/1"));
+        
+        verify(itemService).saveItem(Mockito.any(Item.class));
+    }
+
+    @Test
+    void getMyItems_NotLoggedIn_RedirectsToLogin() throws Exception {
+        mockMvc.perform(get("/items/my-items"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/login"));
+    }
+
+    @Test
+    void getMyItems_LoggedIn_ReturnsItems() throws Exception {
+        given(itemService.getItemsByOwner(1L)).willReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/items/my-items")
+                .sessionAttr("userId", 1L))
+                .andExpect(status().isOk())
+                .andExpect(view().name("items/my_items"))
+                .andExpect(model().attributeExists("items"));
     }
 }

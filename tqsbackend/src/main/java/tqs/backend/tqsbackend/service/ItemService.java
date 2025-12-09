@@ -56,4 +56,8 @@ public class ItemService {
     public Item saveItem(Item item) {
         return itemRepository.save(item);
     }
+
+    public List<Item> getItemsByOwner(Long ownerId) {
+        return itemRepository.findByOwnerId(ownerId);
+    }
 }

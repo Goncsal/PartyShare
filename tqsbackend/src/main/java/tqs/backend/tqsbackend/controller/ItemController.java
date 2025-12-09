@@ -63,4 +63,44 @@ public class ItemController {
         model.addAttribute("item", item);
         return "item_details";
     }
+
+    @GetMapping("/new")
+    public String showNewItemForm(Model model, HttpSession session) {
+        if (session.getAttribute("userId") == null) {
+            return "redirect:/users/login";
+        }
+        model.addAttribute("item", new Item());
+        model.addAttribute("categories", categoryService.getAllCategories());
+        return "items/new_item";
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping
+    public String createItem(
+            @org.springframework.web.bind.annotation.ModelAttribute Item item,
+            @RequestParam Long categoryId,
+            HttpSession session) {
+        
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+
+        item.setOwnerId(userId);
+        item.setCategory(categoryService.getCategoryById(categoryId));
+        
+        Item savedItem = itemService.saveItem(item);
+        return "redirect:/items/" + savedItem.getId();
+    }
+
+    @GetMapping("/my-items")
+    public String getMyItems(Model model, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+
+        List<Item> items = itemService.getItemsByOwner(userId);
+        model.addAttribute("items", items);
+        return "items/my_items";
+    }
 }
