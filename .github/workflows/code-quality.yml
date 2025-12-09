@@ -7,9 +7,9 @@ on:
     branches: [ develop ]
 
 jobs:
-  sonar-analysis:
-    name: SonarQube Analysis
-    runs-on: self-hosted
+  sonarcloud:
+    name: SonarCloud Analysis
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
@@ -33,33 +33,29 @@ jobs:
     - name: Make Maven wrapper executable
       run: chmod +x tqsbackend/mvnw
 
-    - name: Ensure SonarQube is running
-      run: |
-        docker-compose -f docker-compose.dev.yml up -d sonarqube
-        # Wait for SonarQube to be ready (simple check)
-        echo "Waiting for SonarQube to start..."
-        timeout 60s bash -c 'until curl -s http://localhost:9000 > /dev/null; do sleep 5; done' || echo "SonarQube might not be ready yet"
 
-    - name: Build and analyze with SonarQube
+    - name: Build and analyze with SonarCloud
       working-directory: ./tqsbackend
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: |
         if [ "${{ github.event_name }}" = "pull_request" ]; then
-          echo "Running SonarQube analysis for PR..."
+          echo "Running SonarCloud analysis for PR..."
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.projectKey=Goncsal_PartyShare \
-            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.organization=goncsal \
+            -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.token=$SONAR_TOKEN \
             -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
             -Dsonar.pullrequest.branch=${{ github.head_ref }} \
             -Dsonar.pullrequest.base=${{ github.base_ref }} \
             -Dsonar.qualitygate.wait=true
         else
-          echo "Running SonarQube analysis for branch push..."
+          echo "Running SonarCloud analysis for branch push..."
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.projectKey=Goncsal_PartyShare \
-            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.organization=goncsal \
+            -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.token=$SONAR_TOKEN \
             -Dsonar.branch.name=${{ github.ref_name }} \
             -Dsonar.qualitygate.wait=true
