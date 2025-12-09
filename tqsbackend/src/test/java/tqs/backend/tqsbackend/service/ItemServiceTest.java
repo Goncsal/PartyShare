@@ -108,4 +108,24 @@ public class ItemServiceTest {
         assertThat(result).contains(item1, item2);
         verify(itemRepository).findByOwnerId(1L);
     }
+
+    @Test
+    public void testSearchItems_WithAllFilters() {
+        // Arrange
+        Category category = new Category("Lighting");
+        Double minPrice = 10.0;
+        Double maxPrice = 100.0;
+        Double minRating = 4.0;
+        String location = "Lisbon";
+        String keyword = "Lamp";
+
+        when(itemRepository.findAll(Mockito.<Specification<Item>>any())).thenReturn(Arrays.asList(new Item()));
+
+        // Act
+        List<Item> result = itemService.searchItems(keyword, category, minPrice, maxPrice, minRating, location);
+
+        // Assert
+        assertThat(result).hasSize(1);
+        verify(itemRepository).findAll(Mockito.<Specification<Item>>any());
+    }
 }
