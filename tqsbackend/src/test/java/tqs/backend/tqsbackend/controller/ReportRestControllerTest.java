@@ -5,7 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import tqs.backend.tqsbackend.entity.Report;
@@ -15,8 +15,6 @@ import tqs.backend.tqsbackend.service.ReportService;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -27,7 +25,7 @@ class ReportRestControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private ReportService reportService;
 
     @Autowired
@@ -43,7 +41,7 @@ class ReportRestControllerTest {
 
     @Test
     void createReport_success() throws Exception {
-        when(reportService.createReport(eq(1L), eq("Bug Found"), eq("Description"))).thenReturn(validReport);
+        when(reportService.createReport(1L, "Bug Found", "Description")).thenReturn(validReport);
 
         mockMvc.perform(post("/api/reports/new")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -55,13 +53,26 @@ class ReportRestControllerTest {
 
     @Test
     void createReport_invalid() throws Exception {
-        when(reportService.createReport(eq(1L), eq(""), any())).thenThrow(new IllegalArgumentException());
+        when(reportService.createReport(1L, "", "Desc")).thenThrow(new IllegalArgumentException());
 
         Report invalidReport = new Report(1L, "", "Desc");
 
         mockMvc.perform(post("/api/reports/new")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidReport)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createReport_nullSender() throws Exception {
+        Report report = new Report(null, "Valid Title", "Valid Desc");
+        // Service would throw IllegalArgumentException for null sender
+        when(reportService.createReport(null, "Valid Title", "Valid Desc"))
+                .thenThrow(new IllegalArgumentException("SenderId invalid"));
+
+        mockMvc.perform(post("/api/reports/new")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(report)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -114,5 +125,25 @@ class ReportRestControllerTest {
         mockMvc.perform(get("/api/reports/state/NEW"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(10L));
+    }
+
+    @Test
+    void getReportsBySender_empty() throws Exception {
+        when(reportService.getReportsBySenderId(1L)).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/reports/sender/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
+    }
+
+    @Test
+    void getReportsByState_empty() throws Exception {
+        when(reportService.getReportsByState(ReportState.CLOSED)).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/reports/state/CLOSED"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
     }
 }
