@@ -60,6 +60,7 @@ class BookingControllerTest {
     @Test
     void createBooking_LoggedIn_Success() throws Exception {
         Booking booking = new Booking();
+        booking.setId(1L);
         booking.setPaymentReference("REF123");
 
         when(bookingService.createBooking(any(BookingCreateRequest.class))).thenReturn(booking);
@@ -70,8 +71,7 @@ class BookingControllerTest {
                 .param("startDate", "2026-01-01")
                 .param("endDate", "2026-01-05"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/bookings/rent/1"))
-                .andExpect(flash().attribute("success", "Booking confirmed! Ref: REF123"));
+                .andExpect(redirectedUrl("/payment/1"));
 
         verify(bookingService).createBooking(any(BookingCreateRequest.class));
     }
@@ -93,6 +93,7 @@ class BookingControllerTest {
         Booking booking = new Booking();
         booking.setId(1L);
         booking.setItem(item);
+        booking.setStatus(tqs.backend.tqsbackend.entity.BookingStatus.CONFIRMED);
         List<Booking> bookings = Arrays.asList(booking);
 
         when(bookingService.getBookingsForRenter(1L)).thenReturn(bookings);

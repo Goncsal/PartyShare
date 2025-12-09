@@ -158,14 +158,17 @@
                     </td>
                     <td th:text="${booking.paymentReference}">Reference</td>
                     <td>
-                        <form th:if="${booking.status.name() == 'PENDING' or booking.status.name() == 'CONFIRMED'}"
-                              th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post" style="display:inline;">
-                            <button type="submit" class="btn-cancel" 
-                                    onclick="return confirm('Are you sure you want to cancel this booking?')">
+                        <form
+                            th:if="${booking.status.toString() == 'PENDING' or booking.status.toString() == 'CONFIRMED'}"
+                            th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post"
+                            style="display:inline;">
+                            <button type="submit" class="btn-cancel"
+                                onclick="return confirm('Are you sure you want to cancel this booking?')">
                                 Cancel
                             </button>
                         </form>
-                        <span th:if="${booking.status.name() == 'CANCELLED' or booking.status.name() == 'REJECTED'}">-</span>
+                        <span
+                            th:if="${booking.status.toString() == 'CANCELLED' or booking.status.toString() == 'REJECTED'}">-</span>
                     </td>
                 </tr>
             </tbody>
