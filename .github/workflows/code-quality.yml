@@ -33,10 +33,6 @@ jobs:
     - name: Make Maven wrapper executable
       run: chmod +x tqsbackend/mvnw
 
-    - name: Build and run tests
-      run: |
-        cd tqsbackend
-        ./mvnw -B clean verify
 
     - name: Build and analyze with SonarCloud
       working-directory: ./tqsbackend
@@ -52,7 +48,8 @@ jobs:
             -Dsonar.token=$SONAR_TOKEN \
             -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
             -Dsonar.pullrequest.branch=${{ github.head_ref }} \
-            -Dsonar.pullrequest.base=${{ github.base_ref }}
+            -Dsonar.pullrequest.base=${{ github.base_ref }} \
+            -Dsonar.qualitygate.wait=true
         else
           echo "Running SonarCloud analysis for branch push..."
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
@@ -60,7 +57,8 @@ jobs:
             -Dsonar.organization=goncsal \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.token=$SONAR_TOKEN \
-            -Dsonar.branch.name=${{ github.ref_name }}
+            -Dsonar.branch.name=${{ github.ref_name }} \
+            -Dsonar.qualitygate.wait=true
         fi
 
     - name: Quality Gate Status
