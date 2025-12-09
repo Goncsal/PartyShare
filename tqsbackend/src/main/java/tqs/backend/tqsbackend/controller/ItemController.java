@@ -24,6 +24,10 @@ public class ItemController {
 
     private final CategoryService categoryService;
 
+    private final tqs.backend.tqsbackend.service.UserService userService;
+
+    private final tqs.backend.tqsbackend.repository.BookingRepository bookingRepository;
+
     @GetMapping("/search")
     public String searchItems(
             @RequestParam(required = false) String q,
@@ -51,16 +55,103 @@ public class ItemController {
         model.addAttribute("minRating", minRating);
         model.addAttribute("location", location);
 
-        model.addAttribute("isLoggedIn", session.getAttribute("userId") != null);
+        Long userId = (Long) session.getAttribute("userId");
+        model.addAttribute("isLoggedIn", userId != null);
         model.addAttribute("userName", session.getAttribute("userName"));
+        
+        if (userId != null) {
+            tqs.backend.tqsbackend.entity.User user = userService.getUserById(userId).orElse(null);
+            if (user != null) {
+                model.addAttribute("userRole", user.getRole().name());
+            }
+        }
 
         return "search";
     }
 
     @GetMapping("/{id}")
-    public String getItemDetails(@PathVariable Long id, Model model) {
+    public String getItemDetails(@PathVariable Long id, Model model, HttpSession session) {
         Item item = itemService.getItemById(id);
         model.addAttribute("item", item);
+        
+        Long userId = (Long) session.getAttribute("userId");
+        boolean canRate = false;
+
+        if (userId != null) {
+            tqs.backend.tqsbackend.entity.User user = userService.getUserById(userId).orElse(null);
+            if (user != null) {
+                model.addAttribute("userRole", user.getRole().name());
+                
+                // Check if user has a completed booking for this item
+                canRate = bookingRepository.existsByRenterIdAndItem_IdAndStatusAndEndDateBefore(
+                    userId, 
+                    id, 
+                    tqs.backend.tqsbackend.entity.BookingStatus.CONFIRMED, 
+                    java.time.LocalDate.now()
+                );
+            }
+        }
+        model.addAttribute("canRate", canRate);
+        
         return "item_details";
+    }
+
+    @GetMapping("/new")
+    public String showNewItemForm(Model model, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+        
+        tqs.backend.tqsbackend.entity.User user = userService.getUserById(userId).orElse(null);
+        if (user == null || user.getRole() != tqs.backend.tqsbackend.entity.UserRoles.OWNER) {
+             return "redirect:/items/search";
+        }
+        model.addAttribute("userRole", user.getRole().name());
+
+        model.addAttribute("item", new Item());
+        model.addAttribute("categories", categoryService.getAllCategories());
+        return "items/new_item";
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping
+    public String createItem(
+            @org.springframework.web.bind.annotation.ModelAttribute Item item,
+            @RequestParam Long categoryId,
+            HttpSession session) {
+        
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+        
+        tqs.backend.tqsbackend.entity.User user = userService.getUserById(userId).orElse(null);
+        if (user == null || user.getRole() != tqs.backend.tqsbackend.entity.UserRoles.OWNER) {
+             return "redirect:/items/search";
+        }
+
+        item.setOwnerId(userId);
+        item.setCategory(categoryService.getCategoryById(categoryId));
+        
+        Item savedItem = itemService.saveItem(item);
+        return "redirect:/items/" + savedItem.getId();
+    }
+
+    @GetMapping("/my-items")
+    public String getMyItems(Model model, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+        
+        tqs.backend.tqsbackend.entity.User user = userService.getUserById(userId).orElse(null);
+        if (user == null || user.getRole() != tqs.backend.tqsbackend.entity.UserRoles.OWNER) {
+             return "redirect:/items/search";
+        }
+        model.addAttribute("userRole", user.getRole().name());
+
+        List<Item> items = itemService.getItemsByOwner(userId);
+        model.addAttribute("items", items);
+        return "items/my_items";
     }
 }

@@ -20,4 +20,8 @@ public class CategoryService {
     public Category getCategoryByName(String name) {
         return categoryRepository.findByName(name);
     }
+
+    public Category getCategoryById(Long id) {
+        return categoryRepository.findById(id).orElse(null);
+    }
 }
