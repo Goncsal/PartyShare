@@ -38,6 +38,12 @@ public class ItemControllerTest {
     @Autowired
     private CategoryService categoryService;
 
+    @Autowired
+    private tqs.backend.tqsbackend.service.UserService userService;
+
+    @Autowired
+    private tqs.backend.tqsbackend.repository.BookingRepository bookingRepository;
+
     @TestConfiguration
     static class TestConfig {
         @Bean
@@ -48,6 +54,16 @@ public class ItemControllerTest {
         @Bean
         public CategoryService categoryService() {
             return Mockito.mock(CategoryService.class);
+        }
+
+        @Bean
+        public tqs.backend.tqsbackend.service.UserService userService() {
+            return Mockito.mock(tqs.backend.tqsbackend.service.UserService.class);
+        }
+
+        @Bean
+        public tqs.backend.tqsbackend.repository.BookingRepository bookingRepository() {
+            return Mockito.mock(tqs.backend.tqsbackend.repository.BookingRepository.class);
         }
     }
 
@@ -61,6 +77,7 @@ public class ItemControllerTest {
         item.setCategory(category);
 
         given(itemService.getItemById(1L)).willReturn(item);
+        given(userService.getUserById(Mockito.anyLong())).willReturn(java.util.Optional.empty());
 
         mockMvc.perform(get("/items/1"))
                 .andExpect(status().isOk())
@@ -78,6 +95,10 @@ public class ItemControllerTest {
     @Test
     void showNewItemForm_LoggedIn_ReturnsForm() throws Exception {
         given(categoryService.getAllCategories()).willReturn(Collections.emptyList());
+        
+        tqs.backend.tqsbackend.entity.User owner = new tqs.backend.tqsbackend.entity.User();
+        owner.setRole(tqs.backend.tqsbackend.entity.UserRoles.OWNER);
+        given(userService.getUserById(1L)).willReturn(java.util.Optional.of(owner));
 
         mockMvc.perform(get("/items/new")
                 .sessionAttr("userId", 1L))
@@ -101,6 +122,10 @@ public class ItemControllerTest {
         Item item = new Item();
         item.setId(1L);
         item.setName("New Item");
+        
+        tqs.backend.tqsbackend.entity.User owner = new tqs.backend.tqsbackend.entity.User();
+        owner.setRole(tqs.backend.tqsbackend.entity.UserRoles.OWNER);
+        given(userService.getUserById(1L)).willReturn(java.util.Optional.of(owner));
 
         given(itemService.saveItem(Mockito.any(Item.class))).willReturn(item);
 
@@ -124,6 +149,10 @@ public class ItemControllerTest {
 
     @Test
     void getMyItems_LoggedIn_ReturnsItems() throws Exception {
+        tqs.backend.tqsbackend.entity.User owner = new tqs.backend.tqsbackend.entity.User();
+        owner.setRole(tqs.backend.tqsbackend.entity.UserRoles.OWNER);
+        given(userService.getUserById(1L)).willReturn(java.util.Optional.of(owner));
+        
         given(itemService.getItemsByOwner(1L)).willReturn(Collections.emptyList());
 
         mockMvc.perform(get("/items/my-items")
