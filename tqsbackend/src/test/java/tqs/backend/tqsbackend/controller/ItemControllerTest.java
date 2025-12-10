@@ -41,9 +41,6 @@ public class ItemControllerTest {
     @Autowired
     private tqs.backend.tqsbackend.service.UserService userService;
 
-    @Autowired
-    private tqs.backend.tqsbackend.repository.BookingRepository bookingRepository;
-
     @TestConfiguration
     static class TestConfig {
         @Bean
@@ -59,11 +56,6 @@ public class ItemControllerTest {
         @Bean
         public tqs.backend.tqsbackend.service.UserService userService() {
             return Mockito.mock(tqs.backend.tqsbackend.service.UserService.class);
-        }
-
-        @Bean
-        public tqs.backend.tqsbackend.repository.BookingRepository bookingRepository() {
-            return Mockito.mock(tqs.backend.tqsbackend.repository.BookingRepository.class);
         }
     }
 
@@ -95,7 +87,7 @@ public class ItemControllerTest {
     @Test
     void showNewItemForm_LoggedIn_ReturnsForm() throws Exception {
         given(categoryService.getAllCategories()).willReturn(Collections.emptyList());
-        
+
         tqs.backend.tqsbackend.entity.User owner = new tqs.backend.tqsbackend.entity.User();
         owner.setRole(tqs.backend.tqsbackend.entity.UserRoles.OWNER);
         given(userService.getUserById(1L)).willReturn(java.util.Optional.of(owner));
@@ -122,7 +114,7 @@ public class ItemControllerTest {
         Item item = new Item();
         item.setId(1L);
         item.setName("New Item");
-        
+
         tqs.backend.tqsbackend.entity.User owner = new tqs.backend.tqsbackend.entity.User();
         owner.setRole(tqs.backend.tqsbackend.entity.UserRoles.OWNER);
         given(userService.getUserById(1L)).willReturn(java.util.Optional.of(owner));
@@ -136,7 +128,7 @@ public class ItemControllerTest {
                 .param("categoryId", "1"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/items/1"));
-        
+
         verify(itemService).saveItem(Mockito.any(Item.class));
     }
 
@@ -152,8 +144,8 @@ public class ItemControllerTest {
         tqs.backend.tqsbackend.entity.User owner = new tqs.backend.tqsbackend.entity.User();
         owner.setRole(tqs.backend.tqsbackend.entity.UserRoles.OWNER);
         given(userService.getUserById(1L)).willReturn(java.util.Optional.of(owner));
-        
-        given(itemService.getItemsByOwner(1L)).willReturn(Collections.emptyList());
+
+        given(itemService.findByOwnerId(1L)).willReturn(Collections.emptyList());
 
         mockMvc.perform(get("/items/my-items")
                 .sessionAttr("userId", 1L))
@@ -165,61 +157,14 @@ public class ItemControllerTest {
     @Test
     void searchItems_ReturnsViewAndModel() throws Exception {
         given(categoryService.getAllCategories()).willReturn(Collections.emptyList());
-        given(itemService.searchItems(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+        given(itemService.searchItems(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+                Mockito.any()))
                 .willReturn(Collections.emptyList());
 
         mockMvc.perform(get("/items/search"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("search"))
                 .andExpect(model().attributeExists("items", "categories"));
-    }
-
-    @Test
-    void getItemDetails_CanRate_True() throws Exception {
-        Item item = new Item();
-        item.setId(1L);
-        tqs.backend.tqsbackend.entity.Category category = new tqs.backend.tqsbackend.entity.Category();
-        category.setName("Test Category");
-        item.setCategory(category);
-        
-        given(itemService.getItemById(1L)).willReturn(item);
-        
-        tqs.backend.tqsbackend.entity.User user = new tqs.backend.tqsbackend.entity.User();
-        user.setRole(tqs.backend.tqsbackend.entity.UserRoles.RENTER);
-        given(userService.getUserById(1L)).willReturn(java.util.Optional.of(user));
-
-        given(bookingRepository.existsByRenterIdAndItem_IdAndStatusAndEndDateBefore(
-                Mockito.anyLong(), Mockito.anyLong(), Mockito.any(tqs.backend.tqsbackend.entity.BookingStatus.class), Mockito.any(java.time.LocalDate.class)))
-                .willReturn(true);
-
-        mockMvc.perform(get("/items/1")
-                .sessionAttr("userId", 1L))
-                .andExpect(status().isOk())
-                .andExpect(model().attribute("canRate", true));
-    }
-
-    @Test
-    void getItemDetails_CanRate_False() throws Exception {
-        Item item = new Item();
-        item.setId(1L);
-        tqs.backend.tqsbackend.entity.Category category = new tqs.backend.tqsbackend.entity.Category();
-        category.setName("Test Category");
-        item.setCategory(category);
-
-        given(itemService.getItemById(1L)).willReturn(item);
-        
-        tqs.backend.tqsbackend.entity.User user = new tqs.backend.tqsbackend.entity.User();
-        user.setRole(tqs.backend.tqsbackend.entity.UserRoles.RENTER);
-        given(userService.getUserById(1L)).willReturn(java.util.Optional.of(user));
-
-        given(bookingRepository.existsByRenterIdAndItem_IdAndStatusAndEndDateBefore(
-                Mockito.anyLong(), Mockito.anyLong(), Mockito.any(tqs.backend.tqsbackend.entity.BookingStatus.class), Mockito.any(java.time.LocalDate.class)))
-                .willReturn(false);
-
-        mockMvc.perform(get("/items/1")
-                .sessionAttr("userId", 1L))
-                .andExpect(status().isOk())
-                .andExpect(model().attribute("canRate", false));
     }
 
     @Test

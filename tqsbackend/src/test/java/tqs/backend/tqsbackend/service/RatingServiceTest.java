@@ -232,5 +232,31 @@ class RatingServiceTest {
 
         List<Rating> ratings = ratingService.getRatingBySenderId(1L);
         assertThat(ratings).hasSize(1);
+        assertThat(ratings.get(0)).isEqualTo(r1);
+        verify(ratingRepository).findBySenderId(1L);
+    }
+
+    @Test
+    void createRating_OwnerRatingOwnProduct_ThrowsException() {
+        // Arrange
+        Long ownerId = 1L;
+        Long itemId = 10L;
+        User owner = new User();
+        owner.setId(ownerId);
+        owner.setRole(UserRoles.RENTER);
+
+        tqs.backend.tqsbackend.entity.Item item = new tqs.backend.tqsbackend.entity.Item();
+        item.setId(itemId);
+        item.setOwnerId(ownerId);
+
+        when(userService.getUserById(ownerId)).thenReturn(Optional.of(owner));
+        when(itemService.getItemById(itemId)).thenReturn(item);
+
+        // Act & Assert
+        assertThatThrownBy(() -> ratingService.createRating(ownerId, RatingType.PRODUCT, itemId, 5, "Great!"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Cannot rate your own product");
+
+        verify(ratingRepository, org.mockito.Mockito.never()).save(any(Rating.class));
     }
 }

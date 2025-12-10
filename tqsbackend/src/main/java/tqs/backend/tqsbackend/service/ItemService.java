@@ -19,6 +19,9 @@ public class ItemService {
             String location) {
         Specification<Item> spec = (root, query, cb) -> cb.conjunction();
 
+        // Only show active items
+        spec = spec.and((root, query, cb) -> cb.equal(root.get("isActive"), true));
+
         if (keyword != null && !keyword.isEmpty()) {
             String likePattern = "%" + keyword.toLowerCase() + "%";
             spec = spec.and((root, query, cb) -> cb.or(
@@ -57,7 +60,49 @@ public class ItemService {
         return itemRepository.save(item);
     }
 
-    public List<Item> getItemsByOwner(Long ownerId) {
+    public List<Item> findByOwnerId(Long ownerId) {
         return itemRepository.findByOwnerId(ownerId);
+    }
+
+    public Item createItem(Item item) {
+        if (item.getOwnerId() == null) {
+            throw new IllegalArgumentException("Owner ID cannot be null");
+        }
+        return itemRepository.save(item);
+    }
+
+    public Item activateItem(Long itemId, Long ownerId) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new IllegalArgumentException("Item not found with id: " + itemId));
+
+        if (!item.getOwnerId().equals(ownerId)) {
+            throw new IllegalArgumentException("User " + ownerId + " is not the owner of item " + itemId);
+        }
+
+        item.setActive(true);
+        return itemRepository.save(item);
+    }
+
+    public Item deactivateItem(Long itemId, Long ownerId) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new IllegalArgumentException("Item not found with id: " + itemId));
+
+        if (!item.getOwnerId().equals(ownerId)) {
+            throw new IllegalArgumentException("User " + ownerId + " is not the owner of item " + itemId);
+        }
+
+        item.setActive(false);
+        return itemRepository.save(item);
+    }
+
+    public void deleteItem(Long itemId, Long ownerId) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new IllegalArgumentException("Item not found with id: " + itemId));
+
+        if (!item.getOwnerId().equals(ownerId)) {
+            throw new IllegalArgumentException("User " + ownerId + " is not the owner of item " + itemId);
+        }
+
+        itemRepository.deleteById(itemId);
     }
 }

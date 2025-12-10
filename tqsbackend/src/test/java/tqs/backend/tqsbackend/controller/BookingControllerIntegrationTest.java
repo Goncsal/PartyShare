@@ -66,19 +66,19 @@ class BookingControllerIntegrationTest {
         }
 
         @Test
-    void shouldCreateBookingFromForm() throws Exception {
-        Item item = itemRepository.findAll().get(0);
+        void shouldCreateBookingFromForm() throws Exception {
+                Item item = itemRepository.findAll().get(0);
 
-        when(paymentService.charge(anyLong(), any(Item.class), any(), anyLong()))
-                .thenReturn(PaymentResult.success("ref-ui-1"));
+                when(paymentService.charge(anyLong(), any(Item.class), any(), anyLong()))
+                                .thenReturn(PaymentResult.success("ref-ui-1"));
 
-        mockMvc.perform(post("/bookings")
-                .sessionAttr("userId", 1L)
-                .param("itemId", item.getId().toString())
-                .param("renterId", "999")
-                .param("startDate", LocalDate.now().plusDays(1).toString())
-                .param("endDate", LocalDate.now().plusDays(3).toString()))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("/payment/*"));
-    }
+                mockMvc.perform(post("/bookings")
+                                .sessionAttr("userId", 1L)
+                                .param("itemId", item.getId().toString())
+                                .param("renterId", "999")
+                                .param("startDate", LocalDate.now().plusDays(1).toString())
+                                .param("endDate", LocalDate.now().plusDays(3).toString()))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrlPattern("/bookings/rent/*"));
+        }
 }

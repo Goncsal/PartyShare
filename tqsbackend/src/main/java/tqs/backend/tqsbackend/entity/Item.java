@@ -30,6 +30,9 @@ public class Item {
 
     private String location;
 
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+
     public Item() {
     }
 
@@ -42,6 +45,7 @@ public class Item {
         this.averageRating = averageRating;
         this.location = location;
         this.ownerId = ownerId;
+        this.isActive = true;
     }
 
     public Item(String name, String description, Double price, Category category, Double averageRating,
@@ -123,5 +127,13 @@ public class Item {
         if (imageUrl != null && !imageUrl.isEmpty()) {
             this.imageUrl = imageUrl;
         }
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
     }
 }

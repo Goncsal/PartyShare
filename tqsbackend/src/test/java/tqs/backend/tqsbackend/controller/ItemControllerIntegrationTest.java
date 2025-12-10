@@ -20,11 +20,11 @@ public class ItemControllerIntegrationTest {
 
         @Test
         public void testSearchByKeyword() throws Exception {
-                mockMvc.perform(get("/items/search").param("q", "Lamp"))
+                mockMvc.perform(get("/items/search").param("q", "Party"))
                                 .andExpect(status().isOk())
                                 .andExpect(view().name("search"))
                                 .andExpect(model().attribute("items",
-                                                hasItem(hasProperty("name", containsString("Lamp")))));
+                                                hasItem(hasProperty("name", containsString("Party")))));
         }
 
         @Test
@@ -66,12 +66,12 @@ public class ItemControllerIntegrationTest {
         @Test
         public void testCombinedFilter() throws Exception {
                 mockMvc.perform(get("/items/search")
-                                .param("q", "Lamp")
+                                .param("q", "Party")
                                 .param("category", "Lighting")
                                 .param("minRating", "0.0"))
                                 .andExpect(status().isOk())
                                 .andExpect(model().attribute("items",
-                                                hasItem(hasProperty("name", containsString("Lamp")))))
+                                                hasItem(hasProperty("name", containsString("Lights")))))
                                 .andExpect(model().attribute("items",
                                                 everyItem(hasProperty("category",
                                                                 hasProperty("name", is("Lighting"))))))

@@ -73,8 +73,8 @@ class UserControllerTest {
         mvc.perform(get("/users/register"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("users/register"))
-            .andExpect(model().attributeExists("user"))
-            .andExpect(model().attribute("user", instanceOf(UserRegistrationDto.class)));
+                .andExpect(model().attributeExists("user"))
+                .andExpect(model().attribute("user", instanceOf(UserRegistrationDto.class)));
     }
 
     @Test
@@ -104,6 +104,21 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("users/register"))
                 .andExpect(model().attribute("error", "Invalid Email"));
+    }
+
+    @Test
+    void register_Post_DuplicateEmail() throws Exception {
+        doThrow(new IllegalArgumentException("Failed to register user: Email already exists."))
+                .when(userService).registerUser("John", "duplicate@ua.pt", "password123", UserRoles.RENTER);
+
+        mvc.perform(post("/users/register")
+                .param("name", "John")
+                .param("email", "duplicate@ua.pt")
+                .param("password", "password123")
+                .param("role", "RENTER"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("users/register"))
+                .andExpect(model().attribute("error", "Failed to register user: Email already exists."));
     }
 
     @Test

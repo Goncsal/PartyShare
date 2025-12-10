@@ -9,8 +9,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import tqs.backend.tqsbackend.entity.Category;
 import tqs.backend.tqsbackend.entity.Item;
+import tqs.backend.tqsbackend.entity.User;
 import tqs.backend.tqsbackend.service.CategoryService;
 import tqs.backend.tqsbackend.service.ItemService;
+import tqs.backend.tqsbackend.service.UserService;
+
+import java.util.Optional;
 
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
@@ -24,9 +28,7 @@ public class ItemController {
 
     private final CategoryService categoryService;
 
-    private final tqs.backend.tqsbackend.service.UserService userService;
-
-    private final tqs.backend.tqsbackend.repository.BookingRepository bookingRepository;
+    private final UserService userService;
 
     @GetMapping("/search")
     public String searchItems(
@@ -58,12 +60,11 @@ public class ItemController {
         Long userId = (Long) session.getAttribute("userId");
         model.addAttribute("isLoggedIn", userId != null);
         model.addAttribute("userName", session.getAttribute("userName"));
-        
+
+        // Add userRole for conditional UI elements
         if (userId != null) {
-            tqs.backend.tqsbackend.entity.User user = userService.getUserById(userId).orElse(null);
-            if (user != null) {
-                model.addAttribute("userRole", user.getRole().name());
-            }
+            Optional<User> userOpt = userService.getUserById(userId);
+            userOpt.ifPresent(user -> model.addAttribute("userRole", user.getRole().toString()));
         }
 
         return "search";
@@ -73,26 +74,14 @@ public class ItemController {
     public String getItemDetails(@PathVariable Long id, Model model, HttpSession session) {
         Item item = itemService.getItemById(id);
         model.addAttribute("item", item);
-        
-        Long userId = (Long) session.getAttribute("userId");
-        boolean canRate = false;
 
+        // Add user role for conditional UI elements
+        Long userId = (Long) session.getAttribute("userId");
         if (userId != null) {
-            tqs.backend.tqsbackend.entity.User user = userService.getUserById(userId).orElse(null);
-            if (user != null) {
-                model.addAttribute("userRole", user.getRole().name());
-                
-                // Check if user has a completed booking for this item
-                canRate = bookingRepository.existsByRenterIdAndItem_IdAndStatusAndEndDateBefore(
-                    userId, 
-                    id, 
-                    tqs.backend.tqsbackend.entity.BookingStatus.CONFIRMED, 
-                    java.time.LocalDate.now()
-                );
-            }
+            Optional<User> userOpt = userService.getUserById(userId);
+            userOpt.ifPresent(user -> model.addAttribute("userRole", user.getRole().toString()));
         }
-        model.addAttribute("canRate", canRate);
-        
+
         return "item_details";
     }
 
@@ -102,10 +91,10 @@ public class ItemController {
         if (userId == null) {
             return "redirect:/users/login";
         }
-        
+
         tqs.backend.tqsbackend.entity.User user = userService.getUserById(userId).orElse(null);
         if (user == null || user.getRole() != tqs.backend.tqsbackend.entity.UserRoles.OWNER) {
-             return "redirect:/items/search";
+            return "redirect:/items/search";
         }
         model.addAttribute("userRole", user.getRole().name());
 
@@ -119,20 +108,20 @@ public class ItemController {
             @org.springframework.web.bind.annotation.ModelAttribute Item item,
             @RequestParam Long categoryId,
             HttpSession session) {
-        
+
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return "redirect:/users/login";
         }
-        
+
         tqs.backend.tqsbackend.entity.User user = userService.getUserById(userId).orElse(null);
         if (user == null || user.getRole() != tqs.backend.tqsbackend.entity.UserRoles.OWNER) {
-             return "redirect:/items/search";
+            return "redirect:/items/search";
         }
 
         item.setOwnerId(userId);
         item.setCategory(categoryService.getCategoryById(categoryId));
-        
+
         Item savedItem = itemService.saveItem(item);
         return "redirect:/items/" + savedItem.getId();
     }
@@ -143,14 +132,14 @@ public class ItemController {
         if (userId == null) {
             return "redirect:/users/login";
         }
-        
+
         tqs.backend.tqsbackend.entity.User user = userService.getUserById(userId).orElse(null);
         if (user == null || user.getRole() != tqs.backend.tqsbackend.entity.UserRoles.OWNER) {
-             return "redirect:/items/search";
+            return "redirect:/items/search";
         }
         model.addAttribute("userRole", user.getRole().name());
 
-        List<Item> items = itemService.getItemsByOwner(userId);
+        List<Item> items = itemService.findByOwnerId(userId);
         model.addAttribute("items", items);
         return "items/my_items";
     }

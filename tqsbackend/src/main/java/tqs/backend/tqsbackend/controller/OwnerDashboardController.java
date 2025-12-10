@@ -1,0 +1,67 @@
+package tqs.backend.tqsbackend.controller;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import tqs.backend.tqsbackend.entity.Item;
+import tqs.backend.tqsbackend.entity.User;
+import tqs.backend.tqsbackend.entity.UserRoles;
+import tqs.backend.tqsbackend.service.ItemService;
+import tqs.backend.tqsbackend.service.UserService;
+
+import jakarta.servlet.http.HttpSession;
+import java.util.List;
+import java.util.Optional;
+
+@Controller
+@RequestMapping("/owner/dashboard")
+@RequiredArgsConstructor
+public class OwnerDashboardController {
+
+    private final ItemService itemService;
+    private final UserService userService;
+
+    @GetMapping
+    public String showDashboard(Model model, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+
+        Optional<User> userOpt = userService.getUserById(userId);
+        if (userOpt.isEmpty() || userOpt.get().getRole() != UserRoles.OWNER) {
+            model.addAttribute("error", "Access denied. Owner role required.");
+            return "error";
+        }
+
+        User user = userOpt.get();
+        List<Item> items = itemService.findByOwnerId(userId);
+
+        model.addAttribute("user", user);
+        model.addAttribute("items", items);
+        model.addAttribute("isLoggedIn", true);
+        model.addAttribute("userName", user.getName());
+
+        return "dashboard/owner";
+    }
+
+    @GetMapping("/add-item")
+    public String showAddItemPage(Model model, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+
+        Optional<User> userOpt = userService.getUserById(userId);
+        if (userOpt.isEmpty() || userOpt.get().getRole() != UserRoles.OWNER) {
+            model.addAttribute("error", "Access denied. Owner role required.");
+            return "error";
+        }
+
+        return "dashboard/add_item";
+    }
+}

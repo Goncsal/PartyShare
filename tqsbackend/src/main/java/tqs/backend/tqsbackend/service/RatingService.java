@@ -32,7 +32,7 @@ public class RatingService {
 
     public Rating createRating(Long senderId, RatingType ratingType, Long ratedId, Integer rate, String comment) {
         validateSender(senderId);
-        validateRatedEntity(ratingType, ratedId);
+        validateRatedEntity(ratingType, ratedId, senderId);
         validateRatingDetails(rate, comment);
 
         Rating rating = new Rating(senderId, ratingType, ratedId, rate, comment);
@@ -82,7 +82,7 @@ public class RatingService {
         }
     }
 
-    private void validateRatedEntity(RatingType ratingType, Long ratedId) {
+    private void validateRatedEntity(RatingType ratingType, Long ratedId, Long senderId) {
         if (ratedId == null || ratedId < 0) {
             logger.warn("Failed to create rating: RatedId {} is invalid.", ratedId);
             throw new IllegalArgumentException("Failed to create rating: RatedId " + ratedId + " is invalid.");
@@ -101,6 +101,12 @@ public class RatingService {
                 logger.warn("Failed to create rating: Rated item with ID {} does not exist.", ratedId);
                 throw new IllegalArgumentException(
                         "Failed to create rating: Rated item with ID " + ratedId + " does not exist.");
+            }
+            // Prevent owners from rating their own products
+            if (item.getOwnerId() != null && item.getOwnerId().equals(senderId)) {
+                logger.warn("Failed to create rating: User {} cannot rate their own product {}.", senderId, ratedId);
+                throw new IllegalArgumentException(
+                        "Failed to create rating: Cannot rate your own product.");
             }
         } else {
             logger.warn("Failed to create rating: Unknown RatingType {}.", ratingType);
