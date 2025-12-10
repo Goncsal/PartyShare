@@ -57,11 +57,11 @@ public class ItemController {
         model.addAttribute("minRating", minRating);
         model.addAttribute("location", location);
 
-        model.addAttribute("isLoggedIn", session.getAttribute("userId") != null);
+        Long userId = (Long) session.getAttribute("userId");
+        model.addAttribute("isLoggedIn", userId != null);
         model.addAttribute("userName", session.getAttribute("userName"));
 
         // Add userRole for conditional UI elements
-        Long userId = (Long) session.getAttribute("userId");
         if (userId != null) {
             Optional<User> userOpt = userService.getUserById(userId);
             userOpt.ifPresent(user -> model.addAttribute("userRole", user.getRole().toString()));
@@ -83,5 +83,64 @@ public class ItemController {
         }
 
         return "item_details";
+    }
+
+    @GetMapping("/new")
+    public String showNewItemForm(Model model, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+
+        tqs.backend.tqsbackend.entity.User user = userService.getUserById(userId).orElse(null);
+        if (user == null || user.getRole() != tqs.backend.tqsbackend.entity.UserRoles.OWNER) {
+            return "redirect:/items/search";
+        }
+        model.addAttribute("userRole", user.getRole().name());
+
+        model.addAttribute("item", new Item());
+        model.addAttribute("categories", categoryService.getAllCategories());
+        return "items/new_item";
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping
+    public String createItem(
+            @org.springframework.web.bind.annotation.ModelAttribute Item item,
+            @RequestParam Long categoryId,
+            HttpSession session) {
+
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+
+        tqs.backend.tqsbackend.entity.User user = userService.getUserById(userId).orElse(null);
+        if (user == null || user.getRole() != tqs.backend.tqsbackend.entity.UserRoles.OWNER) {
+            return "redirect:/items/search";
+        }
+
+        item.setOwnerId(userId);
+        item.setCategory(categoryService.getCategoryById(categoryId));
+
+        Item savedItem = itemService.saveItem(item);
+        return "redirect:/items/" + savedItem.getId();
+    }
+
+    @GetMapping("/my-items")
+    public String getMyItems(Model model, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+
+        tqs.backend.tqsbackend.entity.User user = userService.getUserById(userId).orElse(null);
+        if (user == null || user.getRole() != tqs.backend.tqsbackend.entity.UserRoles.OWNER) {
+            return "redirect:/items/search";
+        }
+        model.addAttribute("userRole", user.getRole().name());
+
+        List<Item> items = itemService.findByOwnerId(userId);
+        model.addAttribute("items", items);
+        return "items/my_items";
     }
 }

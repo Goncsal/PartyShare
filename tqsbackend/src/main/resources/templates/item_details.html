@@ -104,6 +104,9 @@
     <div class="container">
         <a href="/items/search" class="back-link">← Back to Search</a>
 
+        <img th:src="${item.imageUrl}" alt="Item Image"
+            style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 5px; margin-bottom: 20px;">
+
         <h1 th:text="${item.name}">Item Name</h1>
         <p class="category" th:text="${item.category.name}">Category</p>
 
@@ -145,7 +148,6 @@
         <div class="ratings-section" style="margin-top: 40px; border-top: 1px solid #ddd; padding-top: 20px;">
             <h2>Ratings</h2>
 
-            <!-- Rating form only for renters -->
             <div id="rating-form-container" th:if="${userRole != null and userRole == 'RENTER'}"
                 style="margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 5px;">
                 <h3>Leave a Rating</h3>
@@ -175,6 +177,10 @@
 
                     <button type="submit" class="btn-primary">Submit Rating</button>
                 </form>
+            </div>
+            <div th:unless="${canRate}"
+                style="margin-bottom: 20px; padding: 15px; background-color: #f0f0f0; border-radius: 5px; color: #666;">
+                <p>You can only rate items that you have rented and whose rental period has ended.</p>
             </div>
 
             <div id="ratings-list">

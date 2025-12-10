@@ -116,6 +116,18 @@ public class Item {
     public void setLocation(String location) {
         this.location = location;
     }
+    @Column(name = "image_url")
+    private String imageUrl = "https://placehold.co/600x400?text=No+Image";
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            this.imageUrl = imageUrl;
+        }
+    }
 
     public boolean isActive() {
         return isActive;
