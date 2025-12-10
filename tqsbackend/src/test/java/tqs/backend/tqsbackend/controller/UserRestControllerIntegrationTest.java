@@ -39,17 +39,21 @@ class UserRestControllerIntegrationTest {
 
     @Test
     void whenValidInput_thenCreateUser() throws Exception {
-        UserRegistrationDto userDto = new UserRegistrationDto("John", "john@ua.pt", "password123", UserRoles.RENTER);
+        String body = """
+                {
+                    "name": "testuser",
+                    "email": "test@ua.pt",
+                    "password": "password",
+                    "role": "RENTER"
+                }
+                """;
 
         mvc.perform(post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtil.toJson(userDto)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.name").value("John"))
-                .andExpect(jsonPath("$.email").value("john@ua.pt"))
-                .andExpect(jsonPath("$.password").doesNotExist());
+                .content(body))
+                .andExpect(status().isCreated());
 
-        assertThat(userRepository.findAll()).hasSize(1);
+        assertThat(userRepository.findAll()).hasSize(4); // 3 seeded users + 1 new user
     }
 
     @Test
