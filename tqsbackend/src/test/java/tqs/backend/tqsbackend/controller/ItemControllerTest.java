@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import tqs.backend.tqsbackend.entity.Item;
 import tqs.backend.tqsbackend.service.CategoryService;
 import tqs.backend.tqsbackend.service.ItemService;
+import tqs.backend.tqsbackend.service.UserService;
 
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -36,6 +37,11 @@ public class ItemControllerTest {
         @Bean
         public CategoryService categoryService() {
             return Mockito.mock(CategoryService.class);
+        }
+
+        @Bean
+        public UserService userService() {
+            return Mockito.mock(UserService.class);
         }
     }
 

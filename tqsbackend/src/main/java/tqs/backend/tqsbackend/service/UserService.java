@@ -38,6 +38,13 @@ public class UserService {
             throw new IllegalArgumentException("Failed to register user: Password too short.");
         }
 
+        // Check if email already exists
+        String safeEmail = email.replaceAll("[\\n\\r]", "_");
+        if (userRepository.findByEmail(email).isPresent()) {
+            logger.warn("Failed to register user: Email {} already exists.", safeEmail);
+            throw new IllegalArgumentException("Failed to register user: Email already exists.");
+        }
+
         UserRoles sanitizedRole = resolveSelfServiceRole(role);
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
         User user = new User(name, email, hashedPassword, sanitizedRole);

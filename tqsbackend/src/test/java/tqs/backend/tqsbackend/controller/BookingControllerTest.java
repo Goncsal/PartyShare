@@ -110,4 +110,24 @@ class BookingControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/users/login"));
     }
+
+    @Test
+    void createBooking_WithValidationErrors() throws Exception {
+        mvc.perform(post("/bookings")
+                .sessionAttr("userId", 1L)
+                .param("itemId", "1")
+                .param("startDate", "invalid-date") // Invalid date format
+                .param("endDate", "2026-01-05"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(flash().attributeExists("error"));
+    }
+
+    @Test
+    void createBooking_WithNullDates() throws Exception {
+        mvc.perform(post("/bookings")
+                .sessionAttr("userId", 1L)
+                .param("itemId", "1"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(flash().attributeExists("error"));
+    }
 }

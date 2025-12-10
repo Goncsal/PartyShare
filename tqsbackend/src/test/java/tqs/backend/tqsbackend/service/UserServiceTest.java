@@ -86,6 +86,18 @@ class UserServiceTest {
     }
 
     @Test
+    void testRegisterUserWithDuplicateEmail() {
+        // Mock that email already exists
+        when(userRepository.findByEmail("existing@ua.pt")).thenReturn(Optional.of(validUser));
+
+        // Attempt to register with existing email should throw exception
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> userService.registerUser("Jane Doe", "existing@ua.pt", plainPassword, UserRoles.RENTER));
+
+        assertThat(exception.getMessage()).contains("Email already exists");
+    }
+
+    @Test
     void testAuthenticate() {
         when(userRepository.findByEmail(validUser.getEmail())).thenReturn(Optional.of(validUser));
         when(userRepository.findByEmail("sample@ua.pt")).thenReturn(Optional.empty());

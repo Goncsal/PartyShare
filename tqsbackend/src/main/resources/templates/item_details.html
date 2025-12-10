@@ -121,8 +121,8 @@
             <!-- <p><strong>Owner:</strong> <span th:text="${item.owner.name}">Owner Name</span></p> -->
         </div>
 
-        <div class="actions">
-            <!-- Rent Button -->
+        <div class="actions" th:if="${userRole != null and userRole == 'RENTER'}">
+            <!-- Rent Button (only for renters) -->
             <a th:href="@{/bookings/rent/{itemId}(itemId=${item.id})}" class="button btn-success">Rent this Item</a>
 
             <!-- Add to Favorites Form -->
@@ -136,10 +136,17 @@
                 class="button btn-secondary">Message Owner</a>
         </div>
 
+        <!-- Message Owner button for owners -->
+        <div class="actions" th:if="${userRole == null or userRole != 'RENTER'}">
+            <a th:href="@{/messages/new(receiverId=${item.ownerId}, itemId=${item.id})}"
+                class="button btn-secondary">Message Owner</a>
+        </div>
+
         <div class="ratings-section" style="margin-top: 40px; border-top: 1px solid #ddd; padding-top: 20px;">
             <h2>Ratings</h2>
 
-            <div id="rating-form-container"
+            <!-- Rating form only for renters -->
+            <div id="rating-form-container" th:if="${userRole != null and userRole == 'RENTER'}"
                 style="margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 5px;">
                 <h3>Leave a Rating</h3>
                 <form id="ratingForm" action="/ratings/new" method="post">

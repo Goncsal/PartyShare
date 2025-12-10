@@ -78,6 +78,8 @@
         <div>
             <span th:if="${isLoggedIn}">
                 Welcome, <span th:text="${userName}">User</span>! |
+                <a th:if="${userRole == 'OWNER'}" href="/owner/dashboard">My Dashboard</a>
+                <span th:if="${userRole == 'OWNER'}"> | </span>
                 <a href="/favorites">My Favorites</a> |
                 <a href="/bookings">My Bookings</a> |
                 <a href="/reports">My Reports</a> |

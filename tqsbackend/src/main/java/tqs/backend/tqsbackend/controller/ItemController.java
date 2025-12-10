@@ -9,8 +9,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import tqs.backend.tqsbackend.entity.Category;
 import tqs.backend.tqsbackend.entity.Item;
+import tqs.backend.tqsbackend.entity.User;
 import tqs.backend.tqsbackend.service.CategoryService;
 import tqs.backend.tqsbackend.service.ItemService;
+import tqs.backend.tqsbackend.service.UserService;
+
+import java.util.Optional;
 
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
@@ -23,6 +27,8 @@ public class ItemController {
     private final ItemService itemService;
 
     private final CategoryService categoryService;
+
+    private final UserService userService;
 
     @GetMapping("/search")
     public String searchItems(
@@ -54,13 +60,28 @@ public class ItemController {
         model.addAttribute("isLoggedIn", session.getAttribute("userId") != null);
         model.addAttribute("userName", session.getAttribute("userName"));
 
+        // Add userRole for conditional UI elements
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId != null) {
+            Optional<User> userOpt = userService.getUserById(userId);
+            userOpt.ifPresent(user -> model.addAttribute("userRole", user.getRole().toString()));
+        }
+
         return "search";
     }
 
     @GetMapping("/{id}")
-    public String getItemDetails(@PathVariable Long id, Model model) {
+    public String getItemDetails(@PathVariable Long id, Model model, HttpSession session) {
         Item item = itemService.getItemById(id);
         model.addAttribute("item", item);
+
+        // Add user role for conditional UI elements
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId != null) {
+            Optional<User> userOpt = userService.getUserById(userId);
+            userOpt.ifPresent(user -> model.addAttribute("userRole", user.getRole().toString()));
+        }
+
         return "item_details";
     }
 }
