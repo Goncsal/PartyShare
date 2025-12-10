@@ -205,4 +205,94 @@ public class ItemControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/items/search"));
     }
+    @Test
+    void showEditItemForm_Owner_ReturnsView() throws Exception {
+        Item item = new Item();
+        item.setId(1L);
+        item.setOwnerId(1L);
+        
+        tqs.backend.tqsbackend.entity.User owner = new tqs.backend.tqsbackend.entity.User();
+        owner.setRole(tqs.backend.tqsbackend.entity.UserRoles.OWNER);
+        
+        given(userService.getUserById(1L)).willReturn(java.util.Optional.of(owner));
+        given(itemService.getItemById(1L)).willReturn(item);
+        given(categoryService.getAllCategories()).willReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/items/1/edit")
+                .sessionAttr("userId", 1L))
+                .andExpect(status().isOk())
+                .andExpect(view().name("items/edit_item"))
+                .andExpect(model().attributeExists("item", "categories"));
+    }
+
+    @Test
+    void showEditItemForm_NonOwner_Redirects() throws Exception {
+        Item item = new Item();
+        item.setId(1L);
+        item.setOwnerId(2L); // Different owner
+        
+        tqs.backend.tqsbackend.entity.User user = new tqs.backend.tqsbackend.entity.User();
+        user.setRole(tqs.backend.tqsbackend.entity.UserRoles.OWNER);
+        
+        given(userService.getUserById(1L)).willReturn(java.util.Optional.of(user));
+        given(itemService.getItemById(1L)).willReturn(item);
+
+        mockMvc.perform(get("/items/1/edit")
+                .sessionAttr("userId", 1L))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/items/search"));
+    }
+
+    @Test
+    void updateItem_Owner_Success() throws Exception {
+        Item item = new Item();
+        item.setId(1L);
+        
+        tqs.backend.tqsbackend.entity.User owner = new tqs.backend.tqsbackend.entity.User();
+        owner.setRole(tqs.backend.tqsbackend.entity.UserRoles.OWNER);
+        
+        given(userService.getUserById(1L)).willReturn(java.util.Optional.of(owner));
+        given(itemService.updateItem(Mockito.eq(1L), Mockito.any(Item.class), Mockito.eq(1L))).willReturn(item);
+
+        mockMvc.perform(post("/items/1/edit")
+                .sessionAttr("userId", 1L)
+                .param("name", "Updated Name")
+                .param("price", "20.0")
+                .param("categoryId", "1"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/items/my-items"));
+    }
+
+    @Test
+    void updateItem_NonOwner_Forbidden() throws Exception {
+        tqs.backend.tqsbackend.entity.User user = new tqs.backend.tqsbackend.entity.User();
+        user.setRole(tqs.backend.tqsbackend.entity.UserRoles.OWNER);
+        
+        given(userService.getUserById(1L)).willReturn(java.util.Optional.of(user));
+        given(itemService.updateItem(Mockito.eq(1L), Mockito.any(Item.class), Mockito.eq(1L)))
+                .willThrow(new IllegalArgumentException("Not owner"));
+
+        mockMvc.perform(post("/items/1/edit")
+                .sessionAttr("userId", 1L)
+                .param("name", "Updated Name")
+                .param("categoryId", "1"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/items/search"));
+    }
+
+    @Test
+    void toggleItemStatus_Owner_Success() throws Exception {
+        tqs.backend.tqsbackend.entity.User owner = new tqs.backend.tqsbackend.entity.User();
+        owner.setRole(tqs.backend.tqsbackend.entity.UserRoles.OWNER);
+        
+        given(userService.getUserById(1L)).willReturn(java.util.Optional.of(owner));
+
+        mockMvc.perform(post("/items/1/toggle-status")
+                .sessionAttr("userId", 1L)
+                .param("active", "true"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/items/my-items"));
+        
+        verify(itemService).activateItem(1L, 1L);
+    }
 }

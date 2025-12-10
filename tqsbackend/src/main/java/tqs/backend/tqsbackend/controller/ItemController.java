@@ -143,4 +143,70 @@ public class ItemController {
         model.addAttribute("items", items);
         return "items/my_items";
     }
+    @GetMapping("/{id}/edit")
+    public String showEditItemForm(@PathVariable Long id, Model model, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+
+        Item item = itemService.getItemById(id);
+        if (item == null) {
+            return "redirect:/items/search";
+        }
+
+        tqs.backend.tqsbackend.entity.User user = userService.getUserById(userId).orElse(null);
+        if (user == null || !item.getOwnerId().equals(userId)) {
+             return "redirect:/items/search";
+        }
+        
+        model.addAttribute("userRole", user.getRole().name());
+        model.addAttribute("item", item);
+        model.addAttribute("categories", categoryService.getAllCategories());
+        return "items/edit_item";
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/{id}/edit")
+    public String updateItem(
+            @PathVariable Long id,
+            @org.springframework.web.bind.annotation.ModelAttribute Item item,
+            @RequestParam Long categoryId,
+            HttpSession session) {
+
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+
+        try {
+            item.setCategory(categoryService.getCategoryById(categoryId));
+            itemService.updateItem(id, item, userId);
+            return "redirect:/items/my-items";
+        } catch (IllegalArgumentException e) {
+            return "redirect:/items/search";
+        }
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/{id}/toggle-status")
+    public String toggleItemStatus(
+            @PathVariable Long id,
+            @RequestParam boolean active,
+            HttpSession session) {
+
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+
+        try {
+            if (active) {
+                itemService.activateItem(id, userId);
+            } else {
+                itemService.deactivateItem(id, userId);
+            }
+            return "redirect:/items/my-items";
+        } catch (IllegalArgumentException e) {
+            return "redirect:/items/search";
+        }
+    }
 }

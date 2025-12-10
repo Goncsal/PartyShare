@@ -105,4 +105,27 @@ public class ItemService {
 
         itemRepository.deleteById(itemId);
     }
+    public Item updateItem(Long itemId, Item updates, Long ownerId) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new IllegalArgumentException("Item not found with id: " + itemId));
+
+        if (!item.getOwnerId().equals(ownerId)) {
+            throw new IllegalArgumentException("User " + ownerId + " is not the owner of item " + itemId);
+        }
+
+        item.setName(updates.getName());
+        item.setDescription(updates.getDescription());
+        item.setPrice(updates.getPrice());
+        item.setLocation(updates.getLocation());
+        
+        if (updates.getCategory() != null) {
+            item.setCategory(updates.getCategory());
+        }
+        
+        if (updates.getImageUrl() != null && !updates.getImageUrl().isEmpty()) {
+            item.setImageUrl(updates.getImageUrl());
+        }
+
+        return itemRepository.save(item);
+    }
 }

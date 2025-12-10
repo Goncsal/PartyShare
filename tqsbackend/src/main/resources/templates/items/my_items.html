@@ -37,9 +37,14 @@
             color: white;
         }
 
-        .btn-view {
-            background: #eee;
-            color: #333;
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-success {
+            background: #2ecc71;
+            color: white;
         }
     </style>
 </head>
@@ -80,9 +85,17 @@
             <span th:text="${'€' + item.price + '/day'}">€10.00/day</span>
             <span th:if="${!item.isActive}" style="color: red; margin-left: 10px;">(Inactive)</span>
         </div>
-        <div class="actions">
+        <div class="actions" style="display: flex; gap: 5px;">
             <a th:href="@{/items/{id}(id=${item.id})}" class="btn btn-view">View</a>
-            <!-- Edit/Delete buttons will be added in next US -->
+            <a th:href="@{/items/{id}/edit(id=${item.id})}" class="btn btn-primary">Edit</a>
+
+            <form th:action="@{/items/{id}/toggle-status(id=${item.id})}" method="post" style="display: inline;">
+                <input type="hidden" name="active" th:value="${!item.isActive}" />
+                <button type="submit" class="btn" th:classappend="${item.isActive ? 'btn-danger' : 'btn-success'}"
+                    th:text="${item.isActive ? 'Deactivate' : 'Activate'}" style="cursor: pointer; border: none;">
+                    Toggle
+                </button>
+            </form>
         </div>
     </div>
 </body>

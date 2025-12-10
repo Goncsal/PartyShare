@@ -48,32 +48,7 @@ public class OwnerDashboardRestController {
         return ResponseEntity.ok(items);
     }
 
-    /**
-     * Create a new rental item
-     */
-    @PostMapping("/items")
-    public ResponseEntity<?> createItem(@RequestBody Item item, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "User not logged in"));
-        }
 
-        Optional<User> userOpt = userService.getUserById(userId);
-        if (userOpt.isEmpty() || userOpt.get().getRole() != UserRoles.OWNER) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "User is not an owner"));
-        }
-
-        try {
-            item.setOwnerId(userId);
-            Item createdItem = itemService.createItem(item);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdItem);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
-        }
-    }
 
     /**
      * Activate an item

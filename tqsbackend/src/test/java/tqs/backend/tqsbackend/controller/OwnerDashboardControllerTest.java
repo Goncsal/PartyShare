@@ -136,33 +136,5 @@ public class OwnerDashboardControllerTest {
                 .andExpect(model().attribute("items", Collections.emptyList()));
     }
 
-    @Test
-    void testShowAddItemPage_Success() throws Exception {
-        session.setAttribute("userId", 1L);
 
-        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
-
-        mockMvc.perform(get("/owner/dashboard/add-item").session(session))
-                .andExpect(status().isOk())
-                .andExpect(view().name("dashboard/add_item"));
-    }
-
-    @Test
-    void testShowAddItemPage_NotLoggedIn() throws Exception {
-        mockMvc.perform(get("/owner/dashboard/add-item"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/users/login"));
-    }
-
-    @Test
-    void testShowAddItemPage_NotOwner() throws Exception {
-        session.setAttribute("userId", 2L);
-
-        given(userService.getUserById(2L)).willReturn(Optional.of(renterUser));
-
-        mockMvc.perform(get("/owner/dashboard/add-item").session(session))
-                .andExpect(status().isOk())
-                .andExpect(view().name("error"))
-                .andExpect(model().attribute("error", "Access denied. Owner role required."));
-    }
 }

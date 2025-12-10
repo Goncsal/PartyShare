@@ -183,4 +183,46 @@ public class ItemServiceTest {
         verify(itemRepository).findById(1L);
         verify(itemRepository).save(item);
     }
+    @Test
+    public void testUpdateItem_Valid_UpdatesFields() {
+        // Arrange
+        Category category = new Category("Electronics");
+        Item existingItem = new Item("Old Name", "Old Desc", 10.0, category, 4.5, "Location", 1L);
+        existingItem.setId(1L);
+        
+        Item updates = new Item("New Name", "New Desc", 20.0, category, 4.5, "New Location", 1L);
+        
+        when(itemRepository.findById(1L)).thenReturn(Optional.of(existingItem));
+        when(itemRepository.save(Mockito.any(Item.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        Item result = itemService.updateItem(1L, updates, 1L);
+
+        // Assert
+        assertThat(result.getName()).isEqualTo("New Name");
+        assertThat(result.getDescription()).isEqualTo("New Desc");
+        assertThat(result.getPrice()).isEqualTo(20.0);
+        assertThat(result.getLocation()).isEqualTo("New Location");
+        verify(itemRepository).save(existingItem);
+    }
+
+    @Test
+    public void testUpdateItem_NotOwner_ThrowsException() {
+        // Arrange
+        Category category = new Category("Electronics");
+        Item existingItem = new Item("Old Name", "Old Desc", 10.0, category, 4.5, "Location", 1L);
+        existingItem.setId(1L);
+        
+        Item updates = new Item("New Name", "New Desc", 20.0, category, 4.5, "New Location", 1L);
+        
+        when(itemRepository.findById(1L)).thenReturn(Optional.of(existingItem));
+
+        // Act & Assert
+        try {
+            itemService.updateItem(1L, updates, 2L);
+            org.junit.jupiter.api.Assertions.fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage()).isEqualTo("User 2 is not the owner of item 1");
+        }
+    }
 }
