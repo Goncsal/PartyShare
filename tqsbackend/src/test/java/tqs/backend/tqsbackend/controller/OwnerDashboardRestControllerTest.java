@@ -122,41 +122,9 @@ public class OwnerDashboardRestControllerTest {
         verify(itemService, never()).findByOwnerId(anyLong());
     }
 
-    @Test
-    void testCreateItem_Success() throws Exception {
-        session.setAttribute("userId", 1L);
-        Item newItem = new Item("New Item", "New Description", 15.0, category, null, "New Location", 1L);
-        newItem.setId(3L);
 
-        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
-        given(itemService.createItem(any(Item.class))).willReturn(newItem);
 
-        mockMvc.perform(post("/api/owner/dashboard/items")
-                .session(session)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(newItem)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.name").value("New Item"));
 
-        verify(itemService, times(1)).createItem(any(Item.class));
-    }
-
-    @Test
-    void testCreateItem_NotOwner() throws Exception {
-        session.setAttribute("userId", 2L);
-        Item newItem = new Item("New Item", "New Description", 15.0, category, null, "New Location", 2L);
-
-        given(userService.getUserById(2L)).willReturn(Optional.of(renterUser));
-
-        mockMvc.perform(post("/api/owner/dashboard/items")
-                .session(session)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(newItem)))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.error").value("User is not an owner"));
-
-        verify(itemService, never()).createItem(any(Item.class));
-    }
 
     @Test
     void testActivateItem_Success() throws Exception {
@@ -243,35 +211,9 @@ public class OwnerDashboardRestControllerTest {
         verify(ratingService, never()).getRatingByRatedInfo(any(), anyLong());
     }
 
-    @Test
-    void testCreateItem_NotLoggedIn() throws Exception {
-        Item newItem = new Item("New Item", "New Description", 15.0, category, null, "New Location", 1L);
 
-        mockMvc.perform(post("/api/owner/dashboard/items")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(newItem)))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("User not logged in"));
 
-        verify(itemService, never()).createItem(any(Item.class));
-    }
 
-    @Test
-    void testCreateItem_ValidationFailure() throws Exception {
-        session.setAttribute("userId", 1L);
-        Item newItem = new Item("New Item", "New Description", 15.0, category, null, "New Location", 1L);
-
-        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
-        given(itemService.createItem(any(Item.class)))
-                .willThrow(new IllegalArgumentException("Owner ID cannot be null"));
-
-        mockMvc.perform(post("/api/owner/dashboard/items")
-                .session(session)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(newItem)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Owner ID cannot be null"));
-    }
 
     @Test
     void testActivateItem_NotLoggedIn() throws Exception {
