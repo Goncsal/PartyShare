@@ -3,6 +3,7 @@ package tqs.backend.tqsbackend.service;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tqs.backend.tqsbackend.entity.Category;
 import tqs.backend.tqsbackend.entity.Item;
@@ -22,17 +23,21 @@ public class MockAddingItemService {
         private final CategoryRepository categoryRepository;
         private final UserRepository userRepository;
 
+        @Value("${MOCK_USER_PASSWORD:testPassword123}")
+        private String mockUserPassword;
+
         @PostConstruct
         public void init() {
                 if (userRepository.count() == 0 && itemRepository.count() == 0) {
                         // Create owner users
                         User owner1 = new User("Maria Silva", "maria@ua.pt",
-                                        BCrypt.hashpw("password123", BCrypt.gensalt()),
+                                        BCrypt.hashpw(mockUserPassword, BCrypt.gensalt()),
                                         UserRoles.OWNER);
                         User owner2 = new User("João Santos", "joao@ua.pt",
-                                        BCrypt.hashpw("password123", BCrypt.gensalt()),
+                                        BCrypt.hashpw(mockUserPassword, BCrypt.gensalt()),
                                         UserRoles.OWNER);
-                        User owner3 = new User("Ana Costa", "ana@ua.pt", BCrypt.hashpw("password123", BCrypt.gensalt()),
+                        User owner3 = new User("Ana Costa", "ana@ua.pt",
+                                        BCrypt.hashpw(mockUserPassword, BCrypt.gensalt()),
                                         UserRoles.OWNER);
 
                         userRepository.saveAll(Arrays.asList(owner1, owner2, owner3));
