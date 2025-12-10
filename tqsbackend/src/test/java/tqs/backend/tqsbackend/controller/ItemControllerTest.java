@@ -78,6 +78,29 @@ public class ItemControllerTest {
     }
 
     @Test
+    public void testGetItemDetails_LoggedIn() throws Exception {
+        Item item = new Item();
+        item.setId(1L);
+        item.setName("Test Item");
+        tqs.backend.tqsbackend.entity.Category category = new tqs.backend.tqsbackend.entity.Category();
+        category.setName("Test Category");
+        item.setCategory(category);
+        
+        tqs.backend.tqsbackend.entity.User user = new tqs.backend.tqsbackend.entity.User();
+        user.setRole(tqs.backend.tqsbackend.entity.UserRoles.RENTER);
+
+        given(itemService.getItemById(1L)).willReturn(item);
+        given(userService.getUserById(1L)).willReturn(java.util.Optional.of(user));
+
+        mockMvc.perform(get("/items/1")
+                .sessionAttr("userId", 1L))
+                .andExpect(status().isOk())
+                .andExpect(view().name("item_details"))
+                .andExpect(model().attribute("item", item))
+                .andExpect(model().attribute("userRole", "RENTER"));
+    }
+
+    @Test
     void showNewItemForm_NotLoggedIn_RedirectsToLogin() throws Exception {
         mockMvc.perform(get("/items/new"))
                 .andExpect(status().is3xxRedirection())
@@ -168,6 +191,25 @@ public class ItemControllerTest {
     }
 
     @Test
+    void searchItems_LoggedIn_ReturnsViewAndModelWithUserRole() throws Exception {
+        given(categoryService.getAllCategories()).willReturn(Collections.emptyList());
+        given(itemService.searchItems(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+                Mockito.any()))
+                .willReturn(Collections.emptyList());
+        
+        tqs.backend.tqsbackend.entity.User user = new tqs.backend.tqsbackend.entity.User();
+        user.setRole(tqs.backend.tqsbackend.entity.UserRoles.RENTER);
+        given(userService.getUserById(1L)).willReturn(java.util.Optional.of(user));
+
+        mockMvc.perform(get("/items/search")
+                .sessionAttr("userId", 1L))
+                .andExpect(status().isOk())
+                .andExpect(view().name("search"))
+                .andExpect(model().attributeExists("items", "categories"))
+                .andExpect(model().attribute("userRole", "RENTER"));
+    }
+
+    @Test
     void showNewItemForm_LoggedInButNotOwner_RedirectsToSearch() throws Exception {
         tqs.backend.tqsbackend.entity.User renter = new tqs.backend.tqsbackend.entity.User();
         renter.setRole(tqs.backend.tqsbackend.entity.UserRoles.RENTER);
@@ -210,6 +252,9 @@ public class ItemControllerTest {
         Item item = new Item();
         item.setId(1L);
         item.setOwnerId(1L);
+        tqs.backend.tqsbackend.entity.Category category = new tqs.backend.tqsbackend.entity.Category();
+        category.setName("Test Category");
+        item.setCategory(category);
         
         tqs.backend.tqsbackend.entity.User owner = new tqs.backend.tqsbackend.entity.User();
         owner.setRole(tqs.backend.tqsbackend.entity.UserRoles.OWNER);
@@ -294,5 +339,20 @@ public class ItemControllerTest {
                 .andExpect(redirectedUrl("/items/my-items"));
         
         verify(itemService).activateItem(1L, 1L);
+    }
+
+    @Test
+    void toggleItemStatus_Failure_RedirectsToSearch() throws Exception {
+        tqs.backend.tqsbackend.entity.User owner = new tqs.backend.tqsbackend.entity.User();
+        owner.setRole(tqs.backend.tqsbackend.entity.UserRoles.OWNER);
+        
+        given(userService.getUserById(1L)).willReturn(java.util.Optional.of(owner));
+        given(itemService.activateItem(1L, 1L)).willThrow(new IllegalArgumentException("Error"));
+
+        mockMvc.perform(post("/items/1/toggle-status")
+                .sessionAttr("userId", 1L)
+                .param("active", "true"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/items/search"));
     }
 }
