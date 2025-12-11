@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tqs.backend.tqsbackend.entity.Item;
+import tqs.backend.tqsbackend.repository.BookingRepository;
 import tqs.backend.tqsbackend.repository.CategoryRepository;
 import tqs.backend.tqsbackend.repository.ItemRepository;
 import tqs.backend.tqsbackend.repository.UserRepository;
@@ -25,6 +26,9 @@ public class MockAddingItemServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private BookingRepository bookingRepository;
+
     @InjectMocks
     private MockAddingItemService mockAddingItemService;
 
@@ -41,6 +45,7 @@ public class MockAddingItemServiceTest {
         verify(userRepository, times(1)).saveAll(anyList());
         verify(categoryRepository, times(1)).saveAll(anyList());
         verify(itemRepository, times(5)).save(any(Item.class));
+        verify(bookingRepository, times(7)).save(any()); // 4 past + 3 upcoming bookings
     }
 
     @Test

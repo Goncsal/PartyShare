@@ -161,4 +161,8 @@ public class UserService {
         return userRepository.searchUsers(keyword, role, startDate, endDate);
     }
 
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
+
 }

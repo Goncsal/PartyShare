@@ -52,7 +52,7 @@ class UserRestControllerIntegrationTest {
                 .content(body))
                 .andExpect(status().isCreated());
 
-        assertThat(userRepository.findAll()).hasSize(5); // 3 seeded users + 1 admin + 1 new user
+        assertThat(userRepository.findAll()).hasSize(8); // 6 seeded users (3 owners + 3 renters) + 1 new user + 1 admin
     }
 
     @Test

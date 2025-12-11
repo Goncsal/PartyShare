@@ -190,6 +190,204 @@
     <h1>Owner Dashboard</h1>
     <p class="welcome-text">Welcome, <span th:text="${userName}">Owner</span>!</p>
 
+    <!-- Upcoming Rentals Section -->
+    <div class="action-bar" style="margin-top: 30px;">
+        <h2>Upcoming Rentals</h2>
+    </div>
+
+    <div th:if="${upcomingRentals.empty}" class="no-items">
+        <p>No upcoming rentals at the moment.</p>
+    </div>
+
+    <table th:if="${!upcomingRentals.empty}" class="items-table" style="margin-bottom: 30px;">
+        <thead>
+            <tr>
+                <th>Booking ID</th>
+                <th>Item</th>
+                <th>Renter ID</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Status</th>
+                <th>Total Price (€)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="booking : ${upcomingRentals}">
+                <td th:text="${booking.id}">1</td>
+                <td th:text="${booking.item.name}">Item Name</td>
+                <td th:text="${booking.renterId}">123</td>
+                <td th:text="${booking.startDate}">2024-01-01</td>
+                <td th:text="${booking.endDate}">2024-01-07</td>
+                <td>
+                    <span class="status-badge"
+                        th:classappend="${booking.status.name() == 'CONFIRMED'} ? 'status-active' : 'status-inactive'"
+                        th:text="${booking.status}">Status</span>
+                </td>
+                <td th:text="${booking.totalPrice}">100.00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Past Rentals Section -->
+    <div class="action-bar" style="margin-top: 30px;">
+        <h2>Past Rentals</h2>
+    </div>
+
+    <div th:if="${pastRentals.empty}" class="no-items">
+        <p>No past rentals.</p>
+    </div>
+
+    <table th:if="${!pastRentals.empty}" class="items-table" style="margin-bottom: 30px;">
+        <thead>
+            <tr>
+                <th>Booking ID</th>
+                <th>Item</th>
+                <th>Renter ID</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Status</th>
+                <th>Total Price (€)</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="booking : ${pastRentals}">
+                <td th:text="${booking.id}">1</td>
+                <td th:text="${booking.item.name}">Item Name</td>
+                <td th:text="${booking.renterId}">123</td>
+                <td th:text="${booking.startDate}">2024-01-01</td>
+                <td th:text="${booking.endDate}">2024-01-07</td>
+                <td>
+                    <span class="status-badge"
+                        th:classappend="${booking.status.name() == 'CONFIRMED'} ? 'status-active' : 'status-inactive'"
+                        th:text="${booking.status}">Status</span>
+                </td>
+                <td th:text="${booking.totalPrice}">100.00</td>
+                <td>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="btn btn-danger btn-sm damage-report-btn"
+                            th:attr="data-booking-id=${booking.id}, data-item-name=${booking.item.name}, data-renter-id=${booking.renterId}">
+                            Report Damage
+                        </button>
+                        <!-- Rate Renter container - will be dynamically filled -->
+                        <span class="rate-renter-container"
+                            th:attr="data-booking-id=${booking.id}, data-item-name=${booking.item.name}, data-renter-id=${booking.renterId}">
+                            <!-- Loading... will be replaced by JavaScript -->
+                            <button class="btn btn-secondary btn-sm" disabled>Loading...</button>
+                        </span>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Damage Report Modal -->
+    <div id="damageReportModal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div
+            style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h2 style="margin-top: 0; color: #333;">Report Damage</h2>
+            <form id="damageReportForm">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Booking
+                        ID:</label>
+                    <input type="text" id="modalBookingId" readonly
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px; background-color: #f5f5f5;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Item
+                        Name:</label>
+                    <input type="text" id="modalItemName" readonly
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px; background-color: #f5f5f5;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Renter
+                        ID:</label>
+                    <input type="text" id="modalRenterId" readonly
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px; background-color: #f5f5f5;">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Damage
+                        Description: <span style="color: red;">*</span></label>
+                    <textarea id="modalDamageDescription" required rows="6"
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px; resize: vertical;"
+                        placeholder="Please describe the damage in detail..."></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" onclick="closeDamageReportModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Rate Renter Modal -->
+    <div id="rateRenterModal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div
+            style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h2 style="margin-top: 0; color: #333;">Rate Renter</h2>
+            <div id="ratingExistsView" style="display: none;">
+                <p style="color: #666; margin-bottom: 15px;">You have already rated this renter:</p>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Rating:</label>
+                    <div id="existingStars" style="color: #f39c12; font-size: 24px;"></div>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Comment:</label>
+                    <p id="existingComment" style="color: #666;"></p>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" onclick="closeRateRenterModal()" class="btn btn-secondary">Close</button>
+                </div>
+            </div>
+            <form id="rateRenterForm" style="display: none;">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Booking
+                        ID:</label>
+                    <input type="text" id="modalRatingBookingId" readonly
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px; background-color: #f5f5f5;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Item
+                        Name:</label>
+                    <input type="text" id="modalRatingItemName" readonly
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px; background-color: #f5f5f5;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Renter
+                        ID:</label>
+                    <input type="text" id="modalRatingRenterId" readonly
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px; background-color: #f5f5f5;">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Rating:
+                        <span style="color: red;">*</span></label>
+                    <div id="starRating" style="font-size: 32px; cursor: pointer;">
+                        <span class="star" data-rating="1">☆</span>
+                        <span class="star" data-rating="2">☆</span>
+                        <span class="star" data-rating="3">☆</span>
+                        <span class="star" data-rating="4">☆</span>
+                        <span class="star" data-rating="5">☆</span>
+                    </div>
+                    <input type="hidden" id="selectedRating" required>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Comment
+                        (optional):</label>
+                    <textarea id="modalRatingComment" rows="4"
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px; resize: vertical;"
+                        placeholder="Share your experience with this renter..."></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" onclick="closeRateRenterModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Rating</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
     <div class="action-bar">
         <h2>My Rental Items</h2>
         <a href="/items/new" class="btn btn-primary">+ Add New Item</a>
@@ -360,6 +558,255 @@
                     });
             }
         }
+
+        // Event listener for all damage report buttons
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.damage-report-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const bookingId = this.dataset.bookingId;
+                    const itemName = this.dataset.itemName;
+                    const renterId = this.dataset.renterId;
+
+                    document.getElementById('modalBookingId').value = bookingId;
+                    document.getElementById('modalItemName').value = itemName;
+                    document.getElementById('modalRenterId').value = renterId;
+                    document.getElementById('modalDamageDescription').value = '';
+
+                    const modal = document.getElementById('damageReportModal');
+                    modal.style.display = 'flex';
+                });
+            });
+        });
+
+        function closeDamageReportModal() {
+            document.getElementById('damageReportModal').style.display = 'none';
+        }
+
+        document.getElementById('damageReportForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const bookingId = document.getElementById('modalBookingId').value;
+            const damageDescription = document.getElementById('modalDamageDescription').value.trim();
+
+            if (!damageDescription) {
+                alert('Please provide a damage description');
+                return;
+            }
+
+            fetch(`/api/owner/dashboard/bookings/${bookingId}/damage-report`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    damageDescription: damageDescription
+                })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Failed to submit damage report');
+                        });
+                    }
+                })
+                .then(data => {
+                    alert('Damage report submitted successfully.');
+                    closeDamageReportModal();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error: ' + error.message);
+                });
+        });
+
+        // Rate Renter Modal - Star rating interaction
+        const stars = document.querySelectorAll('.star');
+        let selectedRating = 0;
+
+        stars.forEach(star => {
+            star.addEventListener('click', function () {
+                selectedRating = parseInt(this.dataset.rating);
+                document.getElementById('selectedRating').value = selectedRating;
+                updateStarsDisplay(selectedRating);
+            });
+
+            star.addEventListener('mouseenter', function () {
+                const rating = parseInt(this.dataset.rating);
+                updateStarsDisplay(rating);
+            });
+        });
+
+        document.getElementById('starRating').addEventListener('mouseleave', function () {
+            updateStarsDisplay(selectedRating);
+        });
+
+        function updateStarsDisplay(rating) {
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.textContent = '★';
+                    star.style.color = 'gold';
+                } else {
+                    star.textContent = '☆';
+                    star.style.color = '#ddd';
+                }
+            });
+        }
+
+        // Load rating status for all rate renter containers on page load
+        document.querySelectorAll('.rate-renter-container').forEach(container => {
+            const bookingId = container.dataset.bookingId;
+            const itemName = container.dataset.itemName;
+            const renterId = container.dataset.renterId;
+
+            // Check if rating exists for this booking
+            fetch(`/api/owner/dashboard/bookings/${bookingId}/renter-rating`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists) {
+                        // Show rating display (clickable)
+                        const rating = data.rating;
+                        const starsHtml = '★'.repeat(rating.rate) + '☆'.repeat(5 - rating.rate);
+                        container.innerHTML = `
+                            <button class="btn btn-primary btn-sm view-renter-rating-btn" 
+                                data-booking-id="${bookingId}" 
+                                data-item-name="${itemName}" 
+                                data-renter-id="${renterId}"
+                                title="Click to view rating">
+                                <span style="color: #FFFFFF;">${starsHtml}</span>
+                            </button>
+                        `;
+
+                        // Add click handler for viewing rating
+                        const viewBtn = container.querySelector('.view-renter-rating-btn');
+                        viewBtn.addEventListener('click', function () {
+                            openRenterRatingModal(bookingId, itemName, renterId);
+                        });
+                    } else {
+                        // Show rate button
+                        container.innerHTML = `
+                            <button class="btn btn-primary btn-sm rate-renter-btn" 
+                                data-booking-id="${bookingId}" 
+                                data-item-name="${itemName}" 
+                                data-renter-id="${renterId}">
+                                Rate Renter
+                            </button>
+                        `;
+
+                        // Add click handler for rating
+                        const rateBtn = container.querySelector('.rate-renter-btn');
+                        rateBtn.addEventListener('click', function () {
+                            openRenterRatingModal(bookingId, itemName, renterId);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading rating status:', error);
+                    // Show rate button as fallback
+                    container.innerHTML = `
+                        <button class="btn btn-primary btn-sm rate-renter-btn" 
+                            data-booking-id="${bookingId}" 
+                            data-item-name="${itemName}" 
+                            data-renter-id="${renterId}">
+                            Rate Renter
+                        </button>
+                    `;
+                    const rateBtn = container.querySelector('.rate-renter-btn');
+                    rateBtn.addEventListener('click', function () {
+                        openRenterRatingModal(bookingId, itemName, renterId);
+                    });
+                });
+        });
+
+        // Centralized function to open rating modal
+        function openRenterRatingModal(bookingId, itemName, renterId) {
+            // Reset modal
+            document.getElementById('modalRatingBookingId').value = bookingId;
+            document.getElementById('modalRatingItemName').value = itemName;
+            document.getElementById('modalRatingRenterId').value = renterId;
+            document.getElementById('modalRatingComment').value = '';
+            document.getElementById('selectedRating').value = '';
+            selectedRating = 0;
+            updateStarsDisplay(0);
+
+            // Check if rating already exists
+            fetch(`/api/owner/dashboard/bookings/${bookingId}/renter-rating`)
+                .then(response => response.json())
+                .then(data => {
+                    const modal = document.getElementById('rateRenterModal');
+                    const existsView = document.getElementById('ratingExistsView');
+                    const formView = document.getElementById('rateRenterForm');
+
+                    if (data.exists) {
+                        // Show existing rating
+                        const rating = data.rating;
+                        const starsHtml = '★'.repeat(rating.rate) + '☆'.repeat(5 - rating.rate);
+                        document.getElementById('existingStars').innerHTML = starsHtml;
+                        document.getElementById('existingComment').textContent =
+                            rating.comment || 'No comment provided';
+
+                        existsView.style.display = 'block';
+                        formView.style.display = 'none';
+                    } else {
+                        // Show rating form
+                        existsView.style.display = 'none';
+                        formView.style.display = 'block';
+                    }
+
+                    modal.style.display = 'flex';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error checking existing rating: ' + error.message);
+                });
+        }
+
+        function closeRateRenterModal() {
+            document.getElementById('rateRenterModal').style.display = 'none';
+        }
+
+        document.getElementById('rateRenterForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const bookingId = document.getElementById('modalRatingBookingId').value;
+            const rating = parseInt(document.getElementById('selectedRating').value);
+            const comment = document.getElementById('modalRatingComment').value.trim();
+
+            if (!rating || rating < 1 || rating > 5) {
+                alert('Please select a rating');
+                return;
+            }
+
+            fetch(`/api/owner/dashboard/bookings/${bookingId}/rate-renter`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    rate: rating,
+                    comment: comment || null
+                })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Failed to submit rating');
+                        });
+                    }
+                })
+                .then(data => {
+                    alert('Renter rated successfully.');
+                    closeRateRenterModal();
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error: ' + error.message);
+                });
+        });
     </script>
 </body>
 

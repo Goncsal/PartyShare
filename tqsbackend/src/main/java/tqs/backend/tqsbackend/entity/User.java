@@ -29,6 +29,9 @@ public class User {
     @Column(name = "created_at", nullable = false, updatable = false)
     private java.time.LocalDateTime createdAt;
 
+    @Column(name = "average_rating")
+    private Double averageRating;
+
     public User() {
     }
 
@@ -73,6 +76,10 @@ public class User {
         return isActive;
     }
 
+    public Double getAverageRating() {
+        return averageRating;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -95,5 +102,9 @@ public class User {
 
     public void setActive(boolean active) {
         isActive = active;
+    }
+
+    public void setAverageRating(Double averageRating) {
+        this.averageRating = averageRating;
     }
 }
