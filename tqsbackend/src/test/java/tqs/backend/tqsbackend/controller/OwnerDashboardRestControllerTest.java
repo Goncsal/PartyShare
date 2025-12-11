@@ -6,11 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tqs.backend.tqsbackend.entity.*;
 import tqs.backend.tqsbackend.service.ItemService;
@@ -34,13 +33,13 @@ public class OwnerDashboardRestControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private ItemService itemService;
 
-    @MockBean
+    @MockitoBean
     private RatingService ratingService;
 
-    @MockBean
+    @MockitoBean
     private UserService userService;
 
     @Autowired
@@ -121,10 +120,6 @@ public class OwnerDashboardRestControllerTest {
 
         verify(itemService, never()).findByOwnerId(anyLong());
     }
-
-
-
-
 
     @Test
     void testActivateItem_Success() throws Exception {
@@ -210,10 +205,6 @@ public class OwnerDashboardRestControllerTest {
 
         verify(ratingService, never()).getRatingByRatedInfo(any(), anyLong());
     }
-
-
-
-
 
     @Test
     void testActivateItem_NotLoggedIn() throws Exception {

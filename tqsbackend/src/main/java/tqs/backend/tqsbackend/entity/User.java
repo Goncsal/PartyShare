@@ -26,8 +26,12 @@ public class User {
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private java.time.LocalDateTime createdAt;
 
-    public User() {}
+    public User() {
+    }
+
     public User(String name, String email, String password, UserRoles role) {
         this.name = name;
         this.email = email;
@@ -36,19 +40,60 @@ public class User {
         this.isActive = true;
     }
 
+    @PrePersist
+    protected void onCreate() {
+        createdAt = java.time.LocalDateTime.now();
+    }
 
-    public Long getId() { return id; }
-    public String getName() { return name; }
-    public String getEmail() { return email; }
-    public String getPassword() { return password; }
-    public UserRoles getRole() { return role; }
-    public boolean isActive() { return isActive; }
+    public java.time.LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
-    
-    public void setId(Long id) { this.id = id; }
-    public void setName(String name) { this.name = name; }
-    public void setEmail(String email) { this.email = email; }
-    public void setPassword(String password) { this.password = password; }
-    public void setRole(UserRoles role) { this.role = role; }
-    public void setActive(boolean active) { isActive = active; }
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public UserRoles getRole() {
+        return role;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setRole(UserRoles role) {
+        this.role = role;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
 }

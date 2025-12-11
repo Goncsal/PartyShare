@@ -180,4 +180,14 @@ class UserServiceTest {
         boolean actNotFound = userService.activateUser(99L);
         assertThat(actNotFound).isFalse();
     }
+
+    @Test
+    void testSearchUsers() {
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        when(userRepository.searchUsers("John", null, now, now.plusDays(1))).thenReturn(List.of(validUser));
+
+        List<User> result = userService.searchUsers("John", null, now, now.plusDays(1));
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getName()).isEqualTo("John Doe");
+    }
 }
