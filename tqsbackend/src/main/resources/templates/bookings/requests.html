@@ -89,28 +89,23 @@
         .nav-links a:hover {
             text-decoration: underline;
         }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: #3498db;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <div class="nav-header">
-            <a href="/items/search"
-                style="text-decoration: none; color: #333; font-size: 1.5em; font-weight: bold;">PartyShare</a>
-            <div class="nav-links">
-                <a href="/items/search">Search</a> |
-                <span th:if="${session.userId != null}"> <!-- Ideally check role, but session attr is simple -->
-                    <a href="/items/new">Add Item</a> |
-                    <a href="/items/my-items">My Items</a> |
-                    <a href="/bookings/requests" style="font-weight: bold; color: #2c3e50;">Booking Requests</a> |
-                </span>
-                <a href="/favorites">My Favorites</a> |
-                <a href="/bookings">My Bookings</a> |
-                <a href="/reports">My Reports</a> |
-                <a href="/users/profile">Profile</a> |
-                <a href="/users/logout" style="color: #c0392b;">Logout</a>
-            </div>
-        </div>
+        <a href="/items/search" class="back-link">← Back to Search</a>
 
         <h2>Booking Requests</h2>
 
