@@ -47,6 +47,24 @@ public class ItemServiceTest {
     }
 
     @Test
+    public void testSearchItems_WithAllFilters() {
+        // Arrange
+        Category category = new Category("Electronics");
+        Item item = new Item("Laptop", "Gaming Laptop", 1000.0, category, 4.8, "Lisbon");
+        List<Item> expectedItems = Arrays.asList(item);
+
+        when(itemRepository.findAll(Mockito.<Specification<Item>>any())).thenReturn(expectedItems);
+
+        // Act
+        List<Item> result = itemService.searchItems("Laptop", category, 500.0, 1500.0, 4.0, "Lisbon");
+
+        // Assert
+        assertThat(result).hasSize(1);
+        assertThat(result).contains(item);
+        verify(itemRepository).findAll(Mockito.<Specification<Item>>any());
+    }
+
+    @Test
     public void testGetItemById() {
         // Arrange
         Item item = new Item("Lamp", "Desk Lamp", 20.0, new Category("Lighting"), 4.5, "Lisbon");
@@ -166,6 +184,20 @@ public class ItemServiceTest {
     }
 
     @Test
+    public void testActivateItem_ItemNotFound_ThrowsException() {
+        // Arrange
+        when(itemRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        try {
+            itemService.activateItem(99L, 1L);
+            org.junit.jupiter.api.Assertions.fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage()).isEqualTo("Item not found with id: 99");
+        }
+    }
+
+    @Test
     public void testDeactivateItem_Success() {
         // Arrange
         Category category = new Category("Electronics");
@@ -181,6 +213,147 @@ public class ItemServiceTest {
         // Assert
         assertThat(result.isActive()).isFalse();
         verify(itemRepository).findById(1L);
+        verify(itemRepository).save(item);
+    }
+
+    @Test
+    public void testUpdateItem_Valid_UpdatesFields() {
+        // Arrange
+        Category category = new Category("Electronics");
+        Item existingItem = new Item("Old Name", "Old Desc", 10.0, category, 4.5, "Location", 1L);
+        existingItem.setId(1L);
+        
+        Item updates = new Item("New Name", "New Desc", 20.0, category, 4.5, "New Location", 1L);
+        
+        when(itemRepository.findById(1L)).thenReturn(Optional.of(existingItem));
+        when(itemRepository.save(Mockito.any(Item.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        Item result = itemService.updateItem(1L, updates, 1L);
+
+        // Assert
+        assertThat(result.getName()).isEqualTo("New Name");
+        assertThat(result.getDescription()).isEqualTo("New Desc");
+        assertThat(result.getPrice()).isEqualTo(20.0);
+        assertThat(result.getLocation()).isEqualTo("New Location");
+        verify(itemRepository).save(existingItem);
+    }
+
+    @Test
+    public void testUpdateItem_UpdatesImageUrl() {
+        // Arrange
+        Category category = new Category("Electronics");
+        Item existingItem = new Item("Name", "Desc", 10.0, category, 4.5, "Location", 1L);
+        existingItem.setId(1L);
+        
+        Item updates = new Item("Name", "Desc", 10.0, category, 4.5, "Location", 1L);
+        updates.setImageUrl("http://example.com/image.jpg");
+        
+        when(itemRepository.findById(1L)).thenReturn(Optional.of(existingItem));
+        when(itemRepository.save(Mockito.any(Item.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        Item result = itemService.updateItem(1L, updates, 1L);
+
+        // Assert
+        assertThat(result.getImageUrl()).isEqualTo("http://example.com/image.jpg");
+        verify(itemRepository).save(existingItem);
+    }
+
+    @Test
+    public void testUpdateItem_NotOwner_ThrowsException() {
+        // Arrange
+        Category category = new Category("Electronics");
+        Item existingItem = new Item("Old Name", "Old Desc", 10.0, category, 4.5, "Location", 1L);
+        existingItem.setId(1L);
+        
+        Item updates = new Item("New Name", "New Desc", 20.0, category, 4.5, "New Location", 1L);
+        
+        when(itemRepository.findById(1L)).thenReturn(Optional.of(existingItem));
+
+        // Act & Assert
+        try {
+            itemService.updateItem(1L, updates, 2L);
+            org.junit.jupiter.api.Assertions.fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage()).isEqualTo("User 2 is not the owner of item 1");
+        }
+    }
+
+    @Test
+    public void testUpdateItem_ItemNotFound_ThrowsException() {
+        // Arrange
+        Item updates = new Item();
+        when(itemRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        try {
+            itemService.updateItem(99L, updates, 1L);
+            org.junit.jupiter.api.Assertions.fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage()).isEqualTo("Item not found with id: 99");
+        }
+    }
+
+    @Test
+    public void testDeleteItem_Success() {
+        // Arrange
+        Category category = new Category("Electronics");
+        Item item = new Item("Item 1", "Description", 10.0, category, 4.5, "Location", 1L);
+        item.setId(1L);
+        
+        when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
+
+        // Act
+        itemService.deleteItem(1L, 1L);
+
+        // Assert
+        verify(itemRepository).deleteById(1L);
+    }
+
+    @Test
+    public void testDeleteItem_NotOwner_ThrowsException() {
+        // Arrange
+        Category category = new Category("Electronics");
+        Item item = new Item("Item 1", "Description", 10.0, category, 4.5, "Location", 1L);
+        item.setId(1L);
+        
+        when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
+
+        // Act & Assert
+        try {
+            itemService.deleteItem(1L, 2L);
+            org.junit.jupiter.api.Assertions.fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage()).isEqualTo("User 2 is not the owner of item 1");
+        }
+    }
+
+    @Test
+    public void testDeleteItem_ItemNotFound_ThrowsException() {
+        // Arrange
+        when(itemRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        try {
+            itemService.deleteItem(99L, 1L);
+            org.junit.jupiter.api.Assertions.fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage()).isEqualTo("Item not found with id: 99");
+        }
+    }
+
+    @Test
+    public void testSaveItem() {
+        // Arrange
+        Item item = new Item();
+        when(itemRepository.save(item)).thenReturn(item);
+
+        // Act
+        Item result = itemService.saveItem(item);
+
+        // Assert
+        assertThat(result).isEqualTo(item);
         verify(itemRepository).save(item);
     }
 }
