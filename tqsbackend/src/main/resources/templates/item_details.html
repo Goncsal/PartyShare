@@ -119,9 +119,17 @@
 
         <div class="meta">
             <p><strong>Location:</strong> <span th:text="${item.location}">Location</span></p>
-            <p><strong>Rating:</strong> <span th:text="${item.averageRating} + '/5.0'">0.0/5.0</span></p>
-            <!-- Assuming Owner entity has a name or username, adjust as needed -->
-            <!-- <p><strong>Owner:</strong> <span th:text="${item.owner.name}">Owner Name</span></p> -->
+            <p><strong>Item Rating:</strong> <span th:text="${item.averageRating} + '/5.0'">0.0/5.0</span></p>
+
+            <!-- Owner Information -->
+            <div th:if="${owner != null}" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
+                <p><strong>Owner:</strong> <span th:text="${owner.name}">Owner Name</span></p>
+                <p><strong>Owner Rating:</strong>
+                    <span th:if="${owner.averageRating != null}"
+                        th:text="${owner.averageRating} + '/5.0'">0.0/5.0</span>
+                    <span th:if="${owner.averageRating == null}">No ratings yet</span>
+                </p>
+            </div>
         </div>
 
         <div class="actions" th:if="${userRole != null and userRole == 'RENTER'}">
@@ -146,46 +154,94 @@
         </div>
 
         <div class="ratings-section" style="margin-top: 40px; border-top: 1px solid #ddd; padding-top: 20px;">
-            <h2>Ratings</h2>
+            <h2>Item Ratings</h2>
 
-            <div id="rating-form-container" th:if="${userRole != null and userRole == 'RENTER'}"
+            <!-- Item Rating Form -->
+            <div id="item-rating-form-container" th:if="${userRole != null and userRole == 'RENTER'}"
                 style="margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 5px;">
-                <h3>Leave a Rating</h3>
-                <form id="ratingForm" action="/ratings/new" method="post">
+                <h3>Rate this Item</h3>
+
+                <!-- Error message placeholder (shown only after failed submission) -->
+                <div id="item-rating-error"
+                    style="display: none; padding: 10px; margin-bottom: 10px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 3px; color: #721c24;">
+                </div>
+
+                <form id="itemRatingForm" action="/ratings/new" method="post">
                     <input type="hidden" name="ratedId" th:value="${item.id}">
-                    <!-- Hardcoded senderId for demo purposes, in real app should be from session -->
-                    <input type="hidden" name="senderId" value="1">
+                    <input type="hidden" name="senderId" th:value="${session.userId}">
                     <input type="hidden" name="ratingType" value="PRODUCT">
 
                     <div style="margin-bottom: 10px;">
-                        <label for="rate">Rating (1-5):</label>
-                        <select id="rate" name="rate" required style="padding: 5px;">
+                        <label for="itemRate">Rating (1-5):</label>
+                        <select id="itemRate" name="rate" required style="padding: 5px;">
                             <option value="5">5 - Excellent</option>
                             <option value="4">4 - Good</option>
-                            <option value="3">3 - Average</option>
+                            <option value="3" selected>3 - Average</option>
                             <option value="2">2 - Poor</option>
                             <option value="1">1 - Terrible</option>
                         </select>
                     </div>
 
                     <div style="margin-bottom: 10px;">
-                        <label for="comment">Comment:</label><br>
-                        <textarea id="comment" name="comment" rows="3"
+                        <label for="itemComment">Comment:</label><br>
+                        <textarea id="itemComment" name="comment" rows="3"
                             style="width: 100%; padding: 5px; margin-top: 5px;"
                             placeholder="Share your experience..."></textarea>
                     </div>
 
-                    <button type="submit" class="btn-primary">Submit Rating</button>
+                    <button type="submit" class="btn-primary">Submit Item Rating</button>
                 </form>
             </div>
-            <div th:unless="${canRate}"
-                style="margin-bottom: 20px; padding: 15px; background-color: #f0f0f0; border-radius: 5px; color: #666;">
-                <p>You can only rate items that you have rented and whose rental period has ended.</p>
+
+            <div id="item-ratings-list">
+                <p>Loading item ratings...</p>
+            </div>
+        </div>
+
+        <!-- Owner Rating Section -->
+        <div th:if="${owner != null}" class="ratings-section"
+            style="margin-top: 40px; border-top: 1px solid #ddd; padding-top: 20px;">
+            <h2>Owner Ratings</h2>
+
+            <!-- Owner Rating Form -->
+            <div id="owner-rating-form-container" th:if="${userRole != null and userRole == 'RENTER'}"
+                style="margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 5px;">
+                <h3>Rate the Owner</h3>
+
+                <!-- Error message placeholder (shown only after failed submission) -->
+                <div id="owner-rating-error"
+                    style="display: none; padding: 10px; margin-bottom: 10px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 3px; color: #721c24;">
+                </div>
+
+                <form id="ownerRatingForm" action="/ratings/new" method="post">
+                    <input type="hidden" name="ratedId" th:value="${owner.id}">
+                    <input type="hidden" name="senderId" th:value="${session.userId}">
+                    <input type="hidden" name="ratingType" value="OWNER">
+
+                    <div style="margin-bottom: 10px;">
+                        <label for="ownerRate">Rating (1-5):</label>
+                        <select id="ownerRate" name="rate" required style="padding: 5px;">
+                            <option value="5">5 - Excellent</option>
+                            <option value="4">4 - Good</option>
+                            <option value="3" selected>3 - Average</option>
+                            <option value="2">2 - Poor</option>
+                            <option value="1">1 - Terrible</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <label for="ownerComment">Comment:</label><br>
+                        <textarea id="ownerComment" name="comment" rows="3"
+                            style="width: 100%; padding: 5px; margin-top: 5px;"
+                            placeholder="Share your experience with this owner..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Submit Owner Rating</button>
+                </form>
             </div>
 
-            <div id="ratings-list">
-                <!-- Ratings will be loaded here -->
-                <p>Loading ratings...</p>
+            <div id="owner-ratings-list">
+                <p>Loading owner ratings...</p>
             </div>
         </div>
     </div>

@@ -20,8 +20,11 @@ import tqs.backend.tqsbackend.entity.Rating;
 import tqs.backend.tqsbackend.entity.RatingType;
 import tqs.backend.tqsbackend.entity.User;
 import tqs.backend.tqsbackend.entity.UserRoles;
+import tqs.backend.tqsbackend.entity.BookingStatus;
 import tqs.backend.tqsbackend.fixtures.RatingTestFixtures;
 import tqs.backend.tqsbackend.repository.RatingRepository;
+import tqs.backend.tqsbackend.repository.BookingRepository;
+import java.time.LocalDate;
 
 @ExtendWith(MockitoExtension.class)
 class RatingServiceTest {
@@ -34,6 +37,9 @@ class RatingServiceTest {
 
     @Mock
     private ItemService itemService;
+
+    @Mock
+    private BookingRepository bookingRepository;
 
     @InjectMocks
     private RatingService ratingService;
@@ -52,6 +58,8 @@ class RatingServiceTest {
 
         when(userService.getUserById(senderId)).thenReturn(Optional.of(sender));
         when(userService.getUserById(ratedId)).thenReturn(Optional.of(rated));
+        when(bookingRepository.existsByRenterIdAndItem_OwnerIdAndStatusAndEndDateBefore(
+                any(Long.class), any(Long.class), any(BookingStatus.class), any(LocalDate.class))).thenReturn(true);
 
         Rating rating = RatingTestFixtures.sampleRating(senderId, ratedId);
         when(ratingRepository.save(any(Rating.class))).thenReturn(rating);
@@ -76,6 +84,8 @@ class RatingServiceTest {
 
         when(userService.getUserById(senderId)).thenReturn(Optional.of(sender));
         when(itemService.getItemById(itemId)).thenReturn(item);
+        when(bookingRepository.existsByRenterIdAndItem_IdAndStatusAndEndDateBefore(
+                any(Long.class), any(Long.class), any(BookingStatus.class), any(LocalDate.class))).thenReturn(true);
 
         Rating rating = new Rating(senderId, RatingType.PRODUCT, itemId, 5, "Great item!");
         when(ratingRepository.save(any(Rating.class))).thenReturn(rating);
@@ -180,6 +190,8 @@ class RatingServiceTest {
 
         when(userService.getUserById(senderId)).thenReturn(Optional.of(sender));
         when(userService.getUserById(ratedId)).thenReturn(Optional.of(rated));
+        when(bookingRepository.existsByRenterIdAndItem_OwnerIdAndStatusAndEndDateBefore(
+                any(Long.class), any(Long.class), any(BookingStatus.class), any(LocalDate.class))).thenReturn(true);
 
         assertThatThrownBy(() -> ratingService.createRating(senderId, RatingType.OWNER, ratedId, 6, "Comment"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -258,5 +270,215 @@ class RatingServiceTest {
                 .hasMessageContaining("Cannot rate your own product");
 
         verify(ratingRepository, org.mockito.Mockito.never()).save(any(Rating.class));
+    }
+
+    @Test
+    void createRating_Owner_UpdatesAverageRating() {
+        // Arrange
+        Long senderId = 1L;
+        Long ownerId = 2L;
+        User sender = new User();
+        sender.setId(senderId);
+        sender.setRole(UserRoles.RENTER);
+
+        User owner = new User();
+        owner.setId(ownerId);
+        owner.setRole(UserRoles.OWNER);
+
+        when(userService.getUserById(senderId)).thenReturn(Optional.of(sender));
+        when(userService.getUserById(ownerId)).thenReturn(Optional.of(owner));
+        when(bookingRepository.existsByRenterIdAndItem_OwnerIdAndStatusAndEndDateBefore(
+                any(Long.class), any(Long.class), any(BookingStatus.class), any(LocalDate.class))).thenReturn(true);
+
+        Rating rating = new Rating(senderId, RatingType.OWNER, ownerId, 5, "Great owner!");
+        when(ratingRepository.save(any(Rating.class))).thenReturn(rating);
+
+        // Create existing ratings for the owner
+        Rating r1 = new Rating(senderId, RatingType.OWNER, ownerId, 5, "Great!");
+        Rating r2 = new Rating(senderId, RatingType.OWNER, ownerId, 3, "Okay.");
+        when(ratingRepository.findByRatingTypeAndRatedId(RatingType.OWNER, ownerId))
+                .thenReturn(Arrays.asList(r1, r2));
+
+        // Act
+        ratingService.createRating(senderId, RatingType.OWNER, ownerId, 5, "Great owner!");
+
+        // Assert
+        verify(userService).saveUser(any(User.class));
+        assertThat(owner.getAverageRating()).isEqualTo(4.0);
+    }
+
+    @Test
+    void updateOwnerAverageRating_WithMultipleRatings_CalculatesCorrectAverage() {
+        // Arrange
+        Long senderId = 1L;
+        Long ownerId = 2L;
+        User sender = new User();
+        sender.setId(senderId);
+        sender.setRole(UserRoles.RENTER);
+
+        User owner = new User();
+        owner.setId(ownerId);
+        owner.setRole(UserRoles.OWNER);
+
+        when(userService.getUserById(senderId)).thenReturn(Optional.of(sender));
+        when(userService.getUserById(ownerId)).thenReturn(Optional.of(owner));
+        when(bookingRepository.existsByRenterIdAndItem_OwnerIdAndStatusAndEndDateBefore(
+                any(Long.class), any(Long.class), any(BookingStatus.class), any(LocalDate.class))).thenReturn(true);
+
+        Rating rating = new Rating(senderId, RatingType.OWNER, ownerId, 4, "Good!");
+        when(ratingRepository.save(any(Rating.class))).thenReturn(rating);
+
+        // Create multiple ratings with different values
+        Rating r1 = new Rating(senderId, RatingType.OWNER, ownerId, 5, "Excellent!");
+        Rating r2 = new Rating(senderId, RatingType.OWNER, ownerId, 3, "Average");
+        Rating r3 = new Rating(senderId, RatingType.OWNER, ownerId, 4, "Good");
+        when(ratingRepository.findByRatingTypeAndRatedId(RatingType.OWNER, ownerId))
+                .thenReturn(Arrays.asList(r1, r2, r3));
+
+        // Act
+        ratingService.createRating(senderId, RatingType.OWNER, ownerId, 4, "Good!");
+
+        // Assert - Average should be (5 + 3 + 4) / 3 = 4.0
+        verify(userService).saveUser(any(User.class));
+        assertThat(owner.getAverageRating()).isEqualTo(4.0);
+    }
+
+    @Test
+    void updateOwnerAverageRating_RoundsToOneDecimalPlace() {
+        // Arrange
+        Long senderId = 1L;
+        Long ownerId = 2L;
+        User sender = new User();
+        sender.setId(senderId);
+        sender.setRole(UserRoles.RENTER);
+
+        User owner = new User();
+        owner.setId(ownerId);
+        owner.setRole(UserRoles.OWNER);
+
+        when(userService.getUserById(senderId)).thenReturn(Optional.of(sender));
+        when(userService.getUserById(ownerId)).thenReturn(Optional.of(owner));
+        when(bookingRepository.existsByRenterIdAndItem_OwnerIdAndStatusAndEndDateBefore(
+                any(Long.class), any(Long.class), any(BookingStatus.class), any(LocalDate.class))).thenReturn(true);
+
+        Rating rating = new Rating(senderId, RatingType.OWNER, ownerId, 4, "Good!");
+        when(ratingRepository.save(any(Rating.class))).thenReturn(rating);
+
+        // Create ratings that result in a value needing rounding
+        Rating r1 = new Rating(senderId, RatingType.OWNER, ownerId, 5, "Excellent!");
+        Rating r2 = new Rating(senderId, RatingType.OWNER, ownerId, 4, "Good");
+        Rating r3 = new Rating(senderId, RatingType.OWNER, ownerId, 4, "Good");
+        when(ratingRepository.findByRatingTypeAndRatedId(RatingType.OWNER, ownerId))
+                .thenReturn(Arrays.asList(r1, r2, r3));
+
+        // Act
+        ratingService.createRating(senderId, RatingType.OWNER, ownerId, 4, "Good!");
+
+        // Assert - Average should be (5 + 4 + 4) / 3 = 4.333... rounded to 4.3
+        verify(userService).saveUser(any(User.class));
+        assertThat(owner.getAverageRating()).isEqualTo(4.3);
+    }
+
+    @Test
+    void updateOwnerAverageRating_WithSingleRating() {
+        // Arrange
+        Long senderId = 1L;
+        Long ownerId = 2L;
+        User sender = new User();
+        sender.setId(senderId);
+        sender.setRole(UserRoles.RENTER);
+
+        User owner = new User();
+        owner.setId(ownerId);
+        owner.setRole(UserRoles.OWNER);
+
+        when(userService.getUserById(senderId)).thenReturn(Optional.of(sender));
+        when(userService.getUserById(ownerId)).thenReturn(Optional.of(owner));
+        when(bookingRepository.existsByRenterIdAndItem_OwnerIdAndStatusAndEndDateBefore(
+                any(Long.class), any(Long.class), any(BookingStatus.class), any(LocalDate.class))).thenReturn(true);
+
+        Rating rating = new Rating(senderId, RatingType.OWNER, ownerId, 5, "Perfect!");
+        when(ratingRepository.save(any(Rating.class))).thenReturn(rating);
+
+        // Only one rating
+        Rating r1 = new Rating(senderId, RatingType.OWNER, ownerId, 5, "Perfect!");
+        when(ratingRepository.findByRatingTypeAndRatedId(RatingType.OWNER, ownerId))
+                .thenReturn(Arrays.asList(r1));
+
+        // Act
+        ratingService.createRating(senderId, RatingType.OWNER, ownerId, 5, "Perfect!");
+
+        // Assert - Average should be 5.0
+        verify(userService).saveUser(any(User.class));
+        assertThat(owner.getAverageRating()).isEqualTo(5.0);
+    }
+
+    @Test
+    void updateOwnerAverageRating_WithEmptyRatings_DoesNotUpdateOwner() {
+        // Arrange
+        Long senderId = 1L;
+        Long ownerId = 2L;
+        User sender = new User();
+        sender.setId(senderId);
+        sender.setRole(UserRoles.RENTER);
+
+        User owner = new User();
+        owner.setId(ownerId);
+        owner.setRole(UserRoles.OWNER);
+
+        when(userService.getUserById(senderId)).thenReturn(Optional.of(sender));
+        when(userService.getUserById(ownerId)).thenReturn(Optional.of(owner));
+        when(bookingRepository.existsByRenterIdAndItem_OwnerIdAndStatusAndEndDateBefore(
+                any(Long.class), any(Long.class), any(BookingStatus.class), any(LocalDate.class))).thenReturn(true);
+
+        Rating rating = new Rating(senderId, RatingType.OWNER, ownerId, 5, "Great!");
+        when(ratingRepository.save(any(Rating.class))).thenReturn(rating);
+
+        // Empty ratings list
+        when(ratingRepository.findByRatingTypeAndRatedId(RatingType.OWNER, ownerId))
+                .thenReturn(Arrays.asList());
+
+        // Act
+        ratingService.createRating(senderId, RatingType.OWNER, ownerId, 5, "Great!");
+
+        // Assert - saveUser should not be called when ratings list is empty
+        verify(userService, org.mockito.Mockito.never()).saveUser(any(User.class));
+    }
+
+    @Test
+    void updateOwnerAverageRating_WithNonExistentOwner_DoesNotUpdateOwner() {
+        // Arrange
+        Long senderId = 1L;
+        Long ownerId = 2L;
+        User sender = new User();
+        sender.setId(senderId);
+        sender.setRole(UserRoles.RENTER);
+
+        when(userService.getUserById(senderId)).thenReturn(Optional.of(sender));
+        // First call returns owner for validation, second call returns empty for update
+        when(userService.getUserById(ownerId))
+                .thenReturn(Optional.of(new User() {
+                    {
+                        setId(ownerId);
+                        setRole(UserRoles.OWNER);
+                    }
+                }))
+                .thenReturn(Optional.empty());
+        when(bookingRepository.existsByRenterIdAndItem_OwnerIdAndStatusAndEndDateBefore(
+                any(Long.class), any(Long.class), any(BookingStatus.class), any(LocalDate.class))).thenReturn(true);
+
+        Rating rating = new Rating(senderId, RatingType.OWNER, ownerId, 5, "Great!");
+        when(ratingRepository.save(any(Rating.class))).thenReturn(rating);
+
+        // Ratings exist
+        Rating r1 = new Rating(senderId, RatingType.OWNER, ownerId, 5, "Great!");
+        when(ratingRepository.findByRatingTypeAndRatedId(RatingType.OWNER, ownerId))
+                .thenReturn(Arrays.asList(r1));
+
+        // Act
+        ratingService.createRating(senderId, RatingType.OWNER, ownerId, 5, "Great!");
+
+        // Assert - saveUser should not be called when owner is not found
+        verify(userService, org.mockito.Mockito.never()).saveUser(any(User.class));
     }
 }
