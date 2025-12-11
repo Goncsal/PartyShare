@@ -70,12 +70,12 @@
             font-weight: 600;
         }
 
-        .status-PENDING {
+        .status-REQUESTED {
             background: #fff3cd;
             color: #856404;
         }
 
-        .status-CONFIRMED {
+        .status-ACCEPTED {
             background: #d4edda;
             color: #155724;
         }
@@ -88,6 +88,11 @@
         .status-CANCELLED {
             background: #e2e3e5;
             color: #383d41;
+        }
+
+        .status-COUNTER_OFFER {
+            background: #cce5ff;
+            color: #004085;
         }
 
         .back-link {
@@ -119,12 +124,43 @@
             background: #ccc;
             cursor: not-allowed;
         }
+
+        .btn-accept {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+
+        .btn-accept:hover {
+            background: #218838;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <a href="/items/search" class="back-link">&larr; Back to Search</a>
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+            <a href="/items/search"
+                style="text-decoration: none; color: #333; font-size: 1.5em; font-weight: bold;">PartyShare</a>
+            <div>
+                <a href="/items/search">Search</a> |
+                <span th:if="${session.userId != null}"> <!-- Ideally check role, but session attr is simple -->
+                    <a href="/items/new">Add Item</a> |
+                    <a href="/items/my-items">My Items</a> |
+                    <a href="/bookings/requests">Booking Requests</a> |
+                </span>
+                <a href="/favorites">My Favorites</a> |
+                <a href="/bookings" style="font-weight: bold; color: #2c3e50;">My Bookings</a> |
+                <a href="/reports">My Reports</a> |
+                <a href="/users/profile">Profile</a> |
+                <a href="/users/logout" style="color: #c0392b;">Logout</a>
+            </div>
+        </div>
         <h1>My Bookings</h1>
 
         <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
@@ -158,8 +194,25 @@
                     </td>
                     <td th:text="${booking.paymentReference}">Reference</td>
                     <td>
+                        <div th:if="${booking.status.toString() == 'COUNTER_OFFER'}">
+                            <form th:action="@{/bookings/{id}/accept-counter-offer(id=${booking.id})}" method="post"
+                                style="display:inline;">
+                                <button type="submit" class="btn-accept">Accept Offer</button>
+                            </form>
+                            <form th:action="@{/bookings/{id}/decline-counter-offer(id=${booking.id})}" method="post"
+                                style="display:inline;">
+                                <button type="submit" class="btn-cancel">Decline</button>
+                            </form>
+                        </div>
+
+                        <div th:if="${booking.status.toString() == 'ACCEPTED' and booking.paymentStatus.toString() == 'PENDING'}"
+                            style="margin-bottom: 5px;">
+                            <a th:href="@{/payment/{id}(id=${booking.id})}" class="btn-accept"
+                                style="text-decoration: none; display: inline-block;">Pay Now</a>
+                        </div>
+
                         <form
-                            th:if="${booking.status.toString() == 'PENDING' or booking.status.toString() == 'CONFIRMED'}"
+                            th:if="${booking.status.toString() == 'REQUESTED' or booking.status.toString() == 'ACCEPTED'}"
                             th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post"
                             style="display:inline;">
                             <button type="submit" class="btn-cancel"

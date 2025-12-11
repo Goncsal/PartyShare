@@ -39,14 +39,14 @@ class BookingServiceUnavailableDatesTest {
         booking1.setItem(item);
         booking1.setStartDate(LocalDate.of(2024, 1, 10));
         booking1.setEndDate(LocalDate.of(2024, 1, 15));
-        booking1.setStatus(BookingStatus.CONFIRMED);
+        booking1.setStatus(BookingStatus.ACCEPTED);
 
         Booking booking2 = new Booking();
         booking2.setId(2L);
         booking2.setItem(item);
         booking2.setStartDate(LocalDate.of(2024, 1, 20));
         booking2.setEndDate(LocalDate.of(2024, 1, 25));
-        booking2.setStatus(BookingStatus.PENDING);
+        booking2.setStatus(BookingStatus.REQUESTED);
 
         when(bookingRepository.findActiveBookingsByItemId(1L))
                 .thenReturn(Arrays.asList(booking1, booking2));
@@ -80,7 +80,7 @@ class BookingServiceUnavailableDatesTest {
         booking.setItem(item);
         booking.setStartDate(LocalDate.of(2024, 6, 1));
         booking.setEndDate(LocalDate.of(2024, 6, 5));
-        booking.setStatus(BookingStatus.CONFIRMED);
+        booking.setStatus(BookingStatus.ACCEPTED);
 
         when(bookingRepository.findActiveBookingsByItemId(1L))
                 .thenReturn(Arrays.asList(booking));

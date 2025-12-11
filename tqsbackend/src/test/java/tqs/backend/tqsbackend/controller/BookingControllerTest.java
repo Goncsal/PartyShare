@@ -1,133 +1,188 @@
 package tqs.backend.tqsbackend.controller;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import tqs.backend.tqsbackend.dto.BookingCreateRequest;
-import tqs.backend.tqsbackend.entity.Booking;
-import tqs.backend.tqsbackend.entity.Item;
-import tqs.backend.tqsbackend.service.BookingService;
-import tqs.backend.tqsbackend.service.ItemService;
-
-import java.util.Arrays;
-import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import java.util.Collections;
+import java.util.Optional;
+
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import tqs.backend.tqsbackend.dto.BookingCreateRequest;
+import tqs.backend.tqsbackend.entity.Booking;
+import tqs.backend.tqsbackend.entity.BookingStatus;
+import tqs.backend.tqsbackend.entity.User;
+import tqs.backend.tqsbackend.entity.UserRoles;
+import tqs.backend.tqsbackend.service.BookingService;
+import tqs.backend.tqsbackend.service.UserService;
 
 @WebMvcTest(BookingController.class)
-class BookingControllerTest {
+public class BookingControllerTest {
 
     @Autowired
-    private MockMvc mvc;
+    private MockMvc mockMvc;
 
-    @MockitoBean
+    @MockBean
     private BookingService bookingService;
 
-    @MockitoBean
-    private ItemService itemService;
+    @MockBean
+    private tqs.backend.tqsbackend.service.ItemService itemService;
+
+    @MockBean
+    private UserService userService;
 
     @Test
-    void showRentForm_LoggedIn() throws Exception {
-        Item item = new Item();
-        item.setId(1L);
-        item.setName("Test Item");
-        tqs.backend.tqsbackend.entity.Category category = new tqs.backend.tqsbackend.entity.Category();
-        category.setName("Electronics");
-        item.setCategory(category);
+    void getBookingRequests_Owner_ReturnsView() throws Exception {
+        User owner = new User();
+        owner.setRole(UserRoles.OWNER);
+        given(userService.getUserById(1L)).willReturn(Optional.of(owner));
+        given(bookingService.getPendingBookingsByOwner(1L)).willReturn(Collections.emptyList());
 
-        when(itemService.getItemById(1L)).thenReturn(item);
-
-        mvc.perform(get("/bookings/rent/1").sessionAttr("userId", 1L))
+        mockMvc.perform(get("/bookings/requests")
+                .sessionAttr("userId", 1L))
                 .andExpect(status().isOk())
-                .andExpect(view().name("bookings/rent_item"))
-                .andExpect(model().attributeExists("item"))
-                .andExpect(model().attributeExists("bookingRequest"));
+                .andExpect(view().name("bookings/requests"))
+                .andExpect(model().attributeExists("bookings"));
     }
 
     @Test
-    void showRentForm_LoggedOut() throws Exception {
-        mvc.perform(get("/bookings/rent/1"))
+    void getBookingRequests_NotOwner_Redirects() throws Exception {
+        User renter = new User();
+        renter.setRole(UserRoles.RENTER);
+        given(userService.getUserById(1L)).willReturn(Optional.of(renter));
+
+        mockMvc.perform(get("/bookings/requests")
+                .sessionAttr("userId", 1L))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/users/login"));
+                .andExpect(redirectedUrl("/items/search"));
     }
 
     @Test
-    void createBooking_LoggedIn_Success() throws Exception {
+    void createBooking_WithOffer_Success() throws Exception {
+        BookingCreateRequest request = new BookingCreateRequest();
+        request.setItemId(1L);
+        request.setProposedPrice(15.0);
+        
         Booking booking = new Booking();
         booking.setId(1L);
-        booking.setPaymentReference("REF123");
+        
+        given(bookingService.createBooking(any(BookingCreateRequest.class))).willReturn(booking);
 
-        when(bookingService.createBooking(any(BookingCreateRequest.class))).thenReturn(booking);
-
-        mvc.perform(post("/bookings")
+        mockMvc.perform(post("/bookings")
                 .sessionAttr("userId", 1L)
                 .param("itemId", "1")
                 .param("startDate", "2026-01-01")
-                .param("endDate", "2026-01-05"))
+                .param("endDate", "2026-01-03")
+                .param("proposedPrice", "15.0"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/payment/1"));
-
-        verify(bookingService).createBooking(any(BookingCreateRequest.class));
+                .andExpect(redirectedUrl("/bookings"));
+        
+        verify(bookingService).createBooking(argThat(req -> 
+            req.getProposedPrice().equals(15.0) && req.getItemId().equals(1L)
+        ));
     }
 
     @Test
-    void createBooking_LoggedOut() throws Exception {
-        mvc.perform(post("/bookings")
-                .param("itemId", "1")
-                .param("startDate", "2025-01-01")
-                .param("endDate", "2025-01-05"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/users/login"));
-    }
-
-    @Test
-    void getUserBookings_LoggedIn() throws Exception {
-        Item item = new Item();
-        item.setName("Test Item");
+    void acceptBooking_Owner_Success() throws Exception {
+        User owner = new User();
+        owner.setRole(UserRoles.OWNER);
+        given(userService.getUserById(1L)).willReturn(Optional.of(owner));
+        
         Booking booking = new Booking();
         booking.setId(1L);
-        booking.setItem(item);
-        booking.setStatus(tqs.backend.tqsbackend.entity.BookingStatus.CONFIRMED);
-        List<Booking> bookings = Arrays.asList(booking);
+        given(bookingService.acceptBooking(1L, 1L)).willReturn(booking);
 
-        when(bookingService.getBookingsForRenter(1L)).thenReturn(bookings);
-
-        mvc.perform(get("/bookings").sessionAttr("userId", 1L))
-                .andExpect(status().isOk())
-                .andExpect(view().name("bookings/list"))
-                .andExpect(model().attribute("bookings", bookings));
-    }
-
-    @Test
-    void getUserBookings_LoggedOut() throws Exception {
-        mvc.perform(get("/bookings"))
+        mockMvc.perform(post("/bookings/1/accept")
+                .sessionAttr("userId", 1L))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/users/login"));
+                .andExpect(redirectedUrl("/bookings/requests"));
+        
+        verify(bookingService).acceptBooking(1L, 1L);
     }
 
     @Test
-    void createBooking_WithValidationErrors() throws Exception {
-        mvc.perform(post("/bookings")
+    void declineBooking_Owner_Success() throws Exception {
+        User owner = new User();
+        owner.setRole(UserRoles.OWNER);
+        given(userService.getUserById(1L)).willReturn(Optional.of(owner));
+        
+        Booking booking = new Booking();
+        booking.setId(1L);
+        given(bookingService.declineBooking(1L, 1L)).willReturn(booking);
+
+        mockMvc.perform(post("/bookings/1/decline")
+                .sessionAttr("userId", 1L))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/bookings/requests"));
+        
+        verify(bookingService).declineBooking(1L, 1L);
+    }
+
+    @Test
+    void counterOfferBooking_Owner_Success() throws Exception {
+        User owner = new User();
+        owner.setRole(UserRoles.OWNER);
+        given(userService.getUserById(1L)).willReturn(Optional.of(owner));
+        
+        Booking booking = new Booking();
+        booking.setId(1L);
+        given(bookingService.counterOfferBooking(1L, 40.0, 1L)).willReturn(booking);
+
+        mockMvc.perform(post("/bookings/1/counter-offer")
                 .sessionAttr("userId", 1L)
-                .param("itemId", "1")
-                .param("startDate", "invalid-date") // Invalid date format
-                .param("endDate", "2026-01-05"))
+                .param("price", "40.0"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(flash().attributeExists("error"));
+                .andExpect(redirectedUrl("/bookings/requests"));
+        
+        verify(bookingService).counterOfferBooking(1L, 40.0, 1L);
     }
 
     @Test
-    void createBooking_WithNullDates() throws Exception {
-        mvc.perform(post("/bookings")
-                .sessionAttr("userId", 1L)
-                .param("itemId", "1"))
+    void acceptCounterOffer_Renter_Success() throws Exception {
+        User renter = new User();
+        renter.setRole(UserRoles.RENTER);
+        given(userService.getUserById(1L)).willReturn(Optional.of(renter));
+        
+        Booking booking = new Booking();
+        booking.setId(1L);
+        given(bookingService.acceptCounterOffer(1L, 1L)).willReturn(booking);
+
+        mockMvc.perform(post("/bookings/1/accept-counter-offer")
+                .sessionAttr("userId", 1L))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(flash().attributeExists("error"));
+                .andExpect(redirectedUrl("/bookings"));
+        
+        verify(bookingService).acceptCounterOffer(1L, 1L);
+    }
+
+    @Test
+    void declineCounterOffer_Renter_Success() throws Exception {
+        User renter = new User();
+        renter.setRole(UserRoles.RENTER);
+        given(userService.getUserById(1L)).willReturn(Optional.of(renter));
+        
+        Booking booking = new Booking();
+        booking.setId(1L);
+        given(bookingService.declineCounterOffer(1L, 1L)).willReturn(booking);
+
+        mockMvc.perform(post("/bookings/1/decline-counter-offer")
+                .sessionAttr("userId", 1L))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/bookings"));
+        
+        verify(bookingService).declineCounterOffer(1L, 1L);
     }
 }

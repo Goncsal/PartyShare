@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.is;
 
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,7 @@ class BookingRestControllerTest {
         void createBooking_returnsCreatedPayload() throws Exception {
                 Booking booking = BookingTestFixtures.sampleBooking(1L, BookingTestFixtures.sampleItem(10L));
                 booking.setPaymentReference("PAY-API");
+                booking.setStatus(tqs.backend.tqsbackend.entity.BookingStatus.REQUESTED);
 
                 when(bookingService.createBooking(any(BookingCreateRequest.class))).thenReturn(booking);
 
@@ -54,7 +56,7 @@ class BookingRestControllerTest {
                                 .content(BookingTestFixtures.bookingRequestJson(10L, 70L, LocalDate.now().plusDays(1),
                                                 LocalDate.now().plusDays(3))))
                                 .andExpect(status().isCreated())
-                                .andExpect(jsonPath("$.status").value("CONFIRMED"))
+                                .andExpect(jsonPath("$.status", is("REQUESTED")))
                                 .andExpect(jsonPath("$.paymentStatus").value("PAID"))
                                 .andExpect(jsonPath("$.paymentReference").value("PAY-API"));
         }

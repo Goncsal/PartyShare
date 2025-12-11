@@ -67,7 +67,7 @@ class BookingRestControllerIntegrationTest {
             }
             """.formatted(item.getId(), start, end)))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.status", is("CONFIRMED")))
+        .andExpect(jsonPath("$.status", is("REQUESTED")))
         .andExpect(jsonPath("$.paymentStatus", is("PAID")))
         .andExpect(jsonPath("$.paymentReference", is("ref-int-1")))
         .andExpect(jsonPath("$.totalPrice", notNullValue()));
@@ -80,7 +80,7 @@ class BookingRestControllerIntegrationTest {
     LocalDate end = LocalDate.now().plusDays(7);
 
     Booking existing = new Booking(item, 10L, start, end, BigDecimal.valueOf(item.getPrice()),
-        BigDecimal.valueOf(item.getPrice()).multiply(BigDecimal.valueOf(2)), BookingStatus.CONFIRMED,
+        BigDecimal.valueOf(item.getPrice()).multiply(BigDecimal.valueOf(2)), BookingStatus.ACCEPTED,
         PaymentStatus.PAID);
     bookingRepository.save(existing);
 
