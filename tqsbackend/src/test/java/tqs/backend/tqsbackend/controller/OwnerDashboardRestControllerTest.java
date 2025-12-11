@@ -517,4 +517,354 @@ public class OwnerDashboardRestControllerTest {
 
         verify(reportService, never()).createReport(anyLong(), anyString(), anyString());
     }
+
+    // ========== GET RENTER RATING TESTS ==========
+
+    @Test
+    void testGetRenterRating_ExistingRating() throws Exception {
+        session.setAttribute("userId", 1L);
+
+        Booking pastBooking = new Booking();
+        pastBooking.setId(1L);
+        pastBooking.setRenterId(2L);
+        pastBooking.setEndDate(LocalDate.now().minusDays(1));
+        pastBooking.setItem(item1);
+
+        Rating existingRating = new Rating(1L, RatingType.RENTER, 2L, 4, "Good renter");
+        existingRating.setId(1L);
+
+        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
+        given(bookingRepository.findById(1L)).willReturn(Optional.of(pastBooking));
+        given(ratingService.getRatingBySenderIdAndRatedInfo(1L, RatingType.RENTER, 2L))
+                .willReturn(Optional.of(existingRating));
+
+        mockMvc.perform(get("/api/owner/dashboard/bookings/1/renter-rating")
+                .session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.exists").value(true))
+                .andExpect(jsonPath("$.rating.rate").value(4))
+                .andExpect(jsonPath("$.rating.comment").value("Good renter"));
+
+        verify(ratingService, times(1)).getRatingBySenderIdAndRatedInfo(1L, RatingType.RENTER, 2L);
+    }
+
+    @Test
+    void testGetRenterRating_NoExistingRating() throws Exception {
+        session.setAttribute("userId", 1L);
+
+        Booking pastBooking = new Booking();
+        pastBooking.setId(1L);
+        pastBooking.setRenterId(2L);
+        pastBooking.setEndDate(LocalDate.now().minusDays(1));
+        pastBooking.setItem(item1);
+
+        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
+        given(bookingRepository.findById(1L)).willReturn(Optional.of(pastBooking));
+        given(ratingService.getRatingBySenderIdAndRatedInfo(1L, RatingType.RENTER, 2L))
+                .willReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/owner/dashboard/bookings/1/renter-rating")
+                .session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.exists").value(false));
+
+        verify(ratingService, times(1)).getRatingBySenderIdAndRatedInfo(1L, RatingType.RENTER, 2L);
+    }
+
+    @Test
+    void testGetRenterRating_NotLoggedIn() throws Exception {
+        mockMvc.perform(get("/api/owner/dashboard/bookings/1/renter-rating"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("User not logged in"));
+
+        verify(ratingService, never()).getRatingBySenderIdAndRatedInfo(anyLong(), any(), anyLong());
+    }
+
+    @Test
+    void testGetRenterRating_NotOwnerRole() throws Exception {
+        session.setAttribute("userId", 2L);
+        given(userService.getUserById(2L)).willReturn(Optional.of(renterUser));
+
+        mockMvc.perform(get("/api/owner/dashboard/bookings/1/renter-rating")
+                .session(session))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("User is not an owner"));
+
+        verify(ratingService, never()).getRatingBySenderIdAndRatedInfo(anyLong(), any(), anyLong());
+    }
+
+    @Test
+    void testGetRenterRating_BookingNotFound() throws Exception {
+        session.setAttribute("userId", 1L);
+        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
+        given(bookingRepository.findById(99L)).willReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/owner/dashboard/bookings/99/renter-rating")
+                .session(session))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Booking not found"));
+
+        verify(ratingService, never()).getRatingBySenderIdAndRatedInfo(anyLong(), any(), anyLong());
+    }
+
+    @Test
+    void testGetRenterRating_NotOwnerOfBooking() throws Exception {
+        session.setAttribute("userId", 1L);
+
+        Booking booking = new Booking();
+        booking.setId(1L);
+        booking.setRenterId(2L);
+        Item otherOwnerItem = new Item("Other Item", "Description", 10.0, category, 4.5, "Location", 99L);
+        booking.setItem(otherOwnerItem);
+
+        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
+        given(bookingRepository.findById(1L)).willReturn(Optional.of(booking));
+
+        mockMvc.perform(get("/api/owner/dashboard/bookings/1/renter-rating")
+                .session(session))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("Booking does not belong to this owner"));
+
+        verify(ratingService, never()).getRatingBySenderIdAndRatedInfo(anyLong(), any(), anyLong());
+    }
+
+    // ========== RATE RENTER TESTS ==========
+
+    @Test
+    void testRateRenter_Success() throws Exception {
+        session.setAttribute("userId", 1L);
+
+        Booking pastBooking = new Booking();
+        pastBooking.setId(1L);
+        pastBooking.setRenterId(2L);
+        pastBooking.setEndDate(LocalDate.now().minusDays(1));
+        pastBooking.setItem(item1);
+
+        Rating createdRating = new Rating(1L, RatingType.RENTER, 2L, 5, "Excellent renter!");
+        createdRating.setId(1L);
+
+        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
+        given(bookingRepository.findById(1L)).willReturn(Optional.of(pastBooking));
+        given(ratingService.createRating(1L, RatingType.RENTER, 2L, 5, "Excellent renter!"))
+                .willReturn(createdRating);
+
+        String requestBody = "{\"rate\":5,\"comment\":\"Excellent renter!\"}";
+
+        mockMvc.perform(post("/api/owner/dashboard/bookings/1/rate-renter")
+                .session(session)
+                .contentType("application/json")
+                .content(requestBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("Renter rated successfully"))
+                .andExpect(jsonPath("$.ratingId").value(1));
+
+        verify(ratingService, times(1)).createRating(1L, RatingType.RENTER, 2L, 5, "Excellent renter!");
+    }
+
+    @Test
+    void testRateRenter_SuccessWithoutComment() throws Exception {
+        session.setAttribute("userId", 1L);
+
+        Booking pastBooking = new Booking();
+        pastBooking.setId(1L);
+        pastBooking.setRenterId(2L);
+        pastBooking.setEndDate(LocalDate.now().minusDays(1));
+        pastBooking.setItem(item1);
+
+        Rating createdRating = new Rating(1L, RatingType.RENTER, 2L, 4, null);
+        createdRating.setId(2L);
+
+        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
+        given(bookingRepository.findById(1L)).willReturn(Optional.of(pastBooking));
+        given(ratingService.createRating(1L, RatingType.RENTER, 2L, 4, null))
+                .willReturn(createdRating);
+
+        String requestBody = "{\"rate\":4,\"comment\":null}";
+
+        mockMvc.perform(post("/api/owner/dashboard/bookings/1/rate-renter")
+                .session(session)
+                .contentType("application/json")
+                .content(requestBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("Renter rated successfully"))
+                .andExpect(jsonPath("$.ratingId").value(2));
+
+        verify(ratingService, times(1)).createRating(1L, RatingType.RENTER, 2L, 4, null);
+    }
+
+    @Test
+    void testRateRenter_NotLoggedIn() throws Exception {
+        String requestBody = "{\"rate\":5,\"comment\":\"Great!\"}";
+
+        mockMvc.perform(post("/api/owner/dashboard/bookings/1/rate-renter")
+                .contentType("application/json")
+                .content(requestBody))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("User not logged in"));
+
+        verify(ratingService, never()).createRating(anyLong(), any(), anyLong(), anyInt(), anyString());
+    }
+
+    @Test
+    void testRateRenter_NotOwnerRole() throws Exception {
+        session.setAttribute("userId", 2L);
+        given(userService.getUserById(2L)).willReturn(Optional.of(renterUser));
+
+        String requestBody = "{\"rate\":5,\"comment\":\"Great!\"}";
+
+        mockMvc.perform(post("/api/owner/dashboard/bookings/1/rate-renter")
+                .session(session)
+                .contentType("application/json")
+                .content(requestBody))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("User is not an owner"));
+
+        verify(ratingService, never()).createRating(anyLong(), any(), anyLong(), anyInt(), anyString());
+    }
+
+    @Test
+    void testRateRenter_BookingNotFound() throws Exception {
+        session.setAttribute("userId", 1L);
+        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
+        given(bookingRepository.findById(99L)).willReturn(Optional.empty());
+
+        String requestBody = "{\"rate\":5,\"comment\":\"Great!\"}";
+
+        mockMvc.perform(post("/api/owner/dashboard/bookings/99/rate-renter")
+                .session(session)
+                .contentType("application/json")
+                .content(requestBody))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Booking not found"));
+
+        verify(ratingService, never()).createRating(anyLong(), any(), anyLong(), anyInt(), anyString());
+    }
+
+    @Test
+    void testRateRenter_NotOwnerOfBooking() throws Exception {
+        session.setAttribute("userId", 1L);
+
+        Booking booking = new Booking();
+        booking.setId(1L);
+        booking.setRenterId(2L);
+        booking.setEndDate(LocalDate.now().minusDays(1));
+        Item otherOwnerItem = new Item("Other Item", "Description", 10.0, category, 4.5, "Location", 99L);
+        booking.setItem(otherOwnerItem);
+
+        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
+        given(bookingRepository.findById(1L)).willReturn(Optional.of(booking));
+
+        String requestBody = "{\"rate\":5,\"comment\":\"Great!\"}";
+
+        mockMvc.perform(post("/api/owner/dashboard/bookings/1/rate-renter")
+                .session(session)
+                .contentType("application/json")
+                .content(requestBody))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("Booking does not belong to this owner"));
+
+        verify(ratingService, never()).createRating(anyLong(), any(), anyLong(), anyInt(), anyString());
+    }
+
+    @Test
+    void testRateRenter_FutureRental() throws Exception {
+        session.setAttribute("userId", 1L);
+
+        Booking futureBooking = new Booking();
+        futureBooking.setId(1L);
+        futureBooking.setRenterId(2L);
+        futureBooking.setEndDate(LocalDate.now().plusDays(5));
+        futureBooking.setItem(item1);
+
+        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
+        given(bookingRepository.findById(1L)).willReturn(Optional.of(futureBooking));
+
+        String requestBody = "{\"rate\":5,\"comment\":\"Great!\"}";
+
+        mockMvc.perform(post("/api/owner/dashboard/bookings/1/rate-renter")
+                .session(session)
+                .contentType("application/json")
+                .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Cannot rate renter for ongoing or future rentals"));
+
+        verify(ratingService, never()).createRating(anyLong(), any(), anyLong(), anyInt(), anyString());
+    }
+
+    @Test
+    void testRateRenter_OngoingRental() throws Exception {
+        session.setAttribute("userId", 1L);
+
+        Booking ongoingBooking = new Booking();
+        ongoingBooking.setId(1L);
+        ongoingBooking.setRenterId(2L);
+        ongoingBooking.setEndDate(LocalDate.now()); // Ends today
+        ongoingBooking.setItem(item1);
+
+        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
+        given(bookingRepository.findById(1L)).willReturn(Optional.of(ongoingBooking));
+
+        String requestBody = "{\"rate\":5,\"comment\":\"Great!\"}";
+
+        mockMvc.perform(post("/api/owner/dashboard/bookings/1/rate-renter")
+                .session(session)
+                .contentType("application/json")
+                .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Cannot rate renter for ongoing or future rentals"));
+
+        verify(ratingService, never()).createRating(anyLong(), any(), anyLong(), anyInt(), anyString());
+    }
+
+    @Test
+    void testRateRenter_MissingRating() throws Exception {
+        session.setAttribute("userId", 1L);
+
+        Booking pastBooking = new Booking();
+        pastBooking.setId(1L);
+        pastBooking.setRenterId(2L);
+        pastBooking.setEndDate(LocalDate.now().minusDays(1));
+        pastBooking.setItem(item1);
+
+        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
+        given(bookingRepository.findById(1L)).willReturn(Optional.of(pastBooking));
+
+        String requestBody = "{\"comment\":\"Great!\"}"; // Missing rate
+
+        mockMvc.perform(post("/api/owner/dashboard/bookings/1/rate-renter")
+                .session(session)
+                .contentType("application/json")
+                .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Rating is required"));
+
+        verify(ratingService, never()).createRating(anyLong(), any(), anyLong(), anyInt(), anyString());
+    }
+
+    @Test
+    void testRateRenter_RatingServiceThrowsException() throws Exception {
+        session.setAttribute("userId", 1L);
+
+        Booking pastBooking = new Booking();
+        pastBooking.setId(1L);
+        pastBooking.setRenterId(2L);
+        pastBooking.setEndDate(LocalDate.now().minusDays(1));
+        pastBooking.setItem(item1);
+
+        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
+        given(bookingRepository.findById(1L)).willReturn(Optional.of(pastBooking));
+        given(ratingService.createRating(1L, RatingType.RENTER, 2L, 5, "Great!"))
+                .willThrow(new IllegalArgumentException("You can only rate renters you have completed bookings with."));
+
+        String requestBody = "{\"rate\":5,\"comment\":\"Great!\"}";
+
+        mockMvc.perform(post("/api/owner/dashboard/bookings/1/rate-renter")
+                .session(session)
+                .contentType("application/json")
+                .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("You can only rate renters you have completed bookings with."));
+
+        verify(ratingService, times(1)).createRating(1L, RatingType.RENTER, 2L, 5, "Great!");
+    }
 }

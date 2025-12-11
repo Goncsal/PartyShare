@@ -37,7 +37,7 @@ public class RatingService {
     }
 
     public Rating createRating(Long senderId, RatingType ratingType, Long ratedId, Integer rate, String comment) {
-        validateSender(senderId);
+        validateSender(senderId, ratingType);
         validateRatedEntity(ratingType, ratedId, senderId);
         validateRatingDetails(rate, comment);
 
@@ -48,6 +48,8 @@ public class RatingService {
             updateItemAverageRating(ratedId);
         } else if (ratingType == RatingType.OWNER) {
             updateOwnerAverageRating(ratedId);
+        } else if (ratingType == RatingType.RENTER) {
+            updateRenterAverageRating(ratedId);
         }
 
         logger.info("Rating created successfully with ID {}", savedRating.getId());
@@ -99,17 +101,34 @@ public class RatingService {
         }
     }
 
-    private void validateSender(Long senderId) {
+    private void validateSender(Long senderId, RatingType ratingType) {
         if (senderId == null || senderId < 0) {
             logger.warn("Failed to create rating: SenderId {} is invalid.", senderId);
             throw new IllegalArgumentException("Failed to create rating: SenderId " + senderId + " is invalid.");
         }
 
         Optional<User> optSender = userService.getUserById(senderId);
-        if (optSender.isEmpty() || !UserRoles.RENTER.equals(optSender.get().getRole())) {
-            logger.warn("Failed to create rating: Sender with ID {} is not a renter.", senderId);
+        if (optSender.isEmpty()) {
+            logger.warn("Failed to create rating: Sender with ID {} does not exist.", senderId);
             throw new IllegalArgumentException(
-                    "Failed to create rating: Sender with ID " + senderId + " is not a renter.");
+                    "Failed to create rating: Sender with ID " + senderId + " does not exist.");
+        }
+
+        User sender = optSender.get();
+        // For PRODUCT and OWNER ratings, sender must be a RENTER
+        // For RENTER ratings, sender must be an OWNER
+        if (ratingType == RatingType.RENTER) {
+            if (!UserRoles.OWNER.equals(sender.getRole())) {
+                logger.warn("Failed to create rating: Sender with ID {} is not an owner.", senderId);
+                throw new IllegalArgumentException(
+                        "Failed to create rating: Only owners can rate renters.");
+            }
+        } else {
+            if (!UserRoles.RENTER.equals(sender.getRole())) {
+                logger.warn("Failed to create rating: Sender with ID {} is not a renter.", senderId);
+                throw new IllegalArgumentException(
+                        "Failed to create rating: Sender with ID " + senderId + " is not a renter.");
+            }
         }
     }
 
@@ -132,6 +151,20 @@ public class RatingService {
                         ratedId);
                 throw new IllegalArgumentException(
                         "You can only rate owners you have completed bookings with.");
+            }
+        } else if (ratingType == RatingType.RENTER) {
+            Optional<User> optUser = userService.getUserById(ratedId);
+            if (optUser.isEmpty() || !optUser.get().getRole().equals(UserRoles.RENTER)) {
+                logger.warn("Failed to create rating: Rated renter with ID {} does not exist.", ratedId);
+                throw new IllegalArgumentException(
+                        "Failed to create rating: Rated renter with ID " + ratedId + " does not exist.");
+            }
+            // Check if owner has completed booking with this renter
+            if (!hasCompletedBookingWithRenter(senderId, ratedId)) {
+                logger.warn("Failed to create rating: Owner {} has no completed booking with renter {}.", senderId,
+                        ratedId);
+                throw new IllegalArgumentException(
+                        "You can only rate renters you have completed bookings with.");
             }
         } else if (ratingType == RatingType.PRODUCT) {
             Item item = itemService.getItemById(ratedId);
@@ -179,6 +212,34 @@ public class RatingService {
     private boolean hasCompletedBookingWithOwner(Long renterId, Long ownerId) {
         return bookingRepository.existsByRenterIdAndItem_OwnerIdAndStatusAndEndDateBefore(
                 renterId, ownerId, BookingStatus.ACCEPTED, LocalDate.now());
+    }
+
+    private boolean hasCompletedBookingWithRenter(Long ownerId, Long renterId) {
+        return bookingRepository.existsByRenterIdAndItem_OwnerIdAndStatusAndEndDateBefore(
+                renterId, ownerId, BookingStatus.ACCEPTED, LocalDate.now());
+    }
+
+    private void updateRenterAverageRating(Long renterId) {
+        List<Rating> ratings = ratingRepository.findByRatingTypeAndRatedId(RatingType.RENTER, renterId);
+        if (ratings.isEmpty()) {
+            return;
+        }
+
+        double average = ratings.stream()
+                .mapToInt(Rating::getRate)
+                .average()
+                .orElse(0.0);
+
+        // Round to 1 decimal place
+        average = Math.round(average * 10.0) / 10.0;
+
+        Optional<User> userOpt = userService.getUserById(renterId);
+        if (userOpt.isPresent()) {
+            User renter = userOpt.get();
+            renter.setAverageRating(average);
+            userService.saveUser(renter);
+            logger.info("Updated average rating for renter {} to {}", renterId, average);
+        }
     }
 
     public List<Rating> getAllRatings() {
