@@ -38,16 +38,17 @@ class BookingRepositoryTest {
                 LocalDate end = LocalDate.now().plusDays(8);
                 Booking existing = new Booking(item, 300L, start, end, BigDecimal.valueOf(item.getPrice()),
                                 BigDecimal.valueOf(item.getPrice()).multiply(BigDecimal.valueOf(3)),
-                                BookingStatus.CONFIRMED,
+                                BookingStatus.ACCEPTED,
                                 PaymentStatus.PAID);
                 bookingRepository.save(existing);
 
                 boolean overlap = bookingRepository.existsByItemIdAndStatusInAndStartDateLessThanAndEndDateGreaterThan(
-                                item.getId(), List.of(BookingStatus.CONFIRMED, BookingStatus.PENDING), end.minusDays(1),
+                                item.getId(), List.of(BookingStatus.ACCEPTED, BookingStatus.REQUESTED),
+                                end.minusDays(1),
                                 start.plusDays(1));
                 boolean noOverlap = bookingRepository
                                 .existsByItemIdAndStatusInAndStartDateLessThanAndEndDateGreaterThan(
-                                                item.getId(), List.of(BookingStatus.CONFIRMED, BookingStatus.PENDING),
+                                                item.getId(), List.of(BookingStatus.ACCEPTED, BookingStatus.REQUESTED),
                                                 end.plusDays(2), end.plusDays(1));
 
                 assertThat(overlap).isTrue();
@@ -64,19 +65,19 @@ class BookingRepositoryTest {
                 LocalDate pastStart = LocalDate.now().minusDays(10);
                 LocalDate pastEnd = LocalDate.now().minusDays(5);
                 Booking pastBooking = new Booking(item, 200L, pastStart, pastEnd, BigDecimal.valueOf(50.0),
-                                BigDecimal.valueOf(250.0), BookingStatus.CONFIRMED, PaymentStatus.PAID);
+                                BigDecimal.valueOf(250.0), BookingStatus.ACCEPTED, PaymentStatus.PAID);
                 bookingRepository.save(pastBooking);
 
                 // Create upcoming booking (endDate >= today) - should not be returned
                 LocalDate futureStart = LocalDate.now().plusDays(5);
                 LocalDate futureEnd = LocalDate.now().plusDays(10);
                 Booking futureBooking = new Booking(item, 300L, futureStart, futureEnd, BigDecimal.valueOf(50.0),
-                                BigDecimal.valueOf(250.0), BookingStatus.CONFIRMED, PaymentStatus.PAID);
+                                BigDecimal.valueOf(250.0), BookingStatus.ACCEPTED, PaymentStatus.PAID);
                 bookingRepository.save(futureBooking);
 
                 List<Booking> pastRentals = bookingRepository
                                 .findByItem_OwnerIdAndStatusInAndEndDateLessThanOrderByStartDateDesc(
-                                                100L, List.of(BookingStatus.CONFIRMED, BookingStatus.PENDING),
+                                                100L, List.of(BookingStatus.ACCEPTED, BookingStatus.REQUESTED),
                                                 LocalDate.now());
 
                 assertThat(pastRentals).hasSize(1);

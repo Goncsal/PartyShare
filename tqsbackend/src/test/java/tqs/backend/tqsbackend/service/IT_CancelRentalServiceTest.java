@@ -50,10 +50,10 @@ class IT_CancelRentalServiceTest {
     void setUp() {
         sampleItem = BookingTestFixtures.sampleItem(10L);
         confirmedBooking = BookingTestFixtures.sampleBooking(1L, sampleItem);
-        confirmedBooking.setStatus(BookingStatus.CONFIRMED);
+        confirmedBooking.setStatus(BookingStatus.ACCEPTED);
         
         pendingBooking = BookingTestFixtures.sampleBooking(2L, sampleItem);
-        pendingBooking.setStatus(BookingStatus.PENDING);
+        pendingBooking.setStatus(BookingStatus.REQUESTED);
     }
 
     @Test

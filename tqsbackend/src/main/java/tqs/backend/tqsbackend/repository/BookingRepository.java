@@ -18,8 +18,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
         List<Booking> findByRenterId(Long renterId);
 
-        @Query("SELECT b FROM Booking b WHERE b.item.id = :itemId AND b.status IN ('PENDING', 'CONFIRMED')")
-        List<Booking> findActiveBookingsByItemId(@Param("itemId") Long itemId);
+    @Query("SELECT b FROM Booking b WHERE b.item.id = :itemId AND b.status IN ('REQUESTED', 'ACCEPTED')")
+    List<Booking> findActiveBookingsByItemId(@Param("itemId") Long itemId);
 
         boolean existsByRenterIdAndItem_IdAndStatusAndEndDateBefore(Long renterId, Long itemId, BookingStatus status,
                         LocalDate date);
@@ -42,4 +42,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         List<Booking> findByItem_OwnerIdAndStatusInAndEndDateLessThanOrderByStartDateDesc(
                         @Param("ownerId") Long ownerId, @Param("statuses") Collection<BookingStatus> statuses,
                         @Param("date") LocalDate date);
+
+    List<Booking> findByItem_OwnerIdAndStatus(Long ownerId, BookingStatus status);
 }

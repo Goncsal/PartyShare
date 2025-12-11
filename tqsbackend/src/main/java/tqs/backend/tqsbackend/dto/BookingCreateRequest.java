@@ -26,4 +26,6 @@ public class BookingCreateRequest {
     @NotNull
     @Future
     private LocalDate endDate;
+
+    private Double proposedPrice;
 }

@@ -173,12 +173,12 @@ public class RatingService {
 
     private boolean hasCompletedBooking(Long renterId, Long itemId) {
         return bookingRepository.existsByRenterIdAndItem_IdAndStatusAndEndDateBefore(
-                renterId, itemId, BookingStatus.CONFIRMED, LocalDate.now());
+                renterId, itemId, BookingStatus.ACCEPTED, LocalDate.now());
     }
 
     private boolean hasCompletedBookingWithOwner(Long renterId, Long ownerId) {
         return bookingRepository.existsByRenterIdAndItem_OwnerIdAndStatusAndEndDateBefore(
-                renterId, ownerId, BookingStatus.CONFIRMED, LocalDate.now());
+                renterId, ownerId, BookingStatus.ACCEPTED, LocalDate.now());
     }
 
     public List<Rating> getAllRatings() {

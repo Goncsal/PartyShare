@@ -96,44 +96,44 @@ public class MockAddingItemService {
                         Booking pastBooking1 = new Booking(partyLamps, renter1.getId(),
                                         LocalDate.now().minusDays(20), LocalDate.now().minusDays(15),
                                         BigDecimal.valueOf(55.0), BigDecimal.valueOf(275.0),
-                                        BookingStatus.CONFIRMED, PaymentStatus.PAID);
+                                        BookingStatus.ACCEPTED, PaymentStatus.PAID);
                         bookingRepository.save(pastBooking1);
 
                         Booking pastBooking2 = new Booking(mealTable, renter2.getId(),
                                         LocalDate.now().minusDays(30), LocalDate.now().minusDays(25),
                                         BigDecimal.valueOf(150.0), BigDecimal.valueOf(750.0),
-                                        BookingStatus.CONFIRMED, PaymentStatus.PAID);
+                                        BookingStatus.ACCEPTED, PaymentStatus.PAID);
                         bookingRepository.save(pastBooking2);
 
                         Booking pastBooking3 = new Booking(audioInterface, renter3.getId(),
                                         LocalDate.now().minusDays(10), LocalDate.now().minusDays(5),
                                         BigDecimal.valueOf(1200.0), BigDecimal.valueOf(6000.0),
-                                        BookingStatus.CONFIRMED, PaymentStatus.PAID);
+                                        BookingStatus.ACCEPTED, PaymentStatus.PAID);
                         bookingRepository.save(pastBooking3);
 
                         Booking pastBooking4 = new Booking(speaker, renter1.getId(),
                                         LocalDate.now().minusDays(7), LocalDate.now().minusDays(3),
                                         BigDecimal.valueOf(40.0), BigDecimal.valueOf(160.0),
-                                        BookingStatus.CONFIRMED, PaymentStatus.PAID);
+                                        BookingStatus.ACCEPTED, PaymentStatus.PAID);
                         bookingRepository.save(pastBooking4);
 
                         // Create upcoming bookings (future rentals)
                         Booking upcomingBooking1 = new Booking(partyLamps, renter2.getId(),
                                         LocalDate.now().plusDays(5), LocalDate.now().plusDays(10),
                                         BigDecimal.valueOf(55.0), BigDecimal.valueOf(275.0),
-                                        BookingStatus.CONFIRMED, PaymentStatus.PAID);
+                                        BookingStatus.ACCEPTED, PaymentStatus.PAID);
                         bookingRepository.save(upcomingBooking1);
 
                         Booking upcomingBooking2 = new Booking(sunHat, renter3.getId(),
                                         LocalDate.now().plusDays(2), LocalDate.now().plusDays(5),
                                         BigDecimal.valueOf(80.0), BigDecimal.valueOf(240.0),
-                                        BookingStatus.PENDING, PaymentStatus.PENDING);
+                                        BookingStatus.REQUESTED, PaymentStatus.PENDING);
                         bookingRepository.save(upcomingBooking2);
 
                         Booking upcomingBooking3 = new Booking(speaker, renter2.getId(),
                                         LocalDate.now().plusDays(15), LocalDate.now().plusDays(20),
                                         BigDecimal.valueOf(40.0), BigDecimal.valueOf(200.0),
-                                        BookingStatus.CONFIRMED, PaymentStatus.PAID);
+                                        BookingStatus.ACCEPTED, PaymentStatus.PAID);
                         bookingRepository.save(upcomingBooking3);
 
                 }

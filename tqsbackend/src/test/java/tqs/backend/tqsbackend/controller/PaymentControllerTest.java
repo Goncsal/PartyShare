@@ -53,7 +53,7 @@ class PaymentControllerTest {
         booking.setEndDate(LocalDate.now().plusDays(3));
         booking.setDailyPrice(BigDecimal.valueOf(10.0));
         booking.setTotalPrice(BigDecimal.valueOf(20.0));
-        booking.setStatus(BookingStatus.PENDING);
+        booking.setStatus(BookingStatus.REQUESTED);
         booking.setPaymentStatus(PaymentStatus.PENDING);
         return booking;
     }
@@ -81,7 +81,7 @@ class PaymentControllerTest {
     @Test
     void paymentSuccess_WithValidBooking_ReturnsSuccessView() throws Exception {
         Booking booking = createTestBooking();
-        booking.setStatus(BookingStatus.CONFIRMED);
+        booking.setStatus(BookingStatus.ACCEPTED);
         booking.setPaymentStatus(PaymentStatus.PAID);
         booking.setPaymentReference("ref-123");
         when(bookingService.getBooking(1L)).thenReturn(booking);

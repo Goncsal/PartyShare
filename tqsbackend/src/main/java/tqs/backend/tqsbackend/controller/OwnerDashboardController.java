@@ -50,14 +50,14 @@ public class OwnerDashboardController {
         List<Booking> upcomingRentals = bookingRepository
                 .findByItem_OwnerIdAndStatusInAndEndDateGreaterThanEqualOrderByStartDateAsc(
                         userId,
-                        Arrays.asList(BookingStatus.CONFIRMED, BookingStatus.PENDING),
+                        Arrays.asList(BookingStatus.ACCEPTED, BookingStatus.REQUESTED),
                         LocalDate.now());
 
         // Fetch past rentals (bookings with endDate < today)
         List<Booking> pastRentals = bookingRepository
                 .findByItem_OwnerIdAndStatusInAndEndDateLessThanOrderByStartDateDesc(
                         userId,
-                        Arrays.asList(BookingStatus.CONFIRMED, BookingStatus.PENDING),
+                        Arrays.asList(BookingStatus.ACCEPTED, BookingStatus.REQUESTED),
                         LocalDate.now());
 
         model.addAttribute("user", user);
