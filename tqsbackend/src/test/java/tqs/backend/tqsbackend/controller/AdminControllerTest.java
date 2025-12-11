@@ -59,4 +59,20 @@ class AdminControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/users/login"));
     }
+
+    @Test
+    void whenGetDashboard_thenReturnDashboardPage() throws Exception {
+        mvc.perform(get("/admin/dashboard")
+                .sessionAttr("userRole", UserRoles.ADMIN))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/dashboard"));
+    }
+
+    @Test
+    void whenGetDashboardAsNonAdmin_thenRedirect() throws Exception {
+        mvc.perform(get("/admin/dashboard")
+                .sessionAttr("userRole", UserRoles.RENTER))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/login"));
+    }
 }
