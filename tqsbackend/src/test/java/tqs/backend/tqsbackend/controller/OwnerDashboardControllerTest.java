@@ -55,6 +55,11 @@ public class OwnerDashboardControllerTest {
         public UserService userService() {
             return mock(UserService.class);
         }
+
+        @Bean
+        public tqs.backend.tqsbackend.repository.BookingRepository bookingRepository() {
+            return mock(tqs.backend.tqsbackend.repository.BookingRepository.class);
+        }
     }
 
     @BeforeEach

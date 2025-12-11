@@ -124,6 +124,20 @@
             <p class="rating" th:text="'Rating: ' + ${item.averageRating} + '/5.0'">Rating: 0.0</p>
             <p>Location: <span th:text="${item.location}">Location</span></p>
 
+            <!-- Owner Information -->
+            <div th:if="${ownerMap[item.ownerId] != null}"
+                style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
+                <p style="font-size: 0.9em; color: #666;">
+                    <strong>Owner:</strong> <span th:text="${ownerMap[item.ownerId].name}">Owner Name</span>
+                    <span th:if="${ownerMap[item.ownerId].averageRating != null}" style="color: #f39c12;">
+                        (★ <span th:text="${ownerMap[item.ownerId].averageRating}">0.0</span>/5.0)
+                    </span>
+                    <span th:if="${ownerMap[item.ownerId].averageRating == null}" style="color: #999;">
+                        (No ratings)
+                    </span>
+                </p>
+            </div>
+
             <div class="actions">
                 <form action="#" th:action="@{/favorites/{itemId}(itemId=${item.id})}" method="post">
                     <button type="submit">Add to Favorites</button>

@@ -67,6 +67,15 @@ public class ItemController {
             userOpt.ifPresent(user -> model.addAttribute("userRole", user.getRole().toString()));
         }
 
+        // Add owner information for each item
+        java.util.Map<Long, User> ownerMap = new java.util.HashMap<>();
+        for (Item item : items) {
+            if (item.getOwnerId() != null && !ownerMap.containsKey(item.getOwnerId())) {
+                userService.getUserById(item.getOwnerId()).ifPresent(owner -> ownerMap.put(item.getOwnerId(), owner));
+            }
+        }
+        model.addAttribute("ownerMap", ownerMap);
+
         return "search";
     }
 
@@ -74,6 +83,13 @@ public class ItemController {
     public String getItemDetails(@PathVariable Long id, Model model, HttpSession session) {
         Item item = itemService.getItemById(id);
         model.addAttribute("item", item);
+
+        // Add owner information
+        if (item.getOwnerId() != null) {
+            userService.getUserById(item.getOwnerId()).ifPresent(owner -> {
+                model.addAttribute("owner", owner);
+            });
+        }
 
         // Add user role for conditional UI elements
         Long userId = (Long) session.getAttribute("userId");
