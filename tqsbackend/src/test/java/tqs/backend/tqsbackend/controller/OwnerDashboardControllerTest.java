@@ -39,6 +39,9 @@ public class OwnerDashboardControllerTest {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private tqs.backend.tqsbackend.repository.BookingRepository bookingRepository;
+
     private MockHttpSession session;
     private User ownerUser;
     private User renterUser;
@@ -87,12 +90,20 @@ public class OwnerDashboardControllerTest {
 
         given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
         given(itemService.findByOwnerId(1L)).willReturn(items);
+        given(bookingRepository.findByItem_OwnerIdAndStatusInAndEndDateGreaterThanEqualOrderByStartDateAsc(
+                org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.anyCollection(),
+                org.mockito.ArgumentMatchers.any())).willReturn(Collections.emptyList());
+        given(bookingRepository.findByItem_OwnerIdAndStatusInAndEndDateLessThanOrderByStartDateDesc(
+                org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.anyCollection(),
+                org.mockito.ArgumentMatchers.any())).willReturn(Collections.emptyList());
 
         mockMvc.perform(get("/owner/dashboard").session(session))
                 .andExpect(status().isOk())
                 .andExpect(view().name("dashboard/owner"))
                 .andExpect(model().attributeExists("user"))
                 .andExpect(model().attributeExists("items"))
+                .andExpect(model().attributeExists("upcomingRentals"))
+                .andExpect(model().attributeExists("pastRentals"))
                 .andExpect(model().attribute("isLoggedIn", true))
                 .andExpect(model().attribute("userName", "Owner"));
     }
@@ -134,12 +145,17 @@ public class OwnerDashboardControllerTest {
 
         given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
         given(itemService.findByOwnerId(1L)).willReturn(Collections.emptyList());
+        given(bookingRepository.findByItem_OwnerIdAndStatusInAndEndDateGreaterThanEqualOrderByStartDateAsc(
+                org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.anyCollection(),
+                org.mockito.ArgumentMatchers.any())).willReturn(Collections.emptyList());
+        given(bookingRepository.findByItem_OwnerIdAndStatusInAndEndDateLessThanOrderByStartDateDesc(
+                org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.anyCollection(),
+                org.mockito.ArgumentMatchers.any())).willReturn(Collections.emptyList());
 
         mockMvc.perform(get("/owner/dashboard").session(session))
                 .andExpect(status().isOk())
                 .andExpect(view().name("dashboard/owner"))
                 .andExpect(model().attribute("items", Collections.emptyList()));
     }
-
 
 }

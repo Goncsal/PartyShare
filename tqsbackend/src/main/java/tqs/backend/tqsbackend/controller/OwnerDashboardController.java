@@ -53,14 +53,21 @@ public class OwnerDashboardController {
                         Arrays.asList(BookingStatus.CONFIRMED, BookingStatus.PENDING),
                         LocalDate.now());
 
+        // Fetch past rentals (bookings with endDate < today)
+        List<Booking> pastRentals = bookingRepository
+                .findByItem_OwnerIdAndStatusInAndEndDateLessThanOrderByStartDateDesc(
+                        userId,
+                        Arrays.asList(BookingStatus.CONFIRMED, BookingStatus.PENDING),
+                        LocalDate.now());
+
         model.addAttribute("user", user);
         model.addAttribute("items", items);
         model.addAttribute("upcomingRentals", upcomingRentals);
+        model.addAttribute("pastRentals", pastRentals);
         model.addAttribute("isLoggedIn", true);
         model.addAttribute("userName", user.getName());
 
         return "dashboard/owner";
     }
-
 
 }

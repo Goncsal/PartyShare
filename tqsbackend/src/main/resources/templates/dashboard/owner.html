@@ -219,7 +219,7 @@
                 <td th:text="${booking.startDate}">2024-01-01</td>
                 <td th:text="${booking.endDate}">2024-01-07</td>
                 <td>
-                    <span class="status-badge" 
+                    <span class="status-badge"
                         th:classappend="${booking.status.name() == 'CONFIRMED'} ? 'status-active' : 'status-inactive'"
                         th:text="${booking.status}">Status</span>
                 </td>
@@ -227,6 +227,45 @@
             </tr>
         </tbody>
     </table>
+
+    <!-- Past Rentals Section -->
+    <div class="action-bar" style="margin-top: 30px;">
+        <h2>Past Rentals</h2>
+    </div>
+
+    <div th:if="${pastRentals.empty}" class="no-items">
+        <p>No past rentals.</p>
+    </div>
+
+    <table th:if="${!pastRentals.empty}" class="items-table" style="margin-bottom: 30px;">
+        <thead>
+            <tr>
+                <th>Booking ID</th>
+                <th>Item</th>
+                <th>Renter ID</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Status</th>
+                <th>Total Price (€)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="booking : ${pastRentals}">
+                <td th:text="${booking.id}">1</td>
+                <td th:text="${booking.item.name}">Item Name</td>
+                <td th:text="${booking.renterId}">123</td>
+                <td th:text="${booking.startDate}">2024-01-01</td>
+                <td th:text="${booking.endDate}">2024-01-07</td>
+                <td>
+                    <span class="status-badge"
+                        th:classappend="${booking.status.name() == 'CONFIRMED'} ? 'status-active' : 'status-inactive'"
+                        th:text="${booking.status}">Status</span>
+                </td>
+                <td th:text="${booking.totalPrice}">100.00</td>
+            </tr>
+        </tbody>
+    </table>
+
 
     <div class="action-bar">
         <h2>My Rental Items</h2>
