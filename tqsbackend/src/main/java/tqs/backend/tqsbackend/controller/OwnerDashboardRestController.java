@@ -34,11 +34,14 @@ public class OwnerDashboardRestController {
     private final ReportService reportService;
     private final BookingRepository bookingRepository;
 
+    // ========== HELPER METHODS TO REDUCE DUPLICATION ==========
+
     /**
-     * Get all items for the logged-in owner
+     * Validates that the user is logged in and has OWNER role
+     * 
+     * @return ResponseEntity with error if validation fails, null if successful
      */
-    @GetMapping("/items")
-    public ResponseEntity<Object> getOwnerItems(HttpSession session) {
+    private ResponseEntity<Object> validateOwnerSession(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -50,8 +53,65 @@ public class OwnerDashboardRestController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "User is not an owner"));
         }
+        return null;
+    }
 
-        List<Item> items = itemService.findByOwnerId(userId);
+    /**
+     * Gets the current user ID from session (assumes validation already done)
+     */
+    private Long getUserId(HttpSession session) {
+        return (Long) session.getAttribute("userId");
+    }
+
+    /**
+     * Validates that a booking exists
+     * 
+     * @return ResponseEntity with error if validation fails, null if successful
+     */
+    private ResponseEntity<Object> validateBooking(Long bookingId) {
+        if (bookingRepository.findById(bookingId).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Booking not found"));
+        }
+        return null;
+    }
+
+    /**
+     * Validates that the booking belongs to the owner
+     * 
+     * @return ResponseEntity with error if validation fails, null if successful
+     */
+    private ResponseEntity<Object> validateBookingOwnership(Booking booking, Long userId) {
+        if (!booking.getItem().getOwnerId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Booking does not belong to this owner"));
+        }
+        return null;
+    }
+
+    /**
+     * Validates that the booking is in the past
+     * 
+     * @return ResponseEntity with error if validation fails, null if successful
+     */
+    private ResponseEntity<Object> validatePastBooking(Booking booking, String errorMessage) {
+        if (booking.getEndDate().isAfter(LocalDate.now()) || booking.getEndDate().equals(LocalDate.now())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", errorMessage));
+        }
+        return null;
+    }
+
+    /**
+     * Get all items for the logged-in owner
+     */
+    @GetMapping("/items")
+    public ResponseEntity<Object> getOwnerItems(HttpSession session) {
+        ResponseEntity<Object> validationError = validateOwnerSession(session);
+        if (validationError != null)
+            return validationError;
+
+        List<Item> items = itemService.findByOwnerId(getUserId(session));
         return ResponseEntity.ok(items);
     }
 
@@ -60,20 +120,12 @@ public class OwnerDashboardRestController {
      */
     @PatchMapping("/items/{id}/activate")
     public ResponseEntity<Object> activateItem(@PathVariable Long id, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "User not logged in"));
-        }
-
-        Optional<User> userOpt = userService.getUserById(userId);
-        if (userOpt.isEmpty() || userOpt.get().getRole() != UserRoles.OWNER) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "User is not an owner"));
-        }
+        ResponseEntity<Object> validationError = validateOwnerSession(session);
+        if (validationError != null)
+            return validationError;
 
         try {
-            Item item = itemService.activateItem(id, userId);
+            Item item = itemService.activateItem(id, getUserId(session));
             return ResponseEntity.ok(item);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -86,20 +138,12 @@ public class OwnerDashboardRestController {
      */
     @PatchMapping("/items/{id}/deactivate")
     public ResponseEntity<Object> deactivateItem(@PathVariable Long id, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "User not logged in"));
-        }
-
-        Optional<User> userOpt = userService.getUserById(userId);
-        if (userOpt.isEmpty() || userOpt.get().getRole() != UserRoles.OWNER) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "User is not an owner"));
-        }
+        ResponseEntity<Object> validationError = validateOwnerSession(session);
+        if (validationError != null)
+            return validationError;
 
         try {
-            Item item = itemService.deactivateItem(id, userId);
+            Item item = itemService.deactivateItem(id, getUserId(session));
             return ResponseEntity.ok(item);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -112,17 +156,11 @@ public class OwnerDashboardRestController {
      */
     @GetMapping("/items/{id}/ratings")
     public ResponseEntity<Object> getItemRatings(@PathVariable Long id, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "User not logged in"));
-        }
+        ResponseEntity<Object> validationError = validateOwnerSession(session);
+        if (validationError != null)
+            return validationError;
 
-        Optional<User> userOpt = userService.getUserById(userId);
-        if (userOpt.isEmpty() || userOpt.get().getRole() != UserRoles.OWNER) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "User is not an owner"));
-        }
+        Long userId = getUserId(session);
 
         // Verify the item belongs to this owner
         Item item = itemService.getItemById(id);
@@ -145,20 +183,12 @@ public class OwnerDashboardRestController {
      */
     @DeleteMapping("/items/{id}")
     public ResponseEntity<Object> deleteItem(@PathVariable Long id, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "User not logged in"));
-        }
-
-        Optional<User> userOpt = userService.getUserById(userId);
-        if (userOpt.isEmpty() || userOpt.get().getRole() != UserRoles.OWNER) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "User is not an owner"));
-        }
+        ResponseEntity<Object> validationError = validateOwnerSession(session);
+        if (validationError != null)
+            return validationError;
 
         try {
-            itemService.deleteItem(id, userId);
+            itemService.deleteItem(id, getUserId(session));
             return ResponseEntity.ok(Map.of("message", "Item deleted successfully"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -175,38 +205,24 @@ public class OwnerDashboardRestController {
             @RequestBody Map<String, String> requestBody,
             HttpSession session) {
 
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "User not logged in"));
-        }
+        ResponseEntity<Object> validationError = validateOwnerSession(session);
+        if (validationError != null)
+            return validationError;
 
-        Optional<User> userOpt = userService.getUserById(userId);
-        if (userOpt.isEmpty() || userOpt.get().getRole() != UserRoles.OWNER) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "User is not an owner"));
-        }
+        validationError = validateBooking(bookingId);
+        if (validationError != null)
+            return validationError;
 
-        // Validate booking exists
-        Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
-        if (bookingOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Booking not found"));
-        }
+        Long userId = getUserId(session);
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow();
 
-        Booking booking = bookingOpt.get();
+        validationError = validateBookingOwnership(booking, userId);
+        if (validationError != null)
+            return validationError;
 
-        // Validate booking belongs to this owner
-        if (!booking.getItem().getOwnerId().equals(userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Booking does not belong to this owner"));
-        }
-
-        // Validate booking is in the past
-        if (booking.getEndDate().isAfter(LocalDate.now()) || booking.getEndDate().equals(LocalDate.now())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Cannot report damage for ongoing or future rentals"));
-        }
+        validationError = validatePastBooking(booking, "Cannot report damage for ongoing or future rentals");
+        if (validationError != null)
+            return validationError;
 
         // Get damage description from request
         String damageDescription = requestBody.get("damageDescription");
@@ -253,32 +269,20 @@ public class OwnerDashboardRestController {
             @PathVariable Long bookingId,
             HttpSession session) {
 
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "User not logged in"));
-        }
+        ResponseEntity<Object> validationError = validateOwnerSession(session);
+        if (validationError != null)
+            return validationError;
 
-        Optional<User> userOpt = userService.getUserById(userId);
-        if (userOpt.isEmpty() || userOpt.get().getRole() != UserRoles.OWNER) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "User is not an owner"));
-        }
+        validationError = validateBooking(bookingId);
+        if (validationError != null)
+            return validationError;
 
-        // Validate booking exists
-        Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
-        if (bookingOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Booking not found"));
-        }
+        Long userId = getUserId(session);
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow();
 
-        Booking booking = bookingOpt.get();
-
-        // Validate booking belongs to this owner
-        if (!booking.getItem().getOwnerId().equals(userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Booking does not belong to this owner"));
-        }
+        validationError = validateBookingOwnership(booking, userId);
+        if (validationError != null)
+            return validationError;
 
         // Check if a rating exists
         Optional<Rating> ratingOpt = ratingService.getRatingBySenderIdAndRatedInfo(
@@ -302,38 +306,24 @@ public class OwnerDashboardRestController {
             @RequestBody Map<String, Object> requestBody,
             HttpSession session) {
 
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "User not logged in"));
-        }
+        ResponseEntity<Object> validationError = validateOwnerSession(session);
+        if (validationError != null)
+            return validationError;
 
-        Optional<User> userOpt = userService.getUserById(userId);
-        if (userOpt.isEmpty() || userOpt.get().getRole() != UserRoles.OWNER) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "User is not an owner"));
-        }
+        validationError = validateBooking(bookingId);
+        if (validationError != null)
+            return validationError;
 
-        // Validate booking exists
-        Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
-        if (bookingOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Booking not found"));
-        }
+        Long userId = getUserId(session);
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow();
 
-        Booking booking = bookingOpt.get();
+        validationError = validateBookingOwnership(booking, userId);
+        if (validationError != null)
+            return validationError;
 
-        // Validate booking belongs to this owner
-        if (!booking.getItem().getOwnerId().equals(userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Booking does not belong to this owner"));
-        }
-
-        // Validate booking is in the past
-        if (booking.getEndDate().isAfter(LocalDate.now()) || booking.getEndDate().equals(LocalDate.now())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Cannot rate renter for ongoing or future rentals"));
-        }
+        validationError = validatePastBooking(booking, "Cannot rate renter for ongoing or future rentals");
+        if (validationError != null)
+            return validationError;
 
         // Get rating details from request
         Integer rate;
