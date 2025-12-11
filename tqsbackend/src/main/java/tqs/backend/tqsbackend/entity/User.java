@@ -26,6 +26,9 @@ public class User {
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private java.time.LocalDateTime createdAt;
+
     @Column(name = "average_rating")
     private Double averageRating;
 
@@ -38,6 +41,15 @@ public class User {
         this.password = password;
         this.role = role;
         this.isActive = true;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = java.time.LocalDateTime.now();
+    }
+
+    public java.time.LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
     public Long getId() {

@@ -1,0 +1,78 @@
+package tqs.backend.tqsbackend.controller;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import tqs.backend.tqsbackend.entity.User;
+import tqs.backend.tqsbackend.entity.UserRoles;
+import tqs.backend.tqsbackend.service.UserService;
+
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(AdminController.class)
+class AdminControllerTest {
+
+    @Autowired
+    private MockMvc mvc;
+
+    @MockitoBean
+    private UserService userService;
+
+    @Test
+    void whenGetUsers_thenReturnUsersPage() throws Exception {
+        User user = new User("John", "john@ua.pt", "pass", UserRoles.RENTER);
+        when(userService.searchUsers(any(), any(), any(), any())).thenReturn(List.of(user));
+
+        mvc.perform(get("/admin/users")
+                .sessionAttr("userRole", UserRoles.ADMIN))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/users"))
+                .andExpect(model().attributeExists("users"));
+    }
+
+    @Test
+    void whenGetUsersWithFilters_thenPassFiltersToService() throws Exception {
+        User user = new User("John", "john@ua.pt", "pass", UserRoles.RENTER);
+        when(userService.searchUsers(eq("John"), eq(UserRoles.RENTER), any(), any())).thenReturn(List.of(user));
+
+        mvc.perform(get("/admin/users")
+                .param("keyword", "John")
+                .param("role", "RENTER")
+                .sessionAttr("userRole", UserRoles.ADMIN))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/users"))
+                .andExpect(model().attributeExists("users"));
+    }
+
+    @Test
+    void whenGetUsersAsNonAdmin_thenRedirect() throws Exception {
+        mvc.perform(get("/admin/users")
+                .sessionAttr("userRole", UserRoles.RENTER))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/login"));
+    }
+
+    @Test
+    void whenGetDashboard_thenReturnDashboardPage() throws Exception {
+        mvc.perform(get("/admin/dashboard")
+                .sessionAttr("userRole", UserRoles.ADMIN))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/dashboard"));
+    }
+
+    @Test
+    void whenGetDashboardAsNonAdmin_thenRedirect() throws Exception {
+        mvc.perform(get("/admin/dashboard")
+                .sessionAttr("userRole", UserRoles.RENTER))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/login"));
+    }
+}

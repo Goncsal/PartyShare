@@ -31,7 +31,7 @@ public class UserController {
 
     @PostMapping("/login")
     public String login(@RequestParam String email, @RequestParam String password, Model model,
-            RedirectAttributes redirectAttributes, HttpSession session , HttpServletRequest request) {
+            RedirectAttributes redirectAttributes, HttpSession session, HttpServletRequest request) {
         if (userService.authenticate(email, password)) {
             User user = userService.getUserByEmail(email).orElseThrow();
             session.invalidate();
@@ -40,8 +40,11 @@ public class UserController {
             newSession.setAttribute("userId", user.getId());
             newSession.setAttribute("userRole", user.getRole());
             newSession.setAttribute("userName", user.getName());
-            
+
             redirectAttributes.addFlashAttribute("success", "Login successful!");
+            if (user.getRole() == tqs.backend.tqsbackend.entity.UserRoles.ADMIN) {
+                return "redirect:/admin/dashboard";
+            }
             return "redirect:/items/search";
         } else {
             model.addAttribute("error", "Invalid credentials");
