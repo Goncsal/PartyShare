@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import tqs.backend.tqsbackend.dto.ConversationSummaryDTO;
 import tqs.backend.tqsbackend.dto.MessageCreateRequest;
 import tqs.backend.tqsbackend.dto.MessageResponse;
 import tqs.backend.tqsbackend.entity.Message;
@@ -46,6 +47,12 @@ public class MessageRestController {
             @PathVariable Long otherUserId) {
         List<Message> messages = messageService.getConversation(userId, otherUserId);
         return ResponseEntity.ok(messages.stream().map(this::toResponse).toList());
+    }
+
+    @GetMapping("/conversations")
+    public ResponseEntity<List<ConversationSummaryDTO>> getConversationsList(@RequestParam Long userId) {
+        List<ConversationSummaryDTO> conversations = messageService.getConversationsList(userId);
+        return ResponseEntity.ok(conversations);
     }
 
     private MessageResponse toResponse(Message message) {
