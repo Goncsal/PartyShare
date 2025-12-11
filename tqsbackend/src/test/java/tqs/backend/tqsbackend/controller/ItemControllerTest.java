@@ -26,38 +26,20 @@ import tqs.backend.tqsbackend.service.CategoryService;
 import tqs.backend.tqsbackend.service.ItemService;
 
 @WebMvcTest(ItemController.class)
-@Import(ItemControllerTest.TestConfig.class)
+
 public class ItemControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
+    @MockBean
     private ItemService itemService;
 
-    @Autowired
+    @MockBean
     private CategoryService categoryService;
 
-    @Autowired
+    @MockBean
     private tqs.backend.tqsbackend.service.UserService userService;
-
-    @TestConfiguration
-    static class TestConfig {
-        @Bean
-        public ItemService itemService() {
-            return Mockito.mock(ItemService.class);
-        }
-
-        @Bean
-        public CategoryService categoryService() {
-            return Mockito.mock(CategoryService.class);
-        }
-
-        @Bean
-        public tqs.backend.tqsbackend.service.UserService userService() {
-            return Mockito.mock(tqs.backend.tqsbackend.service.UserService.class);
-        }
-    }
 
     @Test
     public void testGetItemDetails() throws Exception {
@@ -289,6 +271,25 @@ public class ItemControllerTest {
     }
 
     @Test
+    void showEditItemForm_ItemNotFound_Redirects() throws Exception {
+        given(itemService.getItemById(1L)).willReturn(null);
+        
+        mockMvc.perform(get("/items/1/edit")
+                .sessionAttr("userId", 1L))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/items/search"));
+    }
+
+    @Test
+    void showEditItemForm_ItemNotFound_LoggedIn_Redirects() throws Exception {
+        given(itemService.getItemById(1L)).willReturn(null);
+        
+        mockMvc.perform(get("/items/1/edit")
+                .sessionAttr("userId", 1L))
+                .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
     void updateItem_Owner_Success() throws Exception {
         Item item = new Item();
         item.setId(1L);
@@ -326,7 +327,7 @@ public class ItemControllerTest {
     }
 
     @Test
-    void toggleItemStatus_Owner_Success() throws Exception {
+    void toggleItemStatus_Owner_Activate_Success() throws Exception {
         tqs.backend.tqsbackend.entity.User owner = new tqs.backend.tqsbackend.entity.User();
         owner.setRole(tqs.backend.tqsbackend.entity.UserRoles.OWNER);
         
@@ -339,6 +340,22 @@ public class ItemControllerTest {
                 .andExpect(redirectedUrl("/items/my-items"));
         
         verify(itemService).activateItem(1L, 1L);
+    }
+
+    @Test
+    void toggleItemStatus_Owner_Deactivate_Success() throws Exception {
+        tqs.backend.tqsbackend.entity.User owner = new tqs.backend.tqsbackend.entity.User();
+        owner.setRole(tqs.backend.tqsbackend.entity.UserRoles.OWNER);
+        
+        given(userService.getUserById(1L)).willReturn(java.util.Optional.of(owner));
+
+        mockMvc.perform(post("/items/1/toggle-status")
+                .sessionAttr("userId", 1L)
+                .param("active", "false"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/items/my-items"));
+        
+        verify(itemService).deactivateItem(1L, 1L);
     }
 
     @Test

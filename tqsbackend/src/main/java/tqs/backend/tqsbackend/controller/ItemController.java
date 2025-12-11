@@ -30,6 +30,8 @@ public class ItemController {
 
     private final UserService userService;
 
+    private static final String CATEGORIES_ATTR = "categories";
+
     @GetMapping("/search")
     public String searchItems(
             @RequestParam(required = false) String q,
@@ -49,7 +51,7 @@ public class ItemController {
         List<Category> categories = categoryService.getAllCategories();
 
         model.addAttribute("items", items);
-        model.addAttribute("categories", categories);
+        model.addAttribute(CATEGORIES_ATTR, categories);
         model.addAttribute("q", q);
         model.addAttribute("selectedCategory", category);
         model.addAttribute("minPrice", minPrice);
@@ -99,7 +101,7 @@ public class ItemController {
         model.addAttribute("userRole", user.getRole().name());
 
         model.addAttribute("item", new Item());
-        model.addAttribute("categories", categoryService.getAllCategories());
+        model.addAttribute(CATEGORIES_ATTR, categoryService.getAllCategories());
         return "items/new_item";
     }
 
@@ -162,7 +164,7 @@ public class ItemController {
         
         model.addAttribute("userRole", user.getRole().name());
         model.addAttribute("item", item);
-        model.addAttribute("categories", categoryService.getAllCategories());
+        model.addAttribute(CATEGORIES_ATTR, categoryService.getAllCategories());
         return "items/edit_item";
     }
 
