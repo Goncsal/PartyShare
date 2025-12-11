@@ -156,6 +156,11 @@ public class UserService {
         return true;
     }
 
+    public List<User> searchUsers(String keyword, UserRoles role, java.time.LocalDateTime startDate,
+            java.time.LocalDateTime endDate) {
+        return userRepository.searchUsers(keyword, role, startDate, endDate);
+    }
+
     public User saveUser(User user) {
         return userRepository.save(user);
     }

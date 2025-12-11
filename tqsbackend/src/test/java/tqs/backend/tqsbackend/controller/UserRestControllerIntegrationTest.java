@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 
 import org.springframework.test.web.servlet.MockMvc;
 import tqs.backend.tqsbackend.dto.UserLoginRequest;
-import tqs.backend.tqsbackend.dto.UserRegistrationDto;
 import tqs.backend.tqsbackend.entity.User;
 import tqs.backend.tqsbackend.entity.UserRoles;
 import tqs.backend.tqsbackend.repository.UserRepository;
@@ -53,7 +52,7 @@ class UserRestControllerIntegrationTest {
                 .content(body))
                 .andExpect(status().isCreated());
 
-        assertThat(userRepository.findAll()).hasSize(7); // 6 seeded users (3 owners + 3 renters) + 1 new user
+        assertThat(userRepository.findAll()).hasSize(8); // 6 seeded users (3 owners + 3 renters) + 1 new user + 1 admin
     }
 
     @Test
