@@ -184,9 +184,16 @@
                     <input type="text" id="startDate" th:field="*{startDate}" required
                         placeholder="Select start date" />
                 </div>
-                <div>
-                    <label for="endDate">End date</label>
-                    <input type="text" id="endDate" th:field="*{endDate}" required placeholder="Select end date" />
+                <div class="form-group">
+                    <label for="endDate">End Date</label>
+                    <input type="date" id="endDate" th:field="*{endDate}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="proposedPrice">Your Offer (per day) €</label>
+                    <input type="number" step="0.01" id="proposedPrice" th:field="*{proposedPrice}"
+                        th:value="${item.price}" required>
+                    <small style="color: #666;">Default is the item's listed price.</small>
                 </div>
 
                 <div class="price-preview" id="pricePreview" style="display: none;">
@@ -286,16 +293,18 @@
             function updatePricePreview() {
                 const startDate = document.getElementById('startDate').value;
                 const endDate = document.getElementById('endDate').value;
+                const proposedPriceInput = document.getElementById('proposedPrice');
+                const currentDailyPrice = proposedPriceInput ? parseFloat(proposedPriceInput.value) : dailyPrice;
                 const pricePreview = document.getElementById('pricePreview');
 
-                if (startDate && endDate) {
+                if (startDate && endDate && !isNaN(currentDailyPrice)) {
                     const start = new Date(startDate);
                     const end = new Date(endDate);
                     const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
 
                     if (days > 0) {
                         document.getElementById('daysCount').textContent = days;
-                        document.getElementById('totalPrice').textContent = (days * dailyPrice).toFixed(2);
+                        document.getElementById('totalPrice').textContent = (days * currentDailyPrice).toFixed(2);
                         pricePreview.style.display = 'block';
                     } else {
                         pricePreview.style.display = 'none';
@@ -303,6 +312,23 @@
                 } else {
                     pricePreview.style.display = 'none';
                 }
+            }
+
+            const proposedPriceInput = document.getElementById('proposedPrice');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (proposedPriceInput) {
+                proposedPriceInput.addEventListener('input', function () {
+                    updatePricePreview();
+                    const currentPrice = parseFloat(proposedPriceInput.value);
+                    if (currentPrice !== dailyPrice) {
+                        submitBtn.textContent = "Submit Offer";
+                        submitBtn.style.backgroundColor = "#f39c12"; // Orange for offer
+                    } else {
+                        submitBtn.textContent = "Request Booking";
+                        submitBtn.style.backgroundColor = "#3498db"; // Blue for standard
+                    }
+                });
             }
 
             // Form validation

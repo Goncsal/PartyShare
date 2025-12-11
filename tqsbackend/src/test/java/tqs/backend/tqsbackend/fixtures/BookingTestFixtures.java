@@ -31,7 +31,7 @@ public final class BookingTestFixtures {
                 LocalDate.now().plusDays(3),
                 BigDecimal.valueOf(item.getPrice()),
                 BigDecimal.valueOf(item.getPrice() * 2),
-                BookingStatus.CONFIRMED,
+                BookingStatus.ACCEPTED,
                 PaymentStatus.PAID);
         booking.setId(id);
         booking.setPaymentReference("PAY-" + id);
