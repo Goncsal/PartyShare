@@ -38,7 +38,7 @@ public class OwnerDashboardRestController {
      * Get all items for the logged-in owner
      */
     @GetMapping("/items")
-    public ResponseEntity<?> getOwnerItems(HttpSession session) {
+    public ResponseEntity<Object> getOwnerItems(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -59,7 +59,7 @@ public class OwnerDashboardRestController {
      * Activate an item
      */
     @PatchMapping("/items/{id}/activate")
-    public ResponseEntity<?> activateItem(@PathVariable Long id, HttpSession session) {
+    public ResponseEntity<Object> activateItem(@PathVariable Long id, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -85,7 +85,7 @@ public class OwnerDashboardRestController {
      * Deactivate an item
      */
     @PatchMapping("/items/{id}/deactivate")
-    public ResponseEntity<?> deactivateItem(@PathVariable Long id, HttpSession session) {
+    public ResponseEntity<Object> deactivateItem(@PathVariable Long id, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -111,7 +111,7 @@ public class OwnerDashboardRestController {
      * Get all ratings for a specific item owned by the logged-in owner
      */
     @GetMapping("/items/{id}/ratings")
-    public ResponseEntity<?> getItemRatings(@PathVariable Long id, HttpSession session) {
+    public ResponseEntity<Object> getItemRatings(@PathVariable Long id, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -144,7 +144,7 @@ public class OwnerDashboardRestController {
      * Delete an item
      */
     @DeleteMapping("/items/{id}")
-    public ResponseEntity<?> deleteItem(@PathVariable Long id, HttpSession session) {
+    public ResponseEntity<Object> deleteItem(@PathVariable Long id, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -170,7 +170,7 @@ public class OwnerDashboardRestController {
      * Create a damage report for a past rental
      */
     @PostMapping("/bookings/{bookingId}/damage-report")
-    public ResponseEntity<?> createDamageReport(
+    public ResponseEntity<Object> createDamageReport(
             @PathVariable Long bookingId,
             @RequestBody Map<String, String> requestBody,
             HttpSession session) {
@@ -249,7 +249,7 @@ public class OwnerDashboardRestController {
     }
 
     @GetMapping("/bookings/{bookingId}/renter-rating")
-    public ResponseEntity<?> getRenterRating(
+    public ResponseEntity<Object> getRenterRating(
             @PathVariable Long bookingId,
             HttpSession session) {
 
@@ -297,7 +297,7 @@ public class OwnerDashboardRestController {
      * Create a renter rating for a past rental
      */
     @PostMapping("/bookings/{bookingId}/rate-renter")
-    public ResponseEntity<?> rateRenter(
+    public ResponseEntity<Object> rateRenter(
             @PathVariable Long bookingId,
             @RequestBody Map<String, Object> requestBody,
             HttpSession session) {
