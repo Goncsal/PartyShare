@@ -48,20 +48,5 @@ public class OwnerDashboardController {
         return "dashboard/owner";
     }
 
-    @GetMapping("/add-item")
-    public String showAddItemPage(Model model, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
 
-        if (userId == null) {
-            return "redirect:/users/login";
-        }
-
-        Optional<User> userOpt = userService.getUserById(userId);
-        if (userOpt.isEmpty() || userOpt.get().getRole() != UserRoles.OWNER) {
-            model.addAttribute("error", "Access denied. Owner role required.");
-            return "error";
-        }
-
-        return "dashboard/add_item";
-    }
 }

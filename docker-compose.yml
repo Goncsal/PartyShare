@@ -32,6 +32,10 @@ services:
       SPRING_THYMELEAF_CACHE: 'false'
       SPRING_THYMELEAF_MODE: HTML
       SPRING_THYMELEAF_ENCODING: UTF-8
+
+      # Stripe Configuration
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_PUBLIC_KEY: ${STRIPE_PUBLIC_KEY}
     ports:
       - "8080:8080"
     volumes:
