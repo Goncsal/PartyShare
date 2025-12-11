@@ -7,6 +7,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import tqs.backend.tqsbackend.entity.Booking;
 import tqs.backend.tqsbackend.entity.BookingStatus;
 import tqs.backend.tqsbackend.entity.Item;
+import tqs.backend.tqsbackend.entity.PaymentStatus;
 import tqs.backend.tqsbackend.exception.BookingValidationException;
 import tqs.backend.tqsbackend.fixtures.BookingTestFixtures;
 import tqs.backend.tqsbackend.repository.BookingRepository;
@@ -51,7 +54,7 @@ class IT_CancelRentalServiceTest {
         sampleItem = BookingTestFixtures.sampleItem(10L);
         confirmedBooking = BookingTestFixtures.sampleBooking(1L, sampleItem);
         confirmedBooking.setStatus(BookingStatus.ACCEPTED);
-        
+
         pendingBooking = BookingTestFixtures.sampleBooking(2L, sampleItem);
         pendingBooking.setStatus(BookingStatus.REQUESTED);
     }
@@ -61,7 +64,7 @@ class IT_CancelRentalServiceTest {
     void cancelBooking_success_whenConfirmed() {
         Long bookingId = 1L;
         Long renterId = confirmedBooking.getRenterId();
-        
+
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(confirmedBooking));
         when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -76,7 +79,7 @@ class IT_CancelRentalServiceTest {
     void cancelBooking_success_whenPending() {
         Long bookingId = 2L;
         Long renterId = pendingBooking.getRenterId();
-        
+
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(pendingBooking));
         when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -91,7 +94,7 @@ class IT_CancelRentalServiceTest {
     void cancelBooking_fails_whenBookingNotFound() {
         Long bookingId = 999L;
         Long renterId = 70L;
-        
+
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> bookingService.cancelBooking(bookingId, renterId))
@@ -106,7 +109,7 @@ class IT_CancelRentalServiceTest {
     void cancelBooking_fails_whenNotOwner() {
         Long bookingId = 1L;
         Long wrongRenterId = 999L;
-        
+
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(confirmedBooking));
 
         assertThatThrownBy(() -> bookingService.cancelBooking(bookingId, wrongRenterId))
@@ -122,7 +125,7 @@ class IT_CancelRentalServiceTest {
         Long bookingId = 1L;
         Long renterId = confirmedBooking.getRenterId();
         confirmedBooking.setStatus(BookingStatus.CANCELLED);
-        
+
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(confirmedBooking));
 
         assertThatThrownBy(() -> bookingService.cancelBooking(bookingId, renterId))
@@ -138,12 +141,66 @@ class IT_CancelRentalServiceTest {
         Long bookingId = 1L;
         Long renterId = confirmedBooking.getRenterId();
         confirmedBooking.setStatus(BookingStatus.REJECTED);
-        
+
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(confirmedBooking));
 
         assertThatThrownBy(() -> bookingService.cancelBooking(bookingId, renterId))
                 .isInstanceOf(BookingValidationException.class)
                 .hasMessageContaining("cannot be cancelled");
+
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Cancel booking fails when booking has already ended")
+    void cancelBooking_fails_whenBookingAlreadyEnded() {
+        Long bookingId = 1L;
+        Long renterId = 70L;
+
+        // Create a booking that ended yesterday
+        Booking endedBooking = new Booking(
+                sampleItem,
+                renterId,
+                LocalDate.now().minusDays(3),
+                LocalDate.now().minusDays(1),
+                BigDecimal.valueOf(40.0),
+                BigDecimal.valueOf(80.0),
+                BookingStatus.ACCEPTED,
+                PaymentStatus.PAID);
+        endedBooking.setId(bookingId);
+
+        when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(endedBooking));
+
+        assertThatThrownBy(() -> bookingService.cancelBooking(bookingId, renterId))
+                .isInstanceOf(BookingValidationException.class)
+                .hasMessageContaining("already ended");
+
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Cancel booking fails when booking ends today")
+    void cancelBooking_fails_whenBookingEndsToday() {
+        Long bookingId = 1L;
+        Long renterId = 70L;
+
+        // Create a booking that ends today
+        Booking endingTodayBooking = new Booking(
+                sampleItem,
+                renterId,
+                LocalDate.now().minusDays(2),
+                LocalDate.now(),
+                BigDecimal.valueOf(40.0),
+                BigDecimal.valueOf(80.0),
+                BookingStatus.ACCEPTED,
+                PaymentStatus.PAID);
+        endingTodayBooking.setId(bookingId);
+
+        when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(endingTodayBooking));
+
+        assertThatThrownBy(() -> bookingService.cancelBooking(bookingId, renterId))
+                .isInstanceOf(BookingValidationException.class)
+                .hasMessageContaining("already ended");
 
         verify(bookingRepository, never()).save(any());
     }

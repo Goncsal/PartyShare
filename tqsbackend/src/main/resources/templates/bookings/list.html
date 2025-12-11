@@ -212,7 +212,7 @@
                         </div>
 
                         <form
-                            th:if="${booking.status.toString() == 'REQUESTED' or booking.status.toString() == 'ACCEPTED'}"
+                            th:if="${(booking.status.toString() == 'REQUESTED' or booking.status.toString() == 'ACCEPTED') and #temporals.createToday().isBefore(booking.endDate)}"
                             th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post"
                             style="display:inline;">
                             <button type="submit" class="btn-cancel"

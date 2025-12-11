@@ -107,7 +107,7 @@ class RatingServiceTest {
 
         assertThatThrownBy(() -> ratingService.createRating(senderId, RatingType.OWNER, 2L, 5, "Comment"))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Sender with ID " + senderId + " is not a renter");
+                .hasMessageContaining("Sender with ID " + senderId + " does not exist");
     }
 
     @Test

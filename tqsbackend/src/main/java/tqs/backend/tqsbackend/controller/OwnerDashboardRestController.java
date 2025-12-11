@@ -247,4 +247,124 @@ public class OwnerDashboardRestController {
                     .body(Map.of("error", e.getMessage()));
         }
     }
+
+    @GetMapping("/bookings/{bookingId}/renter-rating")
+    public ResponseEntity<?> getRenterRating(
+            @PathVariable Long bookingId,
+            HttpSession session) {
+
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "User not logged in"));
+        }
+
+        Optional<User> userOpt = userService.getUserById(userId);
+        if (userOpt.isEmpty() || userOpt.get().getRole() != UserRoles.OWNER) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "User is not an owner"));
+        }
+
+        // Validate booking exists
+        Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
+        if (bookingOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Booking not found"));
+        }
+
+        Booking booking = bookingOpt.get();
+
+        // Validate booking belongs to this owner
+        if (!booking.getItem().getOwnerId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Booking does not belong to this owner"));
+        }
+
+        // Check if a rating exists
+        Optional<Rating> ratingOpt = ratingService.getRatingBySenderIdAndRatedInfo(
+                userId, RatingType.RENTER, booking.getRenterId());
+
+        if (ratingOpt.isPresent()) {
+            return ResponseEntity.ok(Map.of(
+                    "exists", true,
+                    "rating", ratingOpt.get()));
+        } else {
+            return ResponseEntity.ok(Map.of("exists", false));
+        }
+    }
+
+    /**
+     * Create a renter rating for a past rental
+     */
+    @PostMapping("/bookings/{bookingId}/rate-renter")
+    public ResponseEntity<?> rateRenter(
+            @PathVariable Long bookingId,
+            @RequestBody Map<String, Object> requestBody,
+            HttpSession session) {
+
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "User not logged in"));
+        }
+
+        Optional<User> userOpt = userService.getUserById(userId);
+        if (userOpt.isEmpty() || userOpt.get().getRole() != UserRoles.OWNER) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "User is not an owner"));
+        }
+
+        // Validate booking exists
+        Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
+        if (bookingOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Booking not found"));
+        }
+
+        Booking booking = bookingOpt.get();
+
+        // Validate booking belongs to this owner
+        if (!booking.getItem().getOwnerId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Booking does not belong to this owner"));
+        }
+
+        // Validate booking is in the past
+        if (booking.getEndDate().isAfter(LocalDate.now()) || booking.getEndDate().equals(LocalDate.now())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Cannot rate renter for ongoing or future rentals"));
+        }
+
+        // Get rating details from request
+        Integer rate;
+        try {
+            rate = (Integer) requestBody.get("rate");
+            if (rate == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Rating is required"));
+            }
+        } catch (ClassCastException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Invalid rating format"));
+        }
+
+        String comment = (String) requestBody.get("comment");
+
+        try {
+            Rating rating = ratingService.createRating(
+                    userId,
+                    RatingType.RENTER,
+                    booking.getRenterId(),
+                    rate,
+                    comment);
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of(
+                            "message", "Renter rated successfully",
+                            "ratingId", rating.getId()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
 }
