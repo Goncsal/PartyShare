@@ -12,6 +12,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import tqs.backend.tqsbackend.dto.ConversationSummaryDTO;
 import tqs.backend.tqsbackend.dto.MessageCreateRequest;
 import tqs.backend.tqsbackend.entity.Item;
 import tqs.backend.tqsbackend.entity.Message;
@@ -32,7 +33,7 @@ public class MessageController {
             @RequestParam Long receiverId,
             @RequestParam(required = false) Long itemId,
             Model model, HttpSession session) {
-        
+
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return "redirect:/users/login";
@@ -59,7 +60,7 @@ public class MessageController {
             @RequestParam String content,
             @RequestParam(required = false) Long itemId,
             HttpSession session, RedirectAttributes redirectAttributes) {
-        
+
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return "redirect:/users/login";
@@ -92,5 +93,20 @@ public class MessageController {
         model.addAttribute("userId", userId);
 
         return "messages";
+    }
+
+    @GetMapping("/conversations")
+    public String listConversations(Model model, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+
+        List<ConversationSummaryDTO> conversations = messageService.getConversationsList(userId);
+        model.addAttribute("conversations", conversations);
+        model.addAttribute("userId", userId);
+        model.addAttribute("userRole", session.getAttribute("userRole"));
+
+        return "conversations_list";
     }
 }

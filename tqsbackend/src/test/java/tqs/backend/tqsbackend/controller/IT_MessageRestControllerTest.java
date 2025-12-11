@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import tqs.backend.tqsbackend.dto.ConversationSummaryDTO;
 import tqs.backend.tqsbackend.dto.MessageCreateRequest;
 import tqs.backend.tqsbackend.entity.Message;
 import tqs.backend.tqsbackend.service.MessageService;
@@ -54,7 +55,7 @@ class IT_MessageRestControllerTest {
         Message message = new Message(senderId, 2L, "Hello!");
         message.setId(1L);
         message.setSentAt(LocalDateTime.now());
-        
+
         when(messageService.sendMessage(eq(senderId), any(MessageCreateRequest.class))).thenReturn(message);
 
         mockMvc.perform(post("/api/messages")
@@ -80,7 +81,7 @@ class IT_MessageRestControllerTest {
         Message msg2 = new Message(3L, userId, "Message 2");
         msg2.setId(2L);
         msg2.setSentAt(LocalDateTime.now());
-        
+
         when(messageService.getMessagesForUser(userId)).thenReturn(Arrays.asList(msg1, msg2));
 
         mockMvc.perform(get("/api/messages")
@@ -102,7 +103,7 @@ class IT_MessageRestControllerTest {
         Message msg2 = new Message(userId2, userId1, "Hello");
         msg2.setId(2L);
         msg2.setSentAt(LocalDateTime.now());
-        
+
         when(messageService.getConversation(userId1, userId2)).thenReturn(Arrays.asList(msg1, msg2));
 
         mockMvc.perform(get("/api/messages/conversation/{otherUserId}", userId2)
@@ -111,5 +112,32 @@ class IT_MessageRestControllerTest {
                 .andExpect(jsonPath("$.length()").value(2));
 
         verify(messageService).getConversation(userId1, userId2);
+    }
+
+    @Test
+    @DisplayName("GET /api/messages/conversations returns conversations list")
+    void getConversationsList_success() throws Exception {
+        Long userId = 1L;
+        ConversationSummaryDTO conv1 = new ConversationSummaryDTO(
+                2L, "John Doe", "Hello!", LocalDateTime.now(), true, 10L);
+        ConversationSummaryDTO conv2 = new ConversationSummaryDTO(
+                3L, "Jane Smith", "Thanks", LocalDateTime.now().minusHours(1), false, null);
+
+        when(messageService.getConversationsList(userId)).thenReturn(Arrays.asList(conv1, conv2));
+
+        mockMvc.perform(get("/api/messages/conversations")
+                .param("userId", userId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].otherUserId").value(2))
+                .andExpect(jsonPath("$[0].otherUserName").value("John Doe"))
+                .andExpect(jsonPath("$[0].lastMessageContent").value("Hello!"))
+                .andExpect(jsonPath("$[0].lastMessageFromMe").value(true))
+                .andExpect(jsonPath("$[0].itemId").value(10))
+                .andExpect(jsonPath("$[1].otherUserId").value(3))
+                .andExpect(jsonPath("$[1].otherUserName").value("Jane Smith"))
+                .andExpect(jsonPath("$[1].lastMessageFromMe").value(false));
+
+        verify(messageService).getConversationsList(userId);
     }
 }
