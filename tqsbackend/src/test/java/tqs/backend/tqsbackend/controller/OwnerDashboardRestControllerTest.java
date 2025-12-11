@@ -12,10 +12,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import tqs.backend.tqsbackend.entity.*;
+import tqs.backend.tqsbackend.repository.BookingRepository;
 import tqs.backend.tqsbackend.service.ItemService;
 import tqs.backend.tqsbackend.service.RatingService;
+import tqs.backend.tqsbackend.service.ReportService;
 import tqs.backend.tqsbackend.service.UserService;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +44,12 @@ public class OwnerDashboardRestControllerTest {
 
     @MockBean
     private UserService userService;
+
+    @MockBean
+    private ReportService reportService;
+
+    @MockBean
+    private BookingRepository bookingRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -120,10 +129,6 @@ public class OwnerDashboardRestControllerTest {
 
         verify(itemService, never()).findByOwnerId(anyLong());
     }
-
-
-
-
 
     @Test
     void testActivateItem_Success() throws Exception {
@@ -209,10 +214,6 @@ public class OwnerDashboardRestControllerTest {
 
         verify(ratingService, never()).getRatingByRatedInfo(any(), anyLong());
     }
-
-
-
-
 
     @Test
     void testActivateItem_NotLoggedIn() throws Exception {
@@ -306,5 +307,214 @@ public class OwnerDashboardRestControllerTest {
                 .andExpect(jsonPath("$.error").value("Item not found"));
 
         verify(ratingService, never()).getRatingByRatedInfo(any(), anyLong());
+    }
+
+    // ========== DELETE ITEM TESTS ==========
+
+    @Test
+    void testDeleteItem_Success() throws Exception {
+        session.setAttribute("userId", 1L);
+
+        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
+        doNothing().when(itemService).deleteItem(1L, 1L);
+
+        mockMvc.perform(delete("/api/owner/dashboard/items/1")
+                .session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Item deleted successfully"));
+
+        verify(itemService, times(1)).deleteItem(1L, 1L);
+    }
+
+    @Test
+    void testDeleteItem_NotLoggedIn() throws Exception {
+        mockMvc.perform(delete("/api/owner/dashboard/items/1"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("User not logged in"));
+
+        verify(itemService, never()).deleteItem(anyLong(), anyLong());
+    }
+
+    @Test
+    void testDeleteItem_NotOwnerRole() throws Exception {
+        session.setAttribute("userId", 2L);
+        given(userService.getUserById(2L)).willReturn(Optional.of(renterUser));
+
+        mockMvc.perform(delete("/api/owner/dashboard/items/1")
+                .session(session))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("User is not an owner"));
+
+        verify(itemService, never()).deleteItem(anyLong(), anyLong());
+    }
+
+    @Test
+    void testDeleteItem_NotOwnerOfItem() throws Exception {
+        session.setAttribute("userId", 1L);
+
+        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
+        doThrow(new IllegalArgumentException("User 1 is not the owner of item 99"))
+                .when(itemService).deleteItem(99L, 1L);
+
+        mockMvc.perform(delete("/api/owner/dashboard/items/99")
+                .session(session))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("User 1 is not the owner of item 99"));
+    }
+
+    // ========== CREATE DAMAGE REPORT TESTS ==========
+
+    @Test
+    void testCreateDamageReport_Success() throws Exception {
+        session.setAttribute("userId", 1L);
+
+        Booking pastBooking = new Booking();
+        pastBooking.setId(1L);
+        pastBooking.setRenterId(2L);
+        pastBooking.setEndDate(LocalDate.now().minusDays(1));
+        pastBooking.setItem(item1);
+
+        Report report = new Report(1L, "Damage Report - Booking #1 - Item 1", "The tent had a large tear");
+        report.setId(1L);
+
+        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
+        given(bookingRepository.findById(1L)).willReturn(Optional.of(pastBooking));
+        given(reportService.createReport(eq(1L), anyString(), anyString())).willReturn(report);
+
+        String requestBody = "{\"damageDescription\":\"The tent had a large tear\"}";
+
+        mockMvc.perform(post("/api/owner/dashboard/bookings/1/damage-report")
+                .session(session)
+                .contentType("application/json")
+                .content(requestBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("Damage report created successfully"))
+                .andExpect(jsonPath("$.reportId").value(1));
+
+        verify(reportService, times(1)).createReport(eq(1L), anyString(), anyString());
+    }
+
+    @Test
+    void testCreateDamageReport_NotLoggedIn() throws Exception {
+        String requestBody = "{\"damageDescription\":\"Damage description\"}";
+
+        mockMvc.perform(post("/api/owner/dashboard/bookings/1/damage-report")
+                .contentType("application/json")
+                .content(requestBody))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("User not logged in"));
+
+        verify(reportService, never()).createReport(anyLong(), anyString(), anyString());
+    }
+
+    @Test
+    void testCreateDamageReport_NotOwnerRole() throws Exception {
+        session.setAttribute("userId", 2L);
+        given(userService.getUserById(2L)).willReturn(Optional.of(renterUser));
+
+        String requestBody = "{\"damageDescription\":\"Damage description\"}";
+
+        mockMvc.perform(post("/api/owner/dashboard/bookings/1/damage-report")
+                .session(session)
+                .contentType("application/json")
+                .content(requestBody))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("User is not an owner"));
+
+        verify(reportService, never()).createReport(anyLong(), anyString(), anyString());
+    }
+
+    @Test
+    void testCreateDamageReport_BookingNotFound() throws Exception {
+        session.setAttribute("userId", 1L);
+        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
+        given(bookingRepository.findById(99L)).willReturn(Optional.empty());
+
+        String requestBody = "{\"damageDescription\":\"Damage description\"}";
+
+        mockMvc.perform(post("/api/owner/dashboard/bookings/99/damage-report")
+                .session(session)
+                .contentType("application/json")
+                .content(requestBody))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Booking not found"));
+
+        verify(reportService, never()).createReport(anyLong(), anyString(), anyString());
+    }
+
+    @Test
+    void testCreateDamageReport_NotOwnerOfBooking() throws Exception {
+        session.setAttribute("userId", 1L);
+
+        Booking booking = new Booking();
+        booking.setId(1L);
+        booking.setRenterId(2L);
+        booking.setEndDate(LocalDate.now().minusDays(1));
+        Item otherOwnerItem = new Item("Other Item", "Description", 10.0, category, 4.5, "Location", 99L);
+        booking.setItem(otherOwnerItem);
+
+        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
+        given(bookingRepository.findById(1L)).willReturn(Optional.of(booking));
+
+        String requestBody = "{\"damageDescription\":\"Damage description\"}";
+
+        mockMvc.perform(post("/api/owner/dashboard/bookings/1/damage-report")
+                .session(session)
+                .contentType("application/json")
+                .content(requestBody))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("Booking does not belong to this owner"));
+
+        verify(reportService, never()).createReport(anyLong(), anyString(), anyString());
+    }
+
+    @Test
+    void testCreateDamageReport_FutureRental() throws Exception {
+        session.setAttribute("userId", 1L);
+
+        Booking futureBooking = new Booking();
+        futureBooking.setId(1L);
+        futureBooking.setRenterId(2L);
+        futureBooking.setEndDate(LocalDate.now().plusDays(5));
+        futureBooking.setItem(item1);
+
+        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
+        given(bookingRepository.findById(1L)).willReturn(Optional.of(futureBooking));
+
+        String requestBody = "{\"damageDescription\":\"Damage description\"}";
+
+        mockMvc.perform(post("/api/owner/dashboard/bookings/1/damage-report")
+                .session(session)
+                .contentType("application/json")
+                .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Cannot report damage for ongoing or future rentals"));
+
+        verify(reportService, never()).createReport(anyLong(), anyString(), anyString());
+    }
+
+    @Test
+    void testCreateDamageReport_EmptyDescription() throws Exception {
+        session.setAttribute("userId", 1L);
+
+        Booking pastBooking = new Booking();
+        pastBooking.setId(1L);
+        pastBooking.setRenterId(2L);
+        pastBooking.setEndDate(LocalDate.now().minusDays(1));
+        pastBooking.setItem(item1);
+
+        given(userService.getUserById(1L)).willReturn(Optional.of(ownerUser));
+        given(bookingRepository.findById(1L)).willReturn(Optional.of(pastBooking));
+
+        String requestBody = "{\"damageDescription\":\"\"}";
+
+        mockMvc.perform(post("/api/owner/dashboard/bookings/1/damage-report")
+                .session(session)
+                .contentType("application/json")
+                .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Damage description is required"));
+
+        verify(reportService, never()).createReport(anyLong(), anyString(), anyString());
     }
 }

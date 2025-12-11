@@ -82,8 +82,10 @@
                     <a href="/owner/dashboard">My Dashboard</a> |
                     <a href="/bookings/requests">Booking Requests</a> |
                 </span>
-                <a href="/favorites">My Favorites</a> |
-                <a href="/bookings">My Bookings</a> |
+                <span th:if="${userRole == 'RENTER'}">
+                    <a href="/favorites">My Favorites</a> |
+                    <a href="/bookings">My Bookings</a> |
+                </span>
                 <a href="/reports">My Reports</a> |
                 <a href="/users/profile">Profile</a> |
                 <a href="/users/logout" style="color: #c0392b;">Logout</a>
