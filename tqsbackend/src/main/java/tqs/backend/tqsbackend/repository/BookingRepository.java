@@ -18,8 +18,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByRenterId(Long renterId);
 
-    @Query("SELECT b FROM Booking b WHERE b.item.id = :itemId AND b.status IN ('PENDING', 'CONFIRMED')")
+    @Query("SELECT b FROM Booking b WHERE b.item.id = :itemId AND b.status IN ('REQUESTED', 'ACCEPTED')")
     List<Booking> findActiveBookingsByItemId(@Param("itemId") Long itemId);
 
     boolean existsByRenterIdAndItem_IdAndStatusAndEndDateBefore(Long renterId, Long itemId, BookingStatus status, LocalDate date);
+
+    List<Booking> findByItem_OwnerIdAndStatus(Long ownerId, BookingStatus status);
 }

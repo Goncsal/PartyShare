@@ -37,14 +37,14 @@ class BookingRepositoryTest {
         LocalDate start = LocalDate.now().plusDays(5);
         LocalDate end = LocalDate.now().plusDays(8);
         Booking existing = new Booking(item, 300L, start, end, BigDecimal.valueOf(item.getPrice()),
-                BigDecimal.valueOf(item.getPrice()).multiply(BigDecimal.valueOf(3)), BookingStatus.CONFIRMED,
+                BigDecimal.valueOf(item.getPrice()).multiply(BigDecimal.valueOf(3)), BookingStatus.ACCEPTED,
                 PaymentStatus.PAID);
         bookingRepository.save(existing);
 
         boolean overlap = bookingRepository.existsByItemIdAndStatusInAndStartDateLessThanAndEndDateGreaterThan(
-                item.getId(), List.of(BookingStatus.CONFIRMED, BookingStatus.PENDING), end.minusDays(1), start.plusDays(1));
+                item.getId(), List.of(BookingStatus.ACCEPTED, BookingStatus.REQUESTED), end.minusDays(1), start.plusDays(1));
         boolean noOverlap = bookingRepository.existsByItemIdAndStatusInAndStartDateLessThanAndEndDateGreaterThan(
-                item.getId(), List.of(BookingStatus.CONFIRMED, BookingStatus.PENDING), end.plusDays(2), end.plusDays(1));
+                item.getId(), List.of(BookingStatus.ACCEPTED, BookingStatus.REQUESTED), end.plusDays(2), end.plusDays(1));
 
         assertThat(overlap).isTrue();
         assertThat(noOverlap).isFalse();

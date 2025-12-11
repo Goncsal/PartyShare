@@ -42,27 +42,20 @@ public class BookingService {
         validateDates(request.getStartDate(), request.getEndDate());
         ensureAvailability(item.getId(), request.getStartDate(), request.getEndDate());
 
-        BigDecimal dailyPrice = BigDecimal.valueOf(item.getPrice());
-        BigDecimal totalPrice = calculateTotalPrice(dailyPrice, request.getStartDate(), request.getEndDate());
+        BigDecimal dailyPrice;
+        if (request.getProposedPrice() != null) {
+            validatePrice(request.getProposedPrice());
+            dailyPrice = BigDecimal.valueOf(request.getProposedPrice()).setScale(2, java.math.RoundingMode.HALF_UP);
+        } else {
+            dailyPrice = BigDecimal.valueOf(item.getPrice()).setScale(2, java.math.RoundingMode.HALF_UP);
+        }
+        
+        BigDecimal totalPrice = calculateTotalPrice(dailyPrice, request.getStartDate(), request.getEndDate()).setScale(2, java.math.RoundingMode.HALF_UP);
 
         Booking booking = new Booking(item, request.getRenterId(), request.getStartDate(), request.getEndDate(),
-                dailyPrice, totalPrice, BookingStatus.PENDING, PaymentStatus.PENDING);
+                dailyPrice, totalPrice, BookingStatus.REQUESTED, PaymentStatus.PENDING);
 
-        booking = bookingRepository.save(booking);
-
-        PaymentResult paymentResult = paymentService.charge(request.getRenterId(), item, totalPrice, booking.getId());
-        if (paymentResult.success()) {
-            booking.setStatus(BookingStatus.CONFIRMED);
-            booking.setPaymentStatus(PaymentStatus.PAID);
-            booking.setPaymentReference(paymentResult.reference());
-            return bookingRepository.save(booking);
-        }
-
-        booking.setStatus(BookingStatus.REJECTED);
-        booking.setPaymentStatus(PaymentStatus.FAILED);
-        booking.setPaymentReference(paymentResult.reference());
-        bookingRepository.save(booking);
-        throw new PaymentException(paymentResult.reason() != null ? paymentResult.reason() : "Payment failed");
+        return bookingRepository.save(booking);
     }
 
     public Booking getBooking(Long id) {
@@ -96,7 +89,7 @@ public class BookingService {
 
     private void ensureAvailability(Long itemId, LocalDate startDate, LocalDate endDate) {
         boolean overlapping = bookingRepository.existsByItemIdAndStatusInAndStartDateLessThanAndEndDateGreaterThan(
-                itemId, Arrays.asList(BookingStatus.CONFIRMED, BookingStatus.PENDING), endDate, startDate);
+                itemId, Arrays.asList(BookingStatus.ACCEPTED, BookingStatus.REQUESTED), endDate, startDate);
         if (overlapping) {
             throw new AvailabilityException("Item not available for the selected dates");
         }
@@ -125,7 +118,7 @@ public class BookingService {
             throw new BookingValidationException("You can only cancel your own bookings");
         }
 
-        if (booking.getStatus() != BookingStatus.PENDING && booking.getStatus() != BookingStatus.CONFIRMED) {
+        if (booking.getStatus() != BookingStatus.REQUESTED && booking.getStatus() != BookingStatus.ACCEPTED) {
             throw new BookingValidationException("This booking cannot be cancelled");
         }
 
@@ -138,5 +131,77 @@ public class BookingService {
                 .stream()
                 .map(b -> new tqs.backend.tqsbackend.dto.DateRangeDto(b.getStartDate(), b.getEndDate()))
                 .toList();
+    }
+
+    public List<Booking> getPendingBookingsByOwner(Long ownerId) {
+        return bookingRepository.findByItem_OwnerIdAndStatus(ownerId, BookingStatus.REQUESTED);
+    }
+
+    @Transactional
+    public Booking acceptBooking(Long bookingId, Long ownerId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+        
+        if (!booking.getItem().getOwnerId().equals(ownerId)) {
+            throw new BookingValidationException("You can only accept bookings for your own items");
+        }
+        
+        booking.setStatus(BookingStatus.ACCEPTED);
+        return bookingRepository.save(booking);
+    }
+
+    @Transactional
+    public Booking declineBooking(Long bookingId, Long ownerId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+        
+        if (!booking.getItem().getOwnerId().equals(ownerId)) {
+            throw new BookingValidationException("You can only decline bookings for your own items");
+        }
+        
+        booking.setStatus(BookingStatus.REJECTED);
+        return bookingRepository.save(booking);
+    }
+
+    @Transactional
+    public Booking counterOfferBooking(Long bookingId, Double newPrice, Long ownerId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+        
+        if (!booking.getItem().getOwnerId().equals(ownerId)) {
+            throw new BookingValidationException("You can only make counter-offers for your own items");
+        }
+        
+        booking.setStatus(BookingStatus.COUNTER_OFFER);
+        BigDecimal daily = BigDecimal.valueOf(newPrice).setScale(2, java.math.RoundingMode.HALF_UP);
+        booking.setDailyPrice(daily);
+        booking.setTotalPrice(calculateTotalPrice(daily, booking.getStartDate(), booking.getEndDate()).setScale(2, java.math.RoundingMode.HALF_UP));
+        return bookingRepository.save(booking);
+    }
+
+    @Transactional
+    public Booking acceptCounterOffer(Long bookingId, Long renterId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+        
+        if (!booking.getRenterId().equals(renterId)) {
+            throw new BookingValidationException("You can only accept counter-offers for your own bookings");
+        }
+        
+        booking.setStatus(BookingStatus.ACCEPTED);
+        return bookingRepository.save(booking);
+    }
+
+    @Transactional
+    public Booking declineCounterOffer(Long bookingId, Long renterId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        if (!booking.getRenterId().equals(renterId)) {
+            throw new BookingValidationException("You can only decline counter-offers for your own bookings");
+        }
+
+        booking.setStatus(BookingStatus.CANCELLED);
+        return bookingRepository.save(booking);
     }
 }

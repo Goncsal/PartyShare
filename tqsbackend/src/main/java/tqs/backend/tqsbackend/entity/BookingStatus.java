@@ -1,8 +1,9 @@
 package tqs.backend.tqsbackend.entity;
 
 public enum BookingStatus {
-    PENDING,
-    CONFIRMED,
+
+    REQUESTED,
+    ACCEPTED,
+    REJECTED,
     CANCELLED,
-    REJECTED
-}
+    COUNTER_OFFER}
