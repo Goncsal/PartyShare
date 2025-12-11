@@ -28,83 +28,58 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OwnerDashboardRestController {
 
+    private static final String ERROR_KEY = "error";
+    private static final String MESSAGE_KEY = "message";
+
     private final ItemService itemService;
     private final RatingService ratingService;
     private final UserService userService;
     private final ReportService reportService;
     private final BookingRepository bookingRepository;
 
-    // ========== HELPER METHODS TO REDUCE DUPLICATION ==========
-
-    /**
-     * Validates that the user is logged in and has OWNER role
-     * 
-     * @return ResponseEntity with error if validation fails, null if successful
-     */
     private ResponseEntity<Object> validateOwnerSession(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "User not logged in"));
+                    .body(Map.of(ERROR_KEY, "User not logged in"));
         }
 
         Optional<User> userOpt = userService.getUserById(userId);
         if (userOpt.isEmpty() || userOpt.get().getRole() != UserRoles.OWNER) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "User is not an owner"));
+                    .body(Map.of(ERROR_KEY, "User is not an owner"));
         }
         return null;
     }
 
-    /**
-     * Gets the current user ID from session (assumes validation already done)
-     */
     private Long getUserId(HttpSession session) {
         return (Long) session.getAttribute("userId");
     }
 
-    /**
-     * Validates that a booking exists
-     * 
-     * @return ResponseEntity with error if validation fails, null if successful
-     */
     private ResponseEntity<Object> validateBooking(Long bookingId) {
         if (bookingRepository.findById(bookingId).isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Booking not found"));
+                    .body(Map.of(ERROR_KEY, "Booking not found"));
         }
         return null;
     }
 
-    /**
-     * Validates that the booking belongs to the owner
-     * 
-     * @return ResponseEntity with error if validation fails, null if successful
-     */
     private ResponseEntity<Object> validateBookingOwnership(Booking booking, Long userId) {
         if (!booking.getItem().getOwnerId().equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Booking does not belong to this owner"));
+                    .body(Map.of(ERROR_KEY, "Booking does not belong to this owner"));
         }
         return null;
     }
 
-    /**
-     * Validates that the booking is in the past
-     * 
-     * @return ResponseEntity with error if validation fails, null if successful
-     */
     private ResponseEntity<Object> validatePastBooking(Booking booking, String errorMessage) {
         if (booking.getEndDate().isAfter(LocalDate.now()) || booking.getEndDate().equals(LocalDate.now())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", errorMessage));
+                    .body(Map.of(ERROR_KEY, errorMessage));
         }
         return null;
     }
 
-    /**
-     * Get all items for the logged-in owner
-     */
     @GetMapping("/items")
     public ResponseEntity<Object> getOwnerItems(HttpSession session) {
         ResponseEntity<Object> validationError = validateOwnerSession(session);
@@ -115,9 +90,6 @@ public class OwnerDashboardRestController {
         return ResponseEntity.ok(items);
     }
 
-    /**
-     * Activate an item
-     */
     @PatchMapping("/items/{id}/activate")
     public ResponseEntity<Object> activateItem(@PathVariable Long id, HttpSession session) {
         ResponseEntity<Object> validationError = validateOwnerSession(session);
@@ -129,13 +101,10 @@ public class OwnerDashboardRestController {
             return ResponseEntity.ok(item);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
+                    .body(Map.of(ERROR_KEY, e.getMessage()));
         }
     }
 
-    /**
-     * Deactivate an item
-     */
     @PatchMapping("/items/{id}/deactivate")
     public ResponseEntity<Object> deactivateItem(@PathVariable Long id, HttpSession session) {
         ResponseEntity<Object> validationError = validateOwnerSession(session);
@@ -147,13 +116,10 @@ public class OwnerDashboardRestController {
             return ResponseEntity.ok(item);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
+                    .body(Map.of(ERROR_KEY, e.getMessage()));
         }
     }
 
-    /**
-     * Get all ratings for a specific item owned by the logged-in owner
-     */
     @GetMapping("/items/{id}/ratings")
     public ResponseEntity<Object> getItemRatings(@PathVariable Long id, HttpSession session) {
         ResponseEntity<Object> validationError = validateOwnerSession(session);
@@ -162,25 +128,21 @@ public class OwnerDashboardRestController {
 
         Long userId = getUserId(session);
 
-        // Verify the item belongs to this owner
         Item item = itemService.getItemById(id);
         if (item == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Item not found"));
+                    .body(Map.of(ERROR_KEY, "Item not found"));
         }
 
         if (!item.getOwnerId().equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Item does not belong to this owner"));
+                    .body(Map.of(ERROR_KEY, "Item does not belong to this owner"));
         }
 
         List<Rating> ratings = ratingService.getRatingByRatedInfo(RatingType.PRODUCT, id);
         return ResponseEntity.ok(ratings);
     }
 
-    /**
-     * Delete an item
-     */
     @DeleteMapping("/items/{id}")
     public ResponseEntity<Object> deleteItem(@PathVariable Long id, HttpSession session) {
         ResponseEntity<Object> validationError = validateOwnerSession(session);
@@ -189,16 +151,13 @@ public class OwnerDashboardRestController {
 
         try {
             itemService.deleteItem(id, getUserId(session));
-            return ResponseEntity.ok(Map.of("message", "Item deleted successfully"));
+            return ResponseEntity.ok(Map.of(MESSAGE_KEY, "Item deleted successfully"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
+                    .body(Map.of(ERROR_KEY, e.getMessage()));
         }
     }
 
-    /**
-     * Create a damage report for a past rental
-     */
     @PostMapping("/bookings/{bookingId}/damage-report")
     public ResponseEntity<Object> createDamageReport(
             @PathVariable Long bookingId,
@@ -224,25 +183,25 @@ public class OwnerDashboardRestController {
         if (validationError != null)
             return validationError;
 
-        // Get damage description from request
         String damageDescription = requestBody.get("damageDescription");
         if (damageDescription == null || damageDescription.trim().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Damage description is required"));
+                    .body(Map.of(ERROR_KEY, "Damage description is required"));
         }
 
-        // Create report with formatted title and description
         String reportTitle = String.format("Damage Report - Booking #%d - %s",
                 bookingId, booking.getItem().getName());
 
-        String reportDescription = String.format(
-                "Damage Report Details:\n" +
-                        "- Booking ID: %d\n" +
-                        "- Item: %s (ID: %d)\n" +
-                        "- Renter ID: %d\n" +
-                        "- Rental Period: %s to %s\n" +
-                        "- Total Price: €%.2f\n\n" +
-                        "Damage Description:\n%s",
+        String reportDescription = String.format("""
+                Damage Report Details:
+                - Booking ID: %d
+                - Item: %s (ID: %d)
+                - Renter ID: %d
+                - Rental Period: %s to %s
+                - Total Price: €%.2f
+
+                Damage Description:
+                %s""",
                 booking.getId(),
                 booking.getItem().getName(),
                 booking.getItem().getId(),
@@ -256,11 +215,11 @@ public class OwnerDashboardRestController {
             Report report = reportService.createReport(userId, reportTitle, reportDescription);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of(
-                            "message", "Damage report created successfully",
+                            MESSAGE_KEY, "Damage report created successfully",
                             "reportId", report.getId()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
+                    .body(Map.of(ERROR_KEY, e.getMessage()));
         }
     }
 
@@ -284,7 +243,6 @@ public class OwnerDashboardRestController {
         if (validationError != null)
             return validationError;
 
-        // Check if a rating exists
         Optional<Rating> ratingOpt = ratingService.getRatingBySenderIdAndRatedInfo(
                 userId, RatingType.RENTER, booking.getRenterId());
 
@@ -297,9 +255,6 @@ public class OwnerDashboardRestController {
         }
     }
 
-    /**
-     * Create a renter rating for a past rental
-     */
     @PostMapping("/bookings/{bookingId}/rate-renter")
     public ResponseEntity<Object> rateRenter(
             @PathVariable Long bookingId,
@@ -325,17 +280,16 @@ public class OwnerDashboardRestController {
         if (validationError != null)
             return validationError;
 
-        // Get rating details from request
         Integer rate;
         try {
             rate = (Integer) requestBody.get("rate");
             if (rate == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("error", "Rating is required"));
+                        .body(Map.of(ERROR_KEY, "Rating is required"));
             }
         } catch (ClassCastException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Invalid rating format"));
+                    .body(Map.of(ERROR_KEY, "Invalid rating format"));
         }
 
         String comment = (String) requestBody.get("comment");
@@ -350,11 +304,11 @@ public class OwnerDashboardRestController {
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of(
-                            "message", "Renter rated successfully",
+                            MESSAGE_KEY, "Renter rated successfully",
                             "ratingId", rating.getId()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
+                    .body(Map.of(ERROR_KEY, e.getMessage()));
         }
     }
 }
