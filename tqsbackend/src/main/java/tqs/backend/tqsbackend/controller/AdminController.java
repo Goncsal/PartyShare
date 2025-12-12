@@ -20,10 +20,12 @@ public class AdminController {
 
     private final UserService userService;
     private final tqs.backend.tqsbackend.service.CategoryService categoryService;
+    private final tqs.backend.tqsbackend.service.ReportService reportService;
 
-    public AdminController(UserService userService, tqs.backend.tqsbackend.service.CategoryService categoryService) {
+    public AdminController(UserService userService, tqs.backend.tqsbackend.service.CategoryService categoryService, tqs.backend.tqsbackend.service.ReportService reportService) {
         this.userService = userService;
         this.categoryService = categoryService;
+        this.reportService = reportService;
     }
 
     @GetMapping("/dashboard")
@@ -75,5 +77,15 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/admin/categories";
+    }
+
+    @GetMapping("/reports")
+    public String reports(HttpSession session, Model model) {
+        UserRoles role = (UserRoles) session.getAttribute("userRole");
+        if (role != UserRoles.ADMIN) {
+            return "redirect:/users/login";
+        }
+        model.addAttribute("reports", reportService.getAllReports());
+        return "admin/reports";
     }
 }

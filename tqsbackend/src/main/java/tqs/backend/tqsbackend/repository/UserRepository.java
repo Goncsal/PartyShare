@@ -35,8 +35,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "(:keyword IS NULL OR LOWER(u.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))) "
             +
             "AND (:role IS NULL OR u.role = :role) " +
-            "AND (cast(:startDate as timestamp) IS NULL OR u.createdAt >= :startDate) " +
-            "AND (cast(:endDate as timestamp) IS NULL OR u.createdAt <= :endDate)")
+            "AND (:startDate IS NULL OR u.createdAt >= :startDate) " +
+            "AND (:endDate IS NULL OR u.createdAt <= :endDate)")
     List<User> searchUsers(@org.springframework.data.repository.query.Param("keyword") String keyword,
             @org.springframework.data.repository.query.Param("role") UserRoles role,
             @org.springframework.data.repository.query.Param("startDate") java.time.LocalDateTime startDate,
