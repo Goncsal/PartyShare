@@ -147,7 +147,8 @@ public class BookingService {
     }
 
     public List<Booking> getPendingBookingsByOwner(Long ownerId) {
-        return bookingRepository.findByItem_OwnerIdAndStatus(ownerId, BookingStatus.REQUESTED);
+        return bookingRepository.findByItem_OwnerIdAndStatusIn(ownerId, 
+            Arrays.asList(BookingStatus.REQUESTED, BookingStatus.COUNTER_OFFER));
     }
 
     @Transactional

@@ -33,8 +33,13 @@
                     <li class="nav-item" th:if="${session.userId != null}">
                         <a class="nav-link" href="/bookings">Bookings</a>
                     </li>
-                    <li class="nav-item" th:if="${session.userId != null}">
+                    <li class="nav-item"
+                        th:if="${session.userRole == T(tqs.backend.tqsbackend.entity.UserRoles).OWNER}">
                         <a class="nav-link" href="/bookings/requests">Requests</a>
+                    </li>
+                    <li class="nav-item"
+                        th:if="${session.userRole == T(tqs.backend.tqsbackend.entity.UserRoles).OWNER}">
+                        <a class="nav-link" href="/items/my-items">My Items</a>
                     </li>
                     <li class="nav-item" th:if="${session.userId != null}">
                         <a class="nav-link" href="/reports">Reports</a>

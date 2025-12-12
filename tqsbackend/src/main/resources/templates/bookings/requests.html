@@ -126,7 +126,7 @@
                         style="color: #e67e22; font-weight: bold;">(Counter Offer Sent)</span>
                 </p>
 
-                <div class="btn-group" style="margin-top: 15px;">
+                <div th:if="${booking.status.toString() == 'REQUESTED'}" class="btn-group" style="margin-top: 15px;">
                     <form th:action="@{/bookings/{id}/accept(id=${booking.id})}" method="post" style="display:inline;">
                         <button type="submit" class="btn btn-success">Accept</button>
                     </form>
@@ -140,6 +140,11 @@
                         th:data-target="'counterOffer-' + ${booking.id}" style="margin-left: 10px;">
                         Counter Offer
                     </button>
+                </div>
+
+                <div th:if="${booking.status.toString() == 'COUNTER_OFFER'}" style="margin-top: 15px;">
+                    <span class="badge bg-warning text-dark" style="padding: 10px; font-size: 1em;">Waiting for Renter
+                        response</span>
                 </div>
 
                 <div th:id="'counterOffer-' + ${booking.id}" style="display: none; margin-top: 15px;">
