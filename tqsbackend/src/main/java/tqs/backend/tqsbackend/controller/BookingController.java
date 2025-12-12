@@ -81,12 +81,12 @@ public class BookingController {
         }
 
         try {
-            bookingService.createBooking(request);
-            redirectAttributes.addFlashAttribute("success", "Booking request sent! Waiting for owner approval.");
-            return "redirect:/bookings";
+            Booking booking = bookingService.createBooking(request);
+            // Redirect to payment page instead of showing success immediately
+            return "redirect:/payment/" + booking.getId();
         } catch (AvailabilityException e) {
             redirectAttributes.addFlashAttribute("error", "Dates unavailable for this item");
-        } catch (BookingValidationException e) {
+        } catch (PaymentException | BookingValidationException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
 

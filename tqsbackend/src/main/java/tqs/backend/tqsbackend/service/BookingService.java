@@ -45,18 +45,36 @@ public class BookingService {
         BigDecimal dailyPrice;
         if (request.getProposedPrice() != null) {
             validatePrice(request.getProposedPrice());
-            dailyPrice = BigDecimal.valueOf(request.getProposedPrice()).setScale(2, java.math.RoundingMode.HALF_UP);
+            dailyPrice = BigDecimal.valueOf(request.getProposedPrice());
         } else {
-            dailyPrice = BigDecimal.valueOf(item.getPrice()).setScale(2, java.math.RoundingMode.HALF_UP);
+            dailyPrice = BigDecimal.valueOf(item.getPrice());
         }
-
-        BigDecimal totalPrice = calculateTotalPrice(dailyPrice, request.getStartDate(), request.getEndDate())
-                .setScale(2, java.math.RoundingMode.HALF_UP);
+        
+        BigDecimal totalPrice = calculateTotalPrice(dailyPrice, request.getStartDate(), request.getEndDate());
 
         Booking booking = new Booking(item, request.getRenterId(), request.getStartDate(), request.getEndDate(),
                 dailyPrice, totalPrice, BookingStatus.REQUESTED, PaymentStatus.PENDING);
 
-        return bookingRepository.save(booking);
+        try {
+            booking = bookingRepository.save(booking);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+
+        PaymentResult paymentResult = paymentService.charge(request.getRenterId(), item, totalPrice, booking.getId());
+        if (paymentResult.success()) {
+            // Status remains REQUESTED for owner review, but payment is marked as PAID (held)
+            booking.setPaymentStatus(PaymentStatus.PAID);
+            booking.setPaymentReference(paymentResult.reference());
+            return bookingRepository.save(booking);
+        }
+
+        booking.setStatus(BookingStatus.REJECTED);
+        booking.setPaymentStatus(PaymentStatus.FAILED);
+        booking.setPaymentReference(paymentResult.reference());
+        bookingRepository.save(booking);
+        throw new PaymentException(paymentResult.reason() != null ? paymentResult.reason() : "Payment failed");
     }
 
     public Booking getBooking(Long id) {
@@ -123,10 +141,6 @@ public class BookingService {
             throw new BookingValidationException("This booking cannot be cancelled");
         }
 
-        if (!booking.getEndDate().isAfter(LocalDate.now())) {
-            throw new BookingValidationException("Cannot cancel bookings that have already ended");
-        }
-
         booking.setStatus(BookingStatus.CANCELLED);
         return bookingRepository.save(booking);
     }
@@ -146,11 +160,11 @@ public class BookingService {
     public Booking acceptBooking(Long bookingId, Long ownerId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
-
+        
         if (!booking.getItem().getOwnerId().equals(ownerId)) {
             throw new BookingValidationException("You can only accept bookings for your own items");
         }
-
+        
         booking.setStatus(BookingStatus.ACCEPTED);
         return bookingRepository.save(booking);
     }
@@ -159,11 +173,11 @@ public class BookingService {
     public Booking declineBooking(Long bookingId, Long ownerId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
-
+        
         if (!booking.getItem().getOwnerId().equals(ownerId)) {
             throw new BookingValidationException("You can only decline bookings for your own items");
         }
-
+        
         booking.setStatus(BookingStatus.REJECTED);
         return bookingRepository.save(booking);
     }
@@ -172,16 +186,15 @@ public class BookingService {
     public Booking counterOfferBooking(Long bookingId, Double newPrice, Long ownerId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
-
+        
         if (!booking.getItem().getOwnerId().equals(ownerId)) {
             throw new BookingValidationException("You can only make counter-offers for your own items");
         }
-
+        
         booking.setStatus(BookingStatus.COUNTER_OFFER);
-        BigDecimal daily = BigDecimal.valueOf(newPrice).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal daily = BigDecimal.valueOf(newPrice);
         booking.setDailyPrice(daily);
-        booking.setTotalPrice(calculateTotalPrice(daily, booking.getStartDate(), booking.getEndDate()).setScale(2,
-                java.math.RoundingMode.HALF_UP));
+        booking.setTotalPrice(calculateTotalPrice(daily, booking.getStartDate(), booking.getEndDate()));
         return bookingRepository.save(booking);
     }
 
@@ -189,11 +202,11 @@ public class BookingService {
     public Booking acceptCounterOffer(Long bookingId, Long renterId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
-
+        
         if (!booking.getRenterId().equals(renterId)) {
             throw new BookingValidationException("You can only accept counter-offers for your own bookings");
         }
-
+        
         booking.setStatus(BookingStatus.ACCEPTED);
         return bookingRepository.save(booking);
     }

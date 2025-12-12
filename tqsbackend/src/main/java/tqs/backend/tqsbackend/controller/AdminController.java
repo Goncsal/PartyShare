@@ -18,10 +18,11 @@ import tqs.backend.tqsbackend.service.UserService;
 @RequestMapping("/admin")
 public class AdminController {
 
-    private final UserService userService;
+    private final tqs.backend.tqsbackend.service.CategoryService categoryService;
 
-    public AdminController(UserService userService) {
+    public AdminController(UserService userService, tqs.backend.tqsbackend.service.CategoryService categoryService) {
         this.userService = userService;
+        this.categoryService = categoryService;
     }
 
     @GetMapping("/dashboard")
@@ -47,5 +48,31 @@ public class AdminController {
         List<User> users = userService.searchUsers(keyword, role, startDate, endDate);
         model.addAttribute("users", users);
         return "admin/users";
+    }
+
+    @GetMapping("/categories")
+    public String categories(HttpSession session, Model model) {
+        UserRoles role = (UserRoles) session.getAttribute("userRole");
+        if (role != UserRoles.ADMIN) {
+            return "redirect:/users/login";
+        }
+        model.addAttribute("categories", categoryService.getAllCategories());
+        return "admin/categories";
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/categories")
+    public String createCategory(@RequestParam String name, HttpSession session, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        UserRoles role = (UserRoles) session.getAttribute("userRole");
+        if (role != UserRoles.ADMIN) {
+            return "redirect:/users/login";
+        }
+
+        try {
+            categoryService.createCategory(name);
+            redirectAttributes.addFlashAttribute("success", "Category created successfully");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/categories";
     }
 }

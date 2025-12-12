@@ -143,6 +143,8 @@ class BookingServiceTest {
             b.setId(1L);
             return b;
         });
+        given(paymentService.charge(anyLong(), any(Item.class), any(BigDecimal.class), anyLong()))
+                .willReturn(new PaymentResult(true, "ref123", null));
 
         Booking result = bookingService.createBooking(request);
 
@@ -170,6 +172,8 @@ class BookingServiceTest {
             b.setId(1L);
             return b;
         });
+        given(paymentService.charge(anyLong(), any(Item.class), any(BigDecimal.class), anyLong()))
+                .willReturn(new PaymentResult(true, "ref123", null));
 
         Booking result = bookingService.createBooking(request);
 
