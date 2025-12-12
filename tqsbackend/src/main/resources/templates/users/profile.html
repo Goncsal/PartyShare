@@ -1,91 +1,46 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/base}">
 
 <head>
-    <title>User Profile</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            margin: 20px;
-            background: #f7f9fb;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 40px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-            border: 1px solid #ddd;
-        }
-
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 30px;
-        }
-
-        .profile-info {
-            margin-bottom: 30px;
-        }
-
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .label {
-            font-weight: 600;
-            color: #7f8c8d;
-        }
-
-        .value {
-            font-weight: 500;
-            color: #2c3e50;
-        }
-
-        .actions {
-            text-align: center;
-        }
-
-        a.button {
-            display: inline-block;
-            padding: 10px 20px;
-            background: #95a5a6;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            font-weight: 600;
-        }
-
-        a.button:hover {
-            background: #7f8c8d;
-        }
-    </style>
+    <title th:text="${user.name} + ' - Profile'">User Profile</title>
 </head>
 
 <body>
-    <div class="container">
-        <h1>User Profile</h1>
-
-        <div class="profile-info">
-            <div class="info-row">
-                <span class="label">Status</span>
-                <span class="value">Logged In (Session Simulation)</span>
+    <div layout:fragment="content" class="container mt-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">User Profile</h3>
             </div>
-            <!-- Placeholder content as we don't have full session management yet -->
-            <p style="text-align: center; color: #7f8c8d; margin-top: 20px;">
-                Welcome to your profile! <br>
-                (User details would appear here in a full implementation)
-            </p>
-        </div>
-
-        <div class="actions">
-            <a href="/items/search" class="button">Back to Home</a>
-            <a href="/users/login" class="button" style="background: #e74c3c; margin-left: 10px;">Logout</a>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center mb-3">
+                        <img src="https://ui-avatars.com/api/?name=${user.name}&background=random&size=200"
+                            th:src="@{'https://ui-avatars.com/api/?name=' + ${user.name} + '&background=random&size=200'}"
+                            class="rounded-circle img-fluid mb-3" alt="User Avatar">
+                        <h4 th:text="${user.name}">User Name</h4>
+                        <span class="badge bg-secondary" th:text="${user.role}">ROLE</span>
+                    </div>
+                    <div class="col-md-8">
+                        <h5 class="border-bottom pb-2">Details</h5>
+                        <div class="mb-3">
+                            <strong>Email:</strong>
+                            <span th:text="${user.email}">user@example.com</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Joined:</strong>
+                            <span th:text="${#temporals.format(user.createdAt, 'dd-MM-yyyy')}">01-01-2024</span>
+                        </div>
+                        <div class="mb-3" th:if="${user.averageRating != null}">
+                            <strong>Rating:</strong>
+                            <span class="text-warning">
+                                <i class="bi bi-star-fill"></i>
+                                <span th:text="${#numbers.formatDecimal(user.averageRating, 1, 1)}">4.5</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>

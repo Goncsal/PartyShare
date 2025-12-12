@@ -124,8 +124,8 @@ class UserControllerTest {
     @Test
     void profile_View_LoggedIn() throws Exception {
         mvc.perform(get("/users/profile").sessionAttr("userId", 1L))
-                .andExpect(status().isOk())
-                .andExpect(view().name("users/profile"));
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/1"));
     }
 
     @Test
@@ -133,5 +133,28 @@ class UserControllerTest {
         mvc.perform(get("/users/profile"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/users/login"));
+    }
+
+    @Test
+    void getUserProfile_ValidId_ReturnsProfileView() throws Exception {
+        User user = new User("John", "john@ua.pt", "password", UserRoles.RENTER);
+        user.setId(1L);
+
+        when(userService.getUserById(1L)).thenReturn(java.util.Optional.of(user));
+
+        mvc.perform(get("/users/1"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("users/profile"))
+                .andExpect(model().attributeExists("user"))
+                .andExpect(model().attribute("user", user));
+    }
+
+    @Test
+    void getUserProfile_InvalidId_RedirectsToSearch() throws Exception {
+        when(userService.getUserById(999L)).thenReturn(java.util.Optional.empty());
+
+        mvc.perform(get("/users/999"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/items/search"));
     }
 }
