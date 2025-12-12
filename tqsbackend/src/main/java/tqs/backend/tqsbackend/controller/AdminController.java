@@ -18,6 +18,7 @@ import tqs.backend.tqsbackend.service.UserService;
 @RequestMapping("/admin")
 public class AdminController {
 
+    private final UserService userService;
     private final tqs.backend.tqsbackend.service.CategoryService categoryService;
 
     public AdminController(UserService userService, tqs.backend.tqsbackend.service.CategoryService categoryService) {
