@@ -86,4 +86,10 @@ public class ReportService {
         logger.warn("Failed to update report state: Report with ID {} not found.", id);
         return false;
     }
+    public java.util.List<Report> searchReports(ReportState state) {
+        if (state == null) {
+            return reportRepository.findAll();
+        }
+        return reportRepository.findByState(state);
+    }
 }

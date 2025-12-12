@@ -29,8 +29,8 @@ public class AdminRestController {
     }
 
     @GetMapping("/reports")
-    public ResponseEntity<java.util.List<tqs.backend.tqsbackend.entity.Report>> getAllReports() {
-        return ResponseEntity.ok(reportService.getAllReports());
+    public ResponseEntity<java.util.List<tqs.backend.tqsbackend.entity.Report>> getAllReports(@org.springframework.web.bind.annotation.RequestParam(required = false) tqs.backend.tqsbackend.entity.ReportState state) {
+        return ResponseEntity.ok(reportService.searchReports(state));
     }
 
     @org.springframework.web.bind.annotation.PostMapping("/users/{id}/activate")

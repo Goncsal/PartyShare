@@ -109,4 +109,24 @@ class ReportServiceTest {
         boolean updateFail = reportService.updateReportState(99L);
         assertThat(updateFail).isFalse();
     }
+    @Test
+    void testSearchReports() {
+        Report newReport = new Report(1L, "New Report", "Desc");
+        newReport.setState(ReportState.NEW);
+        
+        Report closedReport = new Report(1L, "Closed Report", "Desc");
+        closedReport.setState(ReportState.CLOSED);
+
+        when(reportRepository.findAll()).thenReturn(List.of(newReport, closedReport));
+        when(reportRepository.findByState(ReportState.NEW)).thenReturn(List.of(newReport));
+
+        // Test without filter (null state)
+        List<Report> allReports = reportService.searchReports(null);
+        assertThat(allReports).hasSize(2);
+
+        // Test with filter
+        List<Report> filteredReports = reportService.searchReports(ReportState.NEW);
+        assertThat(filteredReports).hasSize(1);
+        assertThat(filteredReports.get(0).getState()).isEqualTo(ReportState.NEW);
+    }
 }

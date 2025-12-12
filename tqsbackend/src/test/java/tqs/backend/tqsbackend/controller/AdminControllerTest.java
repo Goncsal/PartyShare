@@ -128,6 +128,19 @@ class AdminControllerTest {
     }
 
     @Test
+    void whenGetReportsWithFilter_thenReturnFilteredReports() throws Exception {
+        mvc.perform(get("/admin/reports")
+                .param("state", "NEW")
+                .sessionAttr("userRole", UserRoles.ADMIN))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/reports"))
+                .andExpect(model().attributeExists("reports"));
+        
+        // Verify that service was called with the correct state
+        org.mockito.Mockito.verify(reportService).searchReports(tqs.backend.tqsbackend.entity.ReportState.NEW);
+    }
+
+    @Test
     void whenGetReportsAsNonAdmin_thenRedirect() throws Exception {
         mvc.perform(get("/admin/reports")
                 .sessionAttr("userRole", UserRoles.RENTER))
