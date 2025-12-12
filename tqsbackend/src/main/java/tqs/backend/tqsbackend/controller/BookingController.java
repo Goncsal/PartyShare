@@ -82,8 +82,8 @@ public class BookingController {
 
         try {
             Booking booking = bookingService.createBooking(request);
-            // Redirect to payment page instead of showing success immediately
-            return "redirect:/payment/" + booking.getId();
+            // Redirect to bookings list for deferred payment
+            return "redirect:/bookings";
         } catch (AvailabilityException e) {
             redirectAttributes.addFlashAttribute("error", "Dates unavailable for this item");
         } catch (PaymentException | BookingValidationException e) {

@@ -142,21 +142,3 @@
 </body>
 
 </html>
-<div class="actions">
-    <form action="#" th:action="@{/favorites/{itemId}(itemId=${item.id})}" method="post">
-        <button type="submit">Add to Favorites</button>
-    </form>
-    <div style="margin-top:8px;">
-        <a th:href="@{/bookings/rent/{itemId}(itemId=${item.id})}">Rent this item</a>
-        <a th:href="@{/items/{itemId}(itemId=${item.id})}" style="margin-left: 10px;">View Details</a>
-    </div>
-</div>
-</div>
-<div th:if="${items.empty}">
-    <p>No items found matching your criteria.</p>
-</div>
-</div>
-
-</body>
-
-</html>

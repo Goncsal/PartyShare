@@ -62,19 +62,7 @@ public class BookingService {
             throw e;
         }
 
-        PaymentResult paymentResult = paymentService.charge(request.getRenterId(), item, totalPrice, booking.getId());
-        if (paymentResult.success()) {
-            // Status remains REQUESTED for owner review, but payment is marked as PAID (held)
-            booking.setPaymentStatus(PaymentStatus.PAID);
-            booking.setPaymentReference(paymentResult.reference());
-            return bookingRepository.save(booking);
-        }
-
-        booking.setStatus(BookingStatus.REJECTED);
-        booking.setPaymentStatus(PaymentStatus.FAILED);
-        booking.setPaymentReference(paymentResult.reference());
-        bookingRepository.save(booking);
-        throw new PaymentException(paymentResult.reason() != null ? paymentResult.reason() : "Payment failed");
+        return booking;
     }
 
     public Booking getBooking(Long id) {
@@ -139,6 +127,10 @@ public class BookingService {
 
         if (booking.getStatus() != BookingStatus.REQUESTED && booking.getStatus() != BookingStatus.ACCEPTED) {
             throw new BookingValidationException("This booking cannot be cancelled");
+        }
+
+        if (!booking.getEndDate().isAfter(LocalDate.now())) {
+            throw new BookingValidationException("Booking has already ended");
         }
 
         booking.setStatus(BookingStatus.CANCELLED);
