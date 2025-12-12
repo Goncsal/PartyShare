@@ -124,8 +124,8 @@ class UserControllerTest {
     @Test
     void profile_View_LoggedIn() throws Exception {
         mvc.perform(get("/users/profile").sessionAttr("userId", 1L))
-                .andExpect(status().isOk())
-                .andExpect(view().name("users/profile"));
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/1"));
     }
 
     @Test
