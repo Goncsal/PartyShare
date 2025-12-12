@@ -71,6 +71,7 @@
     <div class="container">
         <h1>User Profile</h1>
 
+
         <div class="profile-info">
             <div class="info-row">
                 <span class="label">Status</span>
@@ -83,8 +84,26 @@
             </p>
         </div>
 
+        <!-- Admin Controls -->
+        <div th:if="${session.userRole == T(tqs.backend.tqsbackend.entity.UserRoles).ADMIN}"
+            style="margin-bottom: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+            <h3 style="font-size: 1.2em; margin-bottom: 15px; color: #2c3e50;">Admin Actions</h3>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <form th:if="${user.active}" th:action="@{/admin/users/{id}/deactivate(id=${user.id})}" method="post">
+                    <button type="submit" class="button"
+                        style="background: #e74c3c; border: none; cursor: pointer;">Deactivate User</button>
+                </form>
+                <form th:unless="${user.active}" th:action="@{/admin/users/{id}/activate(id=${user.id})}" method="post">
+                    <button type="submit" class="button"
+                        style="background: #2ecc71; border: none; cursor: pointer;">Activate User</button>
+                </form>
+                <a href="/admin/users" class="button" style="background: #95a5a6;">Back to Users List</a>
+            </div>
+        </div>
+
         <div class="actions">
-            <a href="/items/search" class="button">Back to Home</a>
+            <a th:href="${session.userRole == T(tqs.backend.tqsbackend.entity.UserRoles).ADMIN ? '/admin/dashboard' : '/items/search'}"
+                class="button">Back to Home</a>
             <a href="/users/login" class="button" style="background: #e74c3c; margin-left: 10px;">Logout</a>
         </div>
     </div>

@@ -52,6 +52,13 @@ public class ReportService {
 
     public List<Report> getReportsByState(ReportState state) { return reportRepository.findByState(state); }
 
+    public List<Report> searchReports(ReportState state) {
+        if (state == null) {
+            return reportRepository.findAll();
+        }
+        return reportRepository.findByState(state);
+    }
+
     public boolean updateReportState(Long id) {
         Optional<Report> reportOpt = reportRepository.findById(id);
         if (reportOpt.isPresent()) {

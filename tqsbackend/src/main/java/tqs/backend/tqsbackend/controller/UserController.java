@@ -79,12 +79,21 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    public String profile(Model model, HttpSession session) {
+    public String profile(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return "redirect:/users/login";
         }
-        // Placeholder for profile logic
+        return "redirect:/users/" + userId;
+    }
+
+    @GetMapping("/{id}")
+    public String getUserProfile(@org.springframework.web.bind.annotation.PathVariable Long id, Model model) {
+        java.util.Optional<User> userOpt = userService.getUserById(id);
+        if (userOpt.isEmpty()) {
+            return "redirect:/items/search";
+        }
+        model.addAttribute("user", userOpt.get());
         return "users/profile";
     }
 }

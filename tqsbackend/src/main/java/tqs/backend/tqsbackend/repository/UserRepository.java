@@ -32,11 +32,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByNameContainingIgnoreCaseAndRoleAndIsActive(String name, UserRoles role, boolean isActive);
 
     @org.springframework.data.jpa.repository.Query("SELECT u FROM User u WHERE " +
-            "(:keyword IS NULL OR LOWER(u.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))) "
+            "(:keyword IS NULL OR LOWER(u.name) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%'))) "
             +
             "AND (:role IS NULL OR u.role = :role) " +
-            "AND (cast(:startDate as timestamp) IS NULL OR u.createdAt >= :startDate) " +
-            "AND (cast(:endDate as timestamp) IS NULL OR u.createdAt <= :endDate)")
+            "AND (u.createdAt >= COALESCE(:startDate, u.createdAt)) " +
+            "AND (u.createdAt <= COALESCE(:endDate, u.createdAt))")
     List<User> searchUsers(@org.springframework.data.repository.query.Param("keyword") String keyword,
             @org.springframework.data.repository.query.Param("role") UserRoles role,
             @org.springframework.data.repository.query.Param("startDate") java.time.LocalDateTime startDate,
