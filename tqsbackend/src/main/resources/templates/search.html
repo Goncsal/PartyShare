@@ -78,10 +78,16 @@
         <div>
             <span th:if="${isLoggedIn}">
                 Welcome, <span th:text="${userName}">User</span>! |
-                <a th:if="${userRole == 'OWNER'}" href="/owner/dashboard">My Dashboard</a>
-                <span th:if="${userRole == 'OWNER'}"> | </span>
-                <a href="/favorites">My Favorites</a> |
-                <a href="/bookings">My Bookings</a> |
+                <span th:if="${userRole == 'OWNER'}">
+                    <a href="/owner/dashboard">My Dashboard</a> |
+                    <a href="/bookings/requests">Booking Requests</a> |
+                    <a href="/items/my-items">My Items</a> |
+                </span>
+                <span th:if="${userRole == 'RENTER'}">
+                    <a href="/favorites">My Favorites</a> |
+                    <a href="/bookings">My Bookings</a> |
+                </span>
+                <a href="/messages/conversations">Messages</a> |
                 <a href="/reports">My Reports</a> |
                 <a href="/users/profile">Profile</a> |
                 <a href="/users/logout" style="color: #c0392b;">Logout</a>
@@ -123,6 +129,20 @@
             <p class="price" th:text="'€' + ${item.price}">€0.00</p>
             <p class="rating" th:text="'Rating: ' + ${item.averageRating} + '/5.0'">Rating: 0.0</p>
             <p>Location: <span th:text="${item.location}">Location</span></p>
+
+            <!-- Owner Information -->
+            <div th:if="${ownerMap[item.ownerId] != null}"
+                style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
+                <p style="font-size: 0.9em; color: #666;">
+                    <strong>Owner:</strong> <span th:text="${ownerMap[item.ownerId].name}">Owner Name</span>
+                    <span th:if="${ownerMap[item.ownerId].averageRating != null}" style="color: #f39c12;">
+                        (★ <span th:text="${ownerMap[item.ownerId].averageRating}">0.0</span>/5.0)
+                    </span>
+                    <span th:if="${ownerMap[item.ownerId].averageRating == null}" style="color: #999;">
+                        (No ratings)
+                    </span>
+                </p>
+            </div>
 
             <div class="actions">
                 <form action="#" th:action="@{/favorites/{itemId}(itemId=${item.id})}" method="post">
