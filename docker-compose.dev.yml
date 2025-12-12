@@ -48,3 +48,6 @@ services:
 networks:
   tqs-dev-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 10.11.0.0/24
