@@ -88,7 +88,7 @@ public class BookingControllerTest {
                 .param("endDate", "2026-01-03")
                 .param("proposedPrice", "15.0"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/payment/1"));
+                .andExpect(redirectedUrl("/bookings"));
         
         verify(bookingService).createBooking(argThat(req -> 
             req.getProposedPrice().equals(15.0) && req.getItemId().equals(1L)

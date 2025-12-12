@@ -53,9 +53,6 @@ class BookingRestControllerIntegrationTest {
     String start = LocalDate.now().plusDays(1).toString();
     String end = LocalDate.now().plusDays(3).toString();
 
-    when(paymentService.charge(anyLong(), any(Item.class), any(), anyLong()))
-        .thenReturn(PaymentResult.success("ref-int-1"));
-
     mockMvc.perform(post("/api/bookings")
         .contentType(MediaType.APPLICATION_JSON)
         .content("""
@@ -68,8 +65,7 @@ class BookingRestControllerIntegrationTest {
             """.formatted(item.getId(), start, end)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.status", is("REQUESTED")))
-        .andExpect(jsonPath("$.paymentStatus", is("PAID")))
-        .andExpect(jsonPath("$.paymentReference", is("ref-int-1")))
+        .andExpect(jsonPath("$.paymentStatus", is("PENDING")))
         .andExpect(jsonPath("$.totalPrice", notNullValue()));
   }
 
@@ -84,9 +80,6 @@ class BookingRestControllerIntegrationTest {
         PaymentStatus.PAID);
     bookingRepository.save(existing);
 
-    when(paymentService.charge(anyLong(), any(Item.class), any(), anyLong()))
-        .thenReturn(PaymentResult.success("ref-int-2"));
-
     mockMvc.perform(post("/api/bookings")
         .contentType(MediaType.APPLICATION_JSON)
         .content("""
@@ -98,33 +91,6 @@ class BookingRestControllerIntegrationTest {
             }
             """.formatted(item.getId(), start.plusDays(1), end.plusDays(1))))
         .andExpect(status().isConflict());
-  }
-
-  @Test
-  void shouldReturnPaymentRequiredWhenPaymentFails() throws Exception {
-    Item item = itemRepository.findAll().get(0);
-    String start = LocalDate.now().plusDays(2).toString();
-    String end = LocalDate.now().plusDays(4).toString();
-
-    when(paymentService.charge(anyLong(), any(Item.class), any(), anyLong()))
-        .thenReturn(PaymentResult.failure("gateway-error"));
-
-    mockMvc.perform(post("/api/bookings")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("""
-            {
-              "itemId": %d,
-              "renterId": 999,
-              "startDate": "%s",
-              "endDate": "%s"
-            }
-            """.formatted(item.getId(), start, end)))
-        .andExpect(status().isPaymentRequired());
-
-    List<Booking> bookings = bookingRepository.findByRenterId(999L);
-    assertThat(bookings).isNotEmpty();
-    Booking createdBooking = bookings.get(bookings.size() - 1);
-    assertThat(createdBooking.getStatus()).isEqualTo(BookingStatus.REJECTED);
   }
 
   @Test
