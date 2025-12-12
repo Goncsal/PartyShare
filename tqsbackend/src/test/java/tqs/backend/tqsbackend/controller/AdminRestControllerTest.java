@@ -53,12 +53,25 @@ class AdminRestControllerTest {
 
     @Test
     void getAllReports_ReturnsReports() throws Exception {
-        given(reportService.getAllReports()).willReturn(Collections.emptyList());
+        given(reportService.searchReports(null)).willReturn(Collections.emptyList());
 
         mvc.perform(get("/api/admin/reports")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", is(Collections.emptyList())));
+    }
+
+    @Test
+    void getAllReports_WithFilter_ReturnsFilteredReports() throws Exception {
+        given(reportService.searchReports(tqs.backend.tqsbackend.entity.ReportState.NEW)).willReturn(Collections.emptyList());
+
+        mvc.perform(get("/api/admin/reports")
+                .param("state", "NEW")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", is(Collections.emptyList())));
+        
+        org.mockito.Mockito.verify(reportService).searchReports(tqs.backend.tqsbackend.entity.ReportState.NEW);
     }
 
     @Test

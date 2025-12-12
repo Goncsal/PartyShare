@@ -80,12 +80,12 @@ public class AdminController {
     }
 
     @GetMapping("/reports")
-    public String reports(HttpSession session, Model model) {
+    public String reports(HttpSession session, Model model, @RequestParam(required = false) tqs.backend.tqsbackend.entity.ReportState state) {
         UserRoles role = (UserRoles) session.getAttribute("userRole");
         if (role != UserRoles.ADMIN) {
             return "redirect:/users/login";
         }
-        model.addAttribute("reports", reportService.getAllReports());
+        model.addAttribute("reports", reportService.searchReports(state));
         return "admin/reports";
     }
 
