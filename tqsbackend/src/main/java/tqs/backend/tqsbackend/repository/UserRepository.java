@@ -32,7 +32,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByNameContainingIgnoreCaseAndRoleAndIsActive(String name, UserRoles role, boolean isActive);
 
     @org.springframework.data.jpa.repository.Query("SELECT u FROM User u WHERE " +
-            "(:keyword IS NULL OR LOWER(u.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))) "
+            "(:keyword IS NULL OR LOWER(u.name) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%'))) "
             +
             "AND (:role IS NULL OR u.role = :role) " +
             "AND (u.createdAt >= COALESCE(:startDate, u.createdAt)) " +
