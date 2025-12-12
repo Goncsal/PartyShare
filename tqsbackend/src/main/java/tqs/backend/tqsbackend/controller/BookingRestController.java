@@ -66,4 +66,44 @@ public class BookingRestController {
             @PathVariable Long itemId) {
         return ResponseEntity.ok(bookingService.getUnavailableDates(itemId));
     }
+
+    @GetMapping("/requests")
+    public ResponseEntity<java.util.List<BookingResponse>> getBookingRequests(@RequestParam Long ownerId) {
+        return ResponseEntity.ok(bookingService.getPendingBookingsByOwner(ownerId).stream()
+                .map(this::toResponse)
+                .toList());
+    }
+
+    @PostMapping("/{id}/accept")
+    public ResponseEntity<BookingResponse> acceptBooking(@PathVariable Long id, @RequestParam Long ownerId) {
+        Booking booking = bookingService.acceptBooking(id, ownerId);
+        return ResponseEntity.ok(toResponse(booking));
+    }
+
+    @PostMapping("/{id}/decline")
+    public ResponseEntity<BookingResponse> declineBooking(@PathVariable Long id, @RequestParam Long ownerId) {
+        Booking booking = bookingService.declineBooking(id, ownerId);
+        return ResponseEntity.ok(toResponse(booking));
+    }
+
+    @PostMapping("/{id}/counter-offer")
+    public ResponseEntity<BookingResponse> counterOfferBooking(
+            @PathVariable Long id,
+            @RequestParam Double newPrice,
+            @RequestParam Long ownerId) {
+        Booking booking = bookingService.counterOfferBooking(id, newPrice, ownerId);
+        return ResponseEntity.ok(toResponse(booking));
+    }
+
+    @PostMapping("/{id}/accept-counter-offer")
+    public ResponseEntity<BookingResponse> acceptCounterOffer(@PathVariable Long id, @RequestParam Long renterId) {
+        Booking booking = bookingService.acceptCounterOffer(id, renterId);
+        return ResponseEntity.ok(toResponse(booking));
+    }
+
+    @PostMapping("/{id}/decline-counter-offer")
+    public ResponseEntity<BookingResponse> declineCounterOffer(@PathVariable Long id, @RequestParam Long renterId) {
+        Booking booking = bookingService.declineCounterOffer(id, renterId);
+        return ResponseEntity.ok(toResponse(booking));
+    }
 }

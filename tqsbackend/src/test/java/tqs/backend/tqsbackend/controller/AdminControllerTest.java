@@ -26,6 +26,9 @@ class AdminControllerTest {
     @MockitoBean
     private UserService userService;
 
+    @MockitoBean
+    private tqs.backend.tqsbackend.service.CategoryService categoryService;
+
     @Test
     void whenGetUsers_thenReturnUsersPage() throws Exception {
         User user = new User("John", "john@ua.pt", "pass", UserRoles.RENTER);
@@ -71,6 +74,42 @@ class AdminControllerTest {
     @Test
     void whenGetDashboardAsNonAdmin_thenRedirect() throws Exception {
         mvc.perform(get("/admin/dashboard")
+                .sessionAttr("userRole", UserRoles.RENTER))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/login"));
+    }
+
+    @Test
+    void whenGetCategories_thenReturnCategoriesPage() throws Exception {
+        mvc.perform(get("/admin/categories")
+                .sessionAttr("userRole", UserRoles.ADMIN))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/categories"))
+                .andExpect(model().attributeExists("categories"));
+    }
+
+    @Test
+    void whenGetCategoriesAsNonAdmin_thenRedirect() throws Exception {
+        mvc.perform(get("/admin/categories")
+                .sessionAttr("userRole", UserRoles.RENTER))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/login"));
+    }
+
+    @Test
+    void whenCreateCategory_thenRedirectToCategories() throws Exception {
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/admin/categories")
+                .param("name", "New Category")
+                .sessionAttr("userRole", UserRoles.ADMIN))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/categories"))
+                .andExpect(flash().attributeExists("success"));
+    }
+
+    @Test
+    void whenCreateCategoryAsNonAdmin_thenRedirect() throws Exception {
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/admin/categories")
+                .param("name", "New Category")
                 .sessionAttr("userRole", UserRoles.RENTER))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/users/login"));

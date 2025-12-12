@@ -48,6 +48,7 @@ class BookingRestControllerTest {
                 Booking booking = BookingTestFixtures.sampleBooking(1L, BookingTestFixtures.sampleItem(10L));
                 booking.setPaymentReference("PAY-API");
                 booking.setStatus(tqs.backend.tqsbackend.entity.BookingStatus.REQUESTED);
+                booking.setPaymentStatus(tqs.backend.tqsbackend.entity.PaymentStatus.PENDING);
 
                 when(bookingService.createBooking(any(BookingCreateRequest.class))).thenReturn(booking);
 
@@ -57,7 +58,7 @@ class BookingRestControllerTest {
                                                 LocalDate.now().plusDays(3))))
                                 .andExpect(status().isCreated())
                                 .andExpect(jsonPath("$.status", is("REQUESTED")))
-                                .andExpect(jsonPath("$.paymentStatus").value("PAID"))
+                                .andExpect(jsonPath("$.paymentStatus").value("PENDING"))
                                 .andExpect(jsonPath("$.paymentReference").value("PAY-API"));
         }
 
@@ -96,4 +97,54 @@ class BookingRestControllerTest {
                 verify(bookingService).getBooking(15L);
         }
 
+        @Test
+        void acceptBooking_returnsUpdatedBooking() throws Exception {
+                Booking booking = BookingTestFixtures.sampleBooking(1L, BookingTestFixtures.sampleItem(10L));
+                booking.setStatus(tqs.backend.tqsbackend.entity.BookingStatus.ACCEPTED);
+
+                when(bookingService.acceptBooking(1L, 70L)).thenReturn(booking);
+
+                mockMvc.perform(post("/api/bookings/{id}/accept", 1L)
+                                .param("ownerId", "70"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.status", is("ACCEPTED")));
+        }
+
+        @Test
+        void declineBooking_returnsUpdatedBooking() throws Exception {
+                Booking booking = BookingTestFixtures.sampleBooking(1L, BookingTestFixtures.sampleItem(10L));
+                booking.setStatus(tqs.backend.tqsbackend.entity.BookingStatus.REJECTED);
+
+                when(bookingService.declineBooking(1L, 70L)).thenReturn(booking);
+
+                mockMvc.perform(post("/api/bookings/{id}/decline", 1L)
+                                .param("ownerId", "70"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.status", is("REJECTED")));
+        }
+
+        @Test
+        void counterOfferBooking_returnsUpdatedBooking() throws Exception {
+                Booking booking = BookingTestFixtures.sampleBooking(1L, BookingTestFixtures.sampleItem(10L));
+                booking.setStatus(tqs.backend.tqsbackend.entity.BookingStatus.COUNTER_OFFER);
+
+                when(bookingService.counterOfferBooking(1L, 50.0, 70L)).thenReturn(booking);
+
+                mockMvc.perform(post("/api/bookings/{id}/counter-offer", 1L)
+                                .param("newPrice", "50.0")
+                                .param("ownerId", "70"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.status", is("COUNTER_OFFER")));
+        }
+
+        @Test
+        void getBookingRequests_returnsList() throws Exception {
+                Booking booking = BookingTestFixtures.sampleBooking(1L, BookingTestFixtures.sampleItem(10L));
+                when(bookingService.getPendingBookingsByOwner(70L)).thenReturn(java.util.Collections.singletonList(booking));
+
+                mockMvc.perform(get("/api/bookings/requests")
+                                .param("ownerId", "70"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$[0].id", is(1)));
+        }
 }

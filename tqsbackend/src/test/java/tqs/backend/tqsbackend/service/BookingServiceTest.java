@@ -208,4 +208,22 @@ class BookingServiceTest {
         assertThat(result.getStatus()).isEqualTo(BookingStatus.CANCELLED);
         verify(bookingRepository).save(booking);
     }
+    @Test
+    void createBooking_SaveFails_LogsAndRethrows() {
+        BookingCreateRequest request = new BookingCreateRequest();
+        request.setItemId(1L);
+        request.setRenterId(2L);
+        request.setStartDate(java.time.LocalDate.now().plusDays(1));
+        request.setEndDate(java.time.LocalDate.now().plusDays(3));
+
+        Item item = new Item();
+        item.setId(1L);
+        item.setPrice(20.0);
+        item.setOwnerId(1L);
+
+        given(itemService.getItemById(1L)).willReturn(item);
+        given(bookingRepository.save(any(Booking.class))).willThrow(new RuntimeException("Database error"));
+
+        assertThrows(RuntimeException.class, () -> bookingService.createBooking(request));
+    }
 }

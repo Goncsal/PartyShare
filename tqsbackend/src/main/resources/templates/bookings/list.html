@@ -143,25 +143,7 @@
 
 <body>
     <div class="container">
-        <div
-            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
-            <a href="/items/search"
-                style="text-decoration: none; color: #333; font-size: 1.5em; font-weight: bold;">PartyShare</a>
-            <div>
-                <a href="/items/search">Search</a> |
-                <span th:if="${session.userId != null}"> <!-- Ideally check role, but session attr is simple -->
-                    <a href="/items/new">Add Item</a> |
-                    <a href="/items/my-items">My Items</a> |
-                    <a href="/bookings/requests">Booking Requests</a> |
-                </span>
-                <a href="/favorites">My Favorites</a> |
-                <a href="/bookings" style="font-weight: bold; color: #2c3e50;">My Bookings</a> |
-                <a href="/messages/conversations">Messages</a> |
-                <a href="/reports">My Reports</a> |
-                <a href="/users/profile">Profile</a> |
-                <a href="/users/logout" style="color: #c0392b;">Logout</a>
-            </div>
-        </div>
+        <a href="/items/search" class="back-link">&larr; Back to Search</a>
         <h1>My Bookings</h1>
 
         <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
@@ -206,14 +188,8 @@
                             </form>
                         </div>
 
-                        <div th:if="${booking.status.toString() == 'ACCEPTED' and booking.paymentStatus.toString() == 'PENDING'}"
-                            style="margin-bottom: 5px;">
-                            <a th:href="@{/payment/{id}(id=${booking.id})}" class="btn-accept"
-                                style="text-decoration: none; display: inline-block;">Pay Now</a>
-                        </div>
-
                         <form
-                            th:if="${(booking.status.toString() == 'REQUESTED' or booking.status.toString() == 'ACCEPTED') and #temporals.createToday().isBefore(booking.endDate)}"
+                            th:if="${booking.status.toString() == 'REQUESTED' or booking.status.toString() == 'ACCEPTED'}"
                             th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post"
                             style="display:inline;">
                             <button type="submit" class="btn-cancel"
@@ -229,5 +205,7 @@
         </table>
     </div>
 </body>
+
+</html>
 
 </html>

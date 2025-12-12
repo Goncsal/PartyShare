@@ -315,20 +315,8 @@
             }
 
             const proposedPriceInput = document.getElementById('proposedPrice');
-            const submitBtn = document.getElementById('submitBtn');
-
             if (proposedPriceInput) {
-                proposedPriceInput.addEventListener('input', function () {
-                    updatePricePreview();
-                    const currentPrice = parseFloat(proposedPriceInput.value);
-                    if (currentPrice !== dailyPrice) {
-                        submitBtn.textContent = "Submit Offer";
-                        submitBtn.style.backgroundColor = "#f39c12"; // Orange for offer
-                    } else {
-                        submitBtn.textContent = "Request Booking";
-                        submitBtn.style.backgroundColor = "#3498db"; // Blue for standard
-                    }
-                });
+                proposedPriceInput.addEventListener('input', updatePricePreview);
             }
 
             // Form validation
