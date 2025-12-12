@@ -38,6 +38,9 @@ class AdminRestControllerTest {
     // @MockBean
     // private ItemService itemService;
 
+    @MockBean
+    private tqs.backend.tqsbackend.service.ReportService reportService;
+
     @Test
     void getDashboardStats_ReturnsStats() throws Exception {
         given(categoryService.getAllCategories()).willReturn(Collections.emptyList());
@@ -46,5 +49,51 @@ class AdminRestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.categoryCount", is(0)));
+    }
+
+    @Test
+    void getAllReports_ReturnsReports() throws Exception {
+        given(reportService.getAllReports()).willReturn(Collections.emptyList());
+
+        mvc.perform(get("/api/admin/reports")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", is(Collections.emptyList())));
+    }
+
+    @Test
+    void activateUser_ValidId_ReturnsOk() throws Exception {
+        given(userService.activateUser(1L)).willReturn(true);
+
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/admin/users/1/activate")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void activateUser_InvalidId_ReturnsBadRequest() throws Exception {
+        given(userService.activateUser(1L)).willReturn(false);
+
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/admin/users/1/activate")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void deactivateUser_ValidId_ReturnsOk() throws Exception {
+        given(userService.deactivateUser(1L)).willReturn(true);
+
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/admin/users/1/deactivate")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void deactivateUser_InvalidId_ReturnsBadRequest() throws Exception {
+        given(userService.deactivateUser(1L)).willReturn(false);
+
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/admin/users/1/deactivate")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 }

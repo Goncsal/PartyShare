@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+    <title layout:title-pattern="$CONTENT_TITLE - PartyShare">PartyShare</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: sans-serif;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4 border-bottom">
+        <div class="container">
+            <a class="navbar-brand" href="/items/search">PartyShare</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item" th:if="${session.userId != null}">
+                        <span class="nav-link">Welcome, <span th:text="${session.userName}">User</span>!</span>
+                    </li>
+                    <li class="nav-item"
+                        th:if="${session.userRole == T(tqs.backend.tqsbackend.entity.UserRoles).OWNER}">
+                        <a class="nav-link" href="/owner/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.userId != null}">
+                        <a class="nav-link" href="/favorites">Favorites</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.userId != null}">
+                        <a class="nav-link" href="/bookings">Bookings</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.userId != null}">
+                        <a class="nav-link" href="/bookings/requests">Requests</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.userId != null}">
+                        <a class="nav-link" href="/reports">Reports</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.userId != null}">
+                        <a class="nav-link" href="/users/profile">My Profile</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.userId != null}">
+                        <a class="nav-link text-danger" href="/users/logout">Logout</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.userId == null}">
+                        <a class="nav-link" href="/users/login">Login</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.userId == null}">
+                        <a class="nav-link" href="/users/register">Register</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" layout:fragment="content">
+        <!-- Content goes here -->
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

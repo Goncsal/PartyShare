@@ -159,7 +159,8 @@
                         <td th:text="${user.createdAt}">2023-01-01</td>
                         <td>
                             <!-- Actions placeholder -->
-                            <button disabled>Edit</button>
+                            <a th:href="@{/users/{id}(id=${user.id})}" class="btn btn-sm btn-primary"
+                                style="text-decoration: none; color: #3498db;">View Profile</a>
                         </td>
                     </tr>
                 </tbody>

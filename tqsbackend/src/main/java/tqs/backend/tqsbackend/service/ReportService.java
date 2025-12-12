@@ -50,6 +50,8 @@ public class ReportService {
 
     public List<Report> getReportsBySenderId(Long senderId) { return reportRepository.findBySenderId(senderId); }
 
+    public List<Report> getAllReports() { return reportRepository.findAll(); }
+
     public List<Report> getReportsByState(ReportState state) { return reportRepository.findByState(state); }
 
     public boolean updateReportState(Long id) {

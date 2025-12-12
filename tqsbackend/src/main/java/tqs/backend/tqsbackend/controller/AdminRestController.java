@@ -19,15 +19,33 @@ public class AdminRestController {
 
     private final UserService userService;
     private final CategoryService categoryService;
-    // private final ItemService itemService; // If we want item stats
+    private final tqs.backend.tqsbackend.service.ReportService reportService;
 
     @GetMapping("/dashboard-stats")
     public ResponseEntity<Map<String, Object>> getDashboardStats() {
         Map<String, Object> stats = new HashMap<>();
-        // For now, just return counts if services support it, or simple placeholders
-        // Since services don't have count methods exposed yet, we'll just return category count
         stats.put("categoryCount", categoryService.getAllCategories().size());
-        // stats.put("userCount", userService.getAllUsers().size()); // If available
         return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/reports")
+    public ResponseEntity<java.util.List<tqs.backend.tqsbackend.entity.Report>> getAllReports() {
+        return ResponseEntity.ok(reportService.getAllReports());
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/users/{id}/activate")
+    public ResponseEntity<Void> activateUser(@org.springframework.web.bind.annotation.PathVariable Long id) {
+        if (userService.activateUser(id)) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.badRequest().build();
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/users/{id}/deactivate")
+    public ResponseEntity<Void> deactivateUser(@org.springframework.web.bind.annotation.PathVariable Long id) {
+        if (userService.deactivateUser(id)) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.badRequest().build();
     }
 }

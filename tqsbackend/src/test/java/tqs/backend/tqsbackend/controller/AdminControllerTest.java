@@ -29,6 +29,9 @@ class AdminControllerTest {
     @MockitoBean
     private tqs.backend.tqsbackend.service.CategoryService categoryService;
 
+    @MockitoBean
+    private tqs.backend.tqsbackend.service.ReportService reportService;
+
     @Test
     void whenGetUsers_thenReturnUsersPage() throws Exception {
         User user = new User("John", "john@ua.pt", "pass", UserRoles.RENTER);
@@ -110,6 +113,53 @@ class AdminControllerTest {
     void whenCreateCategoryAsNonAdmin_thenRedirect() throws Exception {
         mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/admin/categories")
                 .param("name", "New Category")
+                .sessionAttr("userRole", UserRoles.RENTER))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/login"));
+    }
+
+    @Test
+    void whenGetReports_thenReturnReportsPage() throws Exception {
+        mvc.perform(get("/admin/reports")
+                .sessionAttr("userRole", UserRoles.ADMIN))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/reports"))
+                .andExpect(model().attributeExists("reports"));
+    }
+
+    @Test
+    void whenGetReportsAsNonAdmin_thenRedirect() throws Exception {
+        mvc.perform(get("/admin/reports")
+                .sessionAttr("userRole", UserRoles.RENTER))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/login"));
+    }
+
+    @Test
+    void whenDeactivateUser_thenRedirectToProfile() throws Exception {
+        when(userService.deactivateUser(1L)).thenReturn(true);
+
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/admin/users/1/deactivate")
+                .sessionAttr("userRole", UserRoles.ADMIN))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/1"))
+                .andExpect(flash().attributeExists("success"));
+    }
+
+    @Test
+    void whenActivateUser_thenRedirectToProfile() throws Exception {
+        when(userService.activateUser(1L)).thenReturn(true);
+
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/admin/users/1/activate")
+                .sessionAttr("userRole", UserRoles.ADMIN))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/1"))
+                .andExpect(flash().attributeExists("success"));
+    }
+
+    @Test
+    void whenDeactivateUserAsNonAdmin_thenRedirect() throws Exception {
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/admin/users/1/deactivate")
                 .sessionAttr("userRole", UserRoles.RENTER))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/users/login"));
