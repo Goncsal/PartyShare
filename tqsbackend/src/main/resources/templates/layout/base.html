@@ -42,6 +42,9 @@
                         <a class="nav-link" href="/items/my-items">My Items</a>
                     </li>
                     <li class="nav-item" th:if="${session.userId != null}">
+                        <a class="nav-link" href="/messages/conversations">Messages</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.userId != null}">
                         <a class="nav-link" href="/reports">Reports</a>
                     </li>
                     <li class="nav-item" th:if="${session.userId != null}">
