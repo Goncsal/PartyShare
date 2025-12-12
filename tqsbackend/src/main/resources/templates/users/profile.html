@@ -38,6 +38,23 @@
                                 <span th:text="${#numbers.formatDecimal(user.averageRating, 1, 1)}">4.5</span>
                             </span>
                         </div>
+
+                        <!-- Admin Controls -->
+                        <div th:if="${session.userRole == T(tqs.backend.tqsbackend.entity.UserRoles).ADMIN}"
+                            class="mt-4 pt-3 border-top">
+                            <h5>Admin Actions</h5>
+                            <div class="d-flex gap-2">
+                                <form th:if="${user.active}" th:action="@{/admin/users/{id}/deactivate(id=${user.id})}"
+                                    method="post">
+                                    <button type="submit" class="btn btn-danger">Deactivate User</button>
+                                </form>
+                                <form th:unless="${user.active}"
+                                    th:action="@{/admin/users/{id}/activate(id=${user.id})}" method="post">
+                                    <button type="submit" class="btn btn-success">Activate User</button>
+                                </form>
+                                <a href="/admin/users" class="btn btn-secondary">Back to Users List</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

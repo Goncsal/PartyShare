@@ -134,4 +134,34 @@ class AdminControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/users/login"));
     }
+
+    @Test
+    void whenDeactivateUser_thenRedirectToProfile() throws Exception {
+        when(userService.deactivateUser(1L)).thenReturn(true);
+
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/admin/users/1/deactivate")
+                .sessionAttr("userRole", UserRoles.ADMIN))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/1"))
+                .andExpect(flash().attributeExists("success"));
+    }
+
+    @Test
+    void whenActivateUser_thenRedirectToProfile() throws Exception {
+        when(userService.activateUser(1L)).thenReturn(true);
+
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/admin/users/1/activate")
+                .sessionAttr("userRole", UserRoles.ADMIN))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/1"))
+                .andExpect(flash().attributeExists("success"));
+    }
+
+    @Test
+    void whenDeactivateUserAsNonAdmin_thenRedirect() throws Exception {
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/admin/users/1/deactivate")
+                .sessionAttr("userRole", UserRoles.RENTER))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/login"));
+    }
 }

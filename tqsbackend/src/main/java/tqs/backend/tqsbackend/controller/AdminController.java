@@ -88,4 +88,32 @@ public class AdminController {
         model.addAttribute("reports", reportService.getAllReports());
         return "admin/reports";
     }
+
+    @org.springframework.web.bind.annotation.PostMapping("/users/{id}/deactivate")
+    public String deactivateUser(@org.springframework.web.bind.annotation.PathVariable Long id, HttpSession session, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        UserRoles role = (UserRoles) session.getAttribute("userRole");
+        if (role != UserRoles.ADMIN) {
+            return "redirect:/users/login";
+        }
+        if (userService.deactivateUser(id)) {
+            redirectAttributes.addFlashAttribute("success", "User deactivated successfully.");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Failed to deactivate user.");
+        }
+        return "redirect:/users/" + id;
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/users/{id}/activate")
+    public String activateUser(@org.springframework.web.bind.annotation.PathVariable Long id, HttpSession session, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        UserRoles role = (UserRoles) session.getAttribute("userRole");
+        if (role != UserRoles.ADMIN) {
+            return "redirect:/users/login";
+        }
+        if (userService.activateUser(id)) {
+            redirectAttributes.addFlashAttribute("success", "User activated successfully.");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Failed to activate user.");
+        }
+        return "redirect:/users/" + id;
+    }
 }
