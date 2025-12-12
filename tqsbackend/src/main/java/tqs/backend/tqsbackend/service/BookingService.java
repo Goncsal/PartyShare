@@ -19,9 +19,11 @@ import tqs.backend.tqsbackend.exception.PaymentException;
 import tqs.backend.tqsbackend.repository.BookingRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BookingService {
 
     private final BookingRepository bookingRepository;
@@ -58,7 +60,7 @@ public class BookingService {
         try {
             booking = bookingRepository.save(booking);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error saving booking", e);
             throw e;
         }
 
