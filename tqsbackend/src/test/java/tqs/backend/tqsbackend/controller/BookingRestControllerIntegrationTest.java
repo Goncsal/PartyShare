@@ -1,18 +1,13 @@
 package tqs.backend.tqsbackend.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -27,7 +22,6 @@ import tqs.backend.tqsbackend.entity.Item;
 import tqs.backend.tqsbackend.entity.PaymentStatus;
 import tqs.backend.tqsbackend.repository.BookingRepository;
 import tqs.backend.tqsbackend.repository.ItemRepository;
-import tqs.backend.tqsbackend.service.PaymentResult;
 import tqs.backend.tqsbackend.service.PaymentService;
 
 @SpringBootTest

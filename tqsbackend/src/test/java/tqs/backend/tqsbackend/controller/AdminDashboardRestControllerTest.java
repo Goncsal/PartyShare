@@ -3,8 +3,8 @@ package tqs.backend.tqsbackend.controller;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tqs.backend.tqsbackend.dto.GlobalStatsDTO;
 import tqs.backend.tqsbackend.service.AdminDashboardService;
@@ -20,7 +20,7 @@ class AdminDashboardRestControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private AdminDashboardService adminDashboardService;
 
     @Test
@@ -36,7 +36,7 @@ class AdminDashboardRestControllerTest {
         when(adminDashboardService.getGlobalStats()).thenReturn(stats);
 
         mockMvc.perform(get("/api/admin/stats")
-                        .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalUsers").value(100))
                 .andExpect(jsonPath("$.totalBookings").value(500))
