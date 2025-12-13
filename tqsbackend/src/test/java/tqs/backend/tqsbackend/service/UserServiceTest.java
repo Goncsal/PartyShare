@@ -113,6 +113,18 @@ class UserServiceTest {
     }
 
     @Test
+    void testAuthenticate_DeactivatedUser_ReturnsFalse() {
+        // Arrange
+        when(userRepository.findByEmail(inactiveUser.getEmail())).thenReturn(Optional.of(inactiveUser));
+
+        // Act
+        boolean loginResult = userService.authenticate("inactive@ua.pt", plainPassword);
+
+        // Assert
+        assertThat(loginResult).isFalse();
+    }
+
+    @Test
     void testSingleUserGetters() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(validUser));
         when(userRepository.findByEmail("john@ua.pt")).thenReturn(Optional.of(validUser));

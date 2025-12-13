@@ -208,4 +208,33 @@ class BookingServiceTest {
         assertThat(result.getStatus()).isEqualTo(BookingStatus.CANCELLED);
         verify(bookingRepository).save(booking);
     }
+
+    @Test
+    void confirmPayment_ValidBooking_UpdatesStatusToPaidAndAccepted() {
+        // Arrange
+        Booking booking = new Booking();
+        booking.setId(1L);
+        booking.setStatus(BookingStatus.REQUESTED);
+        booking.setPaymentStatus(PaymentStatus.PENDING);
+
+        given(bookingRepository.findById(1L)).willReturn(Optional.of(booking));
+        given(bookingRepository.save(any(Booking.class))).willAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        bookingService.confirmPayment(1L);
+
+        // Assert
+        assertThat(booking.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
+        assertThat(booking.getStatus()).isEqualTo(BookingStatus.ACCEPTED);
+        verify(bookingRepository).save(booking);
+    }
+
+    @Test
+    void confirmPayment_BookingNotFound_ThrowsException() {
+        // Arrange
+        given(bookingRepository.findById(99L)).willReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(RuntimeException.class, () -> bookingService.confirmPayment(99L));
+    }
 }

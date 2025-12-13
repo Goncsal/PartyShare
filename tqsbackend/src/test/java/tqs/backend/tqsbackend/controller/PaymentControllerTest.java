@@ -90,6 +90,9 @@ class PaymentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("payment/success"))
                 .andExpect(model().attributeExists("booking"));
+        
+        // Verify confirmPayment was called to update booking status
+        org.mockito.Mockito.verify(bookingService).confirmPayment(1L);
     }
 
     @Test

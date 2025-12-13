@@ -99,6 +99,7 @@ public class PaymentController {
 
     @GetMapping("/success/{bookingId}")
     public String paymentSuccess(@PathVariable Long bookingId, Model model) {
+        bookingService.confirmPayment(bookingId);
         Booking booking = bookingService.getBooking(bookingId);
         model.addAttribute("booking", booking);
         return "payment/success";

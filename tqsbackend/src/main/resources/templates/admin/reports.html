@@ -136,7 +136,14 @@
                         </td>
                         <td>
                             <!-- Placeholder for actions like changing state -->
-                            <button disabled>Update State</button>
+                            <form th:action="@{/admin/reports/{id}/update-state(id=${report.id})}" method="post"
+                                th:if="${report.state.name() != 'CLOSED'}">
+                                <button type="submit"
+                                    style="padding: 0.3rem 0.8rem; background-color: #f39c12; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;">
+                                    Advance State
+                                </button>
+                            </form>
+                            <span th:if="${report.state.name() == 'CLOSED'}" style="color: #999;">-</span>
                         </td>
                     </tr>
                 </tbody>

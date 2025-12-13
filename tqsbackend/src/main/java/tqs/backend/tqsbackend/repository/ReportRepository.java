@@ -14,4 +14,5 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
 
     List<Report> findBySenderId(Long senderId);
     List<Report> findByState(ReportState state);
+    long countByState(ReportState state);
 }

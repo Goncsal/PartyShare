@@ -210,4 +210,13 @@ public class BookingService {
         booking.setStatus(BookingStatus.CANCELLED);
         return bookingRepository.save(booking);
     }
+    @Transactional
+    public void confirmPayment(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        booking.setPaymentStatus(PaymentStatus.PAID);
+        booking.setStatus(BookingStatus.ACCEPTED); // Auto-accept upon payment
+        bookingRepository.save(booking);
+    }
 }

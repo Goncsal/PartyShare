@@ -73,6 +73,10 @@ public class UserService {
             return false;
         }
         User user = userOpt.get();
+        if (!user.isActive()) {
+            logger.warn("Authentication failed: User with email {} is deactivated.", safeEmail);
+            return false;
+        }
         if (BCrypt.checkpw(password, user.getPassword())) {
             logger.info("User with email {} authenticated successfully.", safeEmail);
             return true;

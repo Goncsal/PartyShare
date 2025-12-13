@@ -74,18 +74,31 @@
 
         <div class="profile-info">
             <div class="info-row">
-                <span class="label">Status</span>
-                <span class="value">Logged In (Session Simulation)</span>
+                <span class="label">Name</span>
+                <span class="value" th:text="${user.name}">John Doe</span>
             </div>
-            <!-- Placeholder content as we don't have full session management yet -->
-            <p style="text-align: center; color: #7f8c8d; margin-top: 20px;">
-                Welcome to your profile! <br>
-                (User details would appear here in a full implementation)
-            </p>
+            <div class="info-row">
+                <span class="label">Email</span>
+                <span class="value" th:text="${user.email}">john@example.com</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Role</span>
+                <span class="value" th:text="${user.role}">RENTER</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Status</span>
+                <span class="value" th:text="${user.active ? 'Active' : 'Inactive'}"
+                    th:style="${user.active ? 'color: #2ecc71;' : 'color: #e74c3c;'}">Active</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Joined</span>
+                <span class="value"
+                    th:text="${user.createdAt != null ? #temporals.format(user.createdAt, 'dd-MM-yyyy HH:mm') : 'N/A'}">01-01-2023</span>
+            </div>
         </div>
 
         <!-- Admin Controls -->
-        <div th:if="${session.userRole == T(tqs.backend.tqsbackend.entity.UserRoles).ADMIN}"
+        <div th:if="${session.userRole != null and session.userRole.name() == 'ADMIN'}"
             style="margin-bottom: 30px; border-top: 1px solid #eee; padding-top: 20px;">
             <h3 style="font-size: 1.2em; margin-bottom: 15px; color: #2c3e50;">Admin Actions</h3>
             <div style="display: flex; gap: 10px; justify-content: center;">
@@ -102,7 +115,7 @@
         </div>
 
         <div class="actions">
-            <a th:href="${session.userRole == T(tqs.backend.tqsbackend.entity.UserRoles).ADMIN ? '/admin/dashboard' : '/items/search'}"
+            <a th:href="${session.userRole != null and session.userRole.name() == 'ADMIN' ? '/admin/dashboard' : '/items/search'}"
                 class="button">Back to Home</a>
             <a href="/users/login" class="button" style="background: #e74c3c; margin-left: 10px;">Logout</a>
         </div>
