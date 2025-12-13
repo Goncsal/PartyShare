@@ -4,17 +4,18 @@
 <head>
     <title>Booking Requests - PartyShare</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
     <div class="container">
         <div class="header">
             <div>
-                <h1>📩 Booking Requests</h1>
+                <h1><i class="fas fa-envelope-open-text"></i> Booking Requests</h1>
                 <p>Manage incoming requests for your items</p>
             </div>
             <div class="actions">
-                <a href="/items/search" class="btn btn-secondary">Back to Search</a>
+                <a href="/items/search" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Search</a>
             </div>
         </div>
 
@@ -27,10 +28,13 @@
             <div class="card" th:each="booking : ${bookings}" style="margin-bottom: 20px;">
                 <h3 th:text="${booking.item.name}" style="margin-top: 0; color: #2c3e50;">Item Name</h3>
                 <div style="color: #555; line-height: 1.6;">
-                    <p><strong>👤 Renter ID:</strong> <span th:text="${booking.renterId}">123</span></p>
-                    <p><strong>📅 Dates:</strong> <span th:text="${booking.startDate}">Start</span> to <span
-                            th:text="${booking.endDate}">End</span></p>
-                    <p><strong>💰 Total Price:</strong> <span style="font-weight: bold; color: #d35400;">€<span
+                    <p><strong><i class="fas fa-user"></i> Renter ID:</strong> <span
+                            th:text="${booking.renterId}">123</span></p>
+                    <p><strong><i class="fas fa-calendar-alt"></i> Dates:</strong> <span
+                            th:text="${booking.startDate}">Start</span> to <span th:text="${booking.endDate}">End</span>
+                    </p>
+                    <p><strong><i class="fas fa-tag"></i> Total Price:</strong> <span
+                            style="font-weight: bold; color: #d35400;">€<span
                                 th:text="${booking.totalPrice}">100.00</span></span>
                         <span th:if="${booking.status.toString() == 'COUNTER_OFFER'}"
                             style="color: #e67e22; font-weight: bold; margin-left: 10px;">(Counter Offer Sent)</span>
