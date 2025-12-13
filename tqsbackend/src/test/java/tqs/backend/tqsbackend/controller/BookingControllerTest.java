@@ -15,15 +15,13 @@ import java.util.Collections;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import tqs.backend.tqsbackend.dto.BookingCreateRequest;
 import tqs.backend.tqsbackend.entity.Booking;
-import tqs.backend.tqsbackend.entity.BookingStatus;
 import tqs.backend.tqsbackend.entity.User;
 import tqs.backend.tqsbackend.entity.UserRoles;
 import tqs.backend.tqsbackend.service.BookingService;
@@ -35,13 +33,13 @@ public class BookingControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private BookingService bookingService;
 
-    @MockBean
+    @MockitoBean
     private tqs.backend.tqsbackend.service.ItemService itemService;
 
-    @MockBean
+    @MockitoBean
     private UserService userService;
 
     @Test
@@ -75,10 +73,10 @@ public class BookingControllerTest {
         BookingCreateRequest request = new BookingCreateRequest();
         request.setItemId(1L);
         request.setProposedPrice(15.0);
-        
+
         Booking booking = new Booking();
         booking.setId(1L);
-        
+
         given(bookingService.createBooking(any(BookingCreateRequest.class))).willReturn(booking);
 
         mockMvc.perform(post("/bookings")
@@ -89,10 +87,9 @@ public class BookingControllerTest {
                 .param("proposedPrice", "15.0"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/bookings"));
-        
-        verify(bookingService).createBooking(argThat(req -> 
-            req.getProposedPrice().equals(15.0) && req.getItemId().equals(1L)
-        ));
+
+        verify(bookingService)
+                .createBooking(argThat(req -> req.getProposedPrice().equals(15.0) && req.getItemId().equals(1L)));
     }
 
     @Test
@@ -100,7 +97,7 @@ public class BookingControllerTest {
         User owner = new User();
         owner.setRole(UserRoles.OWNER);
         given(userService.getUserById(1L)).willReturn(Optional.of(owner));
-        
+
         Booking booking = new Booking();
         booking.setId(1L);
         given(bookingService.acceptBooking(1L, 1L)).willReturn(booking);
@@ -109,7 +106,7 @@ public class BookingControllerTest {
                 .sessionAttr("userId", 1L))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/bookings/requests"));
-        
+
         verify(bookingService).acceptBooking(1L, 1L);
     }
 
@@ -118,7 +115,7 @@ public class BookingControllerTest {
         User owner = new User();
         owner.setRole(UserRoles.OWNER);
         given(userService.getUserById(1L)).willReturn(Optional.of(owner));
-        
+
         Booking booking = new Booking();
         booking.setId(1L);
         given(bookingService.declineBooking(1L, 1L)).willReturn(booking);
@@ -127,7 +124,7 @@ public class BookingControllerTest {
                 .sessionAttr("userId", 1L))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/bookings/requests"));
-        
+
         verify(bookingService).declineBooking(1L, 1L);
     }
 
@@ -136,7 +133,7 @@ public class BookingControllerTest {
         User owner = new User();
         owner.setRole(UserRoles.OWNER);
         given(userService.getUserById(1L)).willReturn(Optional.of(owner));
-        
+
         Booking booking = new Booking();
         booking.setId(1L);
         given(bookingService.counterOfferBooking(1L, 40.0, 1L)).willReturn(booking);
@@ -146,7 +143,7 @@ public class BookingControllerTest {
                 .param("price", "40.0"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/bookings/requests"));
-        
+
         verify(bookingService).counterOfferBooking(1L, 40.0, 1L);
     }
 
@@ -155,7 +152,7 @@ public class BookingControllerTest {
         User renter = new User();
         renter.setRole(UserRoles.RENTER);
         given(userService.getUserById(1L)).willReturn(Optional.of(renter));
-        
+
         Booking booking = new Booking();
         booking.setId(1L);
         given(bookingService.acceptCounterOffer(1L, 1L)).willReturn(booking);
@@ -164,7 +161,7 @@ public class BookingControllerTest {
                 .sessionAttr("userId", 1L))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/bookings"));
-        
+
         verify(bookingService).acceptCounterOffer(1L, 1L);
     }
 
@@ -173,7 +170,7 @@ public class BookingControllerTest {
         User renter = new User();
         renter.setRole(UserRoles.RENTER);
         given(userService.getUserById(1L)).willReturn(Optional.of(renter));
-        
+
         Booking booking = new Booking();
         booking.setId(1L);
         given(bookingService.declineCounterOffer(1L, 1L)).willReturn(booking);
@@ -182,7 +179,7 @@ public class BookingControllerTest {
                 .sessionAttr("userId", 1L))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/bookings"));
-        
+
         verify(bookingService).declineCounterOffer(1L, 1L);
     }
 }

@@ -1,12 +1,9 @@
 package tqs.backend.tqsbackend.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,8 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import tqs.backend.tqsbackend.entity.Booking;
@@ -28,12 +25,7 @@ import tqs.backend.tqsbackend.repository.BookingRepository;
 import tqs.backend.tqsbackend.repository.CategoryRepository;
 import tqs.backend.tqsbackend.repository.ItemRepository;
 import tqs.backend.tqsbackend.repository.UserRepository;
-import tqs.backend.tqsbackend.service.PaymentResult;
 import tqs.backend.tqsbackend.service.PaymentService;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -55,7 +47,7 @@ class IT_BookingControllerTest {
     @Autowired
     private BookingRepository bookingRepository;
 
-    @MockBean
+    @MockitoBean
     private PaymentService paymentService;
 
     @Test

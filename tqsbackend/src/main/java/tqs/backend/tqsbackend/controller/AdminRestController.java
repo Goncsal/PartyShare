@@ -7,8 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import tqs.backend.tqsbackend.service.UserService;
 import tqs.backend.tqsbackend.service.CategoryService;
-import tqs.backend.tqsbackend.service.ItemService;
-
+import tqs.backend.tqsbackend.service.ReportService;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +18,7 @@ public class AdminRestController {
 
     private final UserService userService;
     private final CategoryService categoryService;
-    private final tqs.backend.tqsbackend.service.ReportService reportService;
+    private final ReportService reportService;
 
     @GetMapping("/dashboard-stats")
     public ResponseEntity<Map<String, Object>> getDashboardStats() {
@@ -29,7 +28,8 @@ public class AdminRestController {
     }
 
     @GetMapping("/reports")
-    public ResponseEntity<java.util.List<tqs.backend.tqsbackend.entity.Report>> getAllReports(@org.springframework.web.bind.annotation.RequestParam(required = false) tqs.backend.tqsbackend.entity.ReportState state) {
+    public ResponseEntity<java.util.List<tqs.backend.tqsbackend.entity.Report>> getAllReports(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) tqs.backend.tqsbackend.entity.ReportState state) {
         return ResponseEntity.ok(reportService.searchReports(state));
     }
 

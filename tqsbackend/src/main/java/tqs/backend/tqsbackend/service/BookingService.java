@@ -15,7 +15,6 @@ import tqs.backend.tqsbackend.entity.Item;
 import tqs.backend.tqsbackend.entity.PaymentStatus;
 import tqs.backend.tqsbackend.exception.AvailabilityException;
 import tqs.backend.tqsbackend.exception.BookingValidationException;
-import tqs.backend.tqsbackend.exception.PaymentException;
 import tqs.backend.tqsbackend.repository.BookingRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -27,8 +26,6 @@ public class BookingService {
     private final BookingRepository bookingRepository;
 
     private final ItemService itemService;
-
-    private final PaymentService paymentService;
 
     @Transactional
     public Booking createBooking(BookingCreateRequest request) {
@@ -210,6 +207,7 @@ public class BookingService {
         booking.setStatus(BookingStatus.CANCELLED);
         return bookingRepository.save(booking);
     }
+
     @Transactional
     public void confirmPayment(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
