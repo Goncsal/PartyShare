@@ -116,4 +116,17 @@ public class AdminController {
         }
         return "redirect:/users/" + id;
     }
+    @org.springframework.web.bind.annotation.PostMapping("/reports/{id}/update-state")
+    public String updateReportState(@org.springframework.web.bind.annotation.PathVariable Long id, HttpSession session, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        UserRoles role = (UserRoles) session.getAttribute("userRole");
+        if (role != UserRoles.ADMIN) {
+            return "redirect:/users/login";
+        }
+        if (reportService.updateReportState(id)) {
+            redirectAttributes.addFlashAttribute("success", "Report state updated successfully.");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Failed to update report state.");
+        }
+        return "redirect:/admin/reports";
+    }
 }
