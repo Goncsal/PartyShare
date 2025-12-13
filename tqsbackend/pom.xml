@@ -187,11 +187,12 @@
 					<org>tqs-partyshare</org>
 					<project>java-spring-boot</project>
 					<authToken>${env.SENTRY_AUTH_TOKEN}</authToken>
-					<!-- Skip source upload if auth token is not available (e.g., during Docker build) -->
-					<skipUploadSourceBundle>${sentry.skip}</skipUploadSourceBundle>
 				</configuration>
 				<executions>
 					<execution>
+						<!-- Bind to 'none' phase to disable automatic execution -->
+						<!-- Run manually with: mvn sentry:uploadSourceBundle when token is available -->
+						<phase>none</phase>
 						<goals>
 							<goal>uploadSourceBundle</goal>
 						</goals>
