@@ -64,6 +64,11 @@
                 <a th:if="${session.userId != item.ownerId}"
                     th:href="@{/messages/new(receiverId=${item.ownerId}, itemId=${item.id})}"
                     class="btn btn-secondary">Message Owner</a>
+
+                <!-- Report Owner Button -->
+                <a th:if="${session.userId != item.ownerId}"
+                    th:href="@{/reports(title='Report Owner: ' + ${owner.name}, description='I want to report the owner of item ' + ${item.name} + ' (ID: ' + ${item.id} + ') because...')}"
+                    class="btn btn-secondary" style="background: #e74c3c; color: white;">Report Owner</a>
             </div>
         </div>
 

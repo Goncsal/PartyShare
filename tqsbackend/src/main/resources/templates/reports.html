@@ -62,12 +62,13 @@
                 <div class="form-group">
                     <label for="title" class="form-label">Title</label>
                     <input type="text" id="title" name="title" required placeholder="Brief summary of the issue"
-                        class="form-control">
+                        class="form-control" th:value="${param.title}">
                 </div>
                 <div class="form-group">
                     <label for="description" class="form-label">Description</label>
                     <textarea id="description" name="description" rows="4" required
-                        placeholder="Detailed description..." class="form-control"></textarea>
+                        placeholder="Detailed description..." class="form-control"
+                        th:text="${param.description}"></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary">Submit Report</button>
             </form>
