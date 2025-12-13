@@ -80,9 +80,14 @@
                 style="margin-bottom: 20px; padding: 20px; background-color: #fcefe9; border-radius: 15px;">
                 <h3 style="margin-top: 0;">Rate this Item</h3>
 
-                <!-- Error message placeholder -->
-                <div id="item-rating-error"
-                    style="display: none; padding: 10px; margin-bottom: 10px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; color: #721c24;">
+                <!-- Error/Success messages -->
+                <div th:if="${errorMessage}" class="alert alert-danger"
+                    style="padding: 10px; margin-bottom: 10px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; color: #721c24;">
+                    <span th:text="${errorMessage}">Error message</span>
+                </div>
+                <div th:if="${successMessage}" class="alert alert-success"
+                    style="padding: 10px; margin-bottom: 10px; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; color: #155724;">
+                    <span th:text="${successMessage}">Success message</span>
                 </div>
 
                 <form id="itemRatingForm" action="/ratings/new" method="post">
@@ -125,9 +130,14 @@
                 style="margin-bottom: 20px; padding: 20px; background-color: #fcefe9; border-radius: 15px;">
                 <h3 style="margin-top: 0;">Rate the Owner</h3>
 
-                <!-- Error message placeholder -->
-                <div id="owner-rating-error"
-                    style="display: none; padding: 10px; margin-bottom: 10px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; color: #721c24;">
+                <!-- Error/Success messages -->
+                <div th:if="${errorMessage}" class="alert alert-danger"
+                    style="padding: 10px; margin-bottom: 10px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; color: #721c24;">
+                    <span th:text="${errorMessage}">Error message</span>
+                </div>
+                <div th:if="${successMessage}" class="alert alert-success"
+                    style="padding: 10px; margin-bottom: 10px; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; color: #155724;">
+                    <span th:text="${successMessage}">Success message</span>
                 </div>
 
                 <form id="ownerRatingForm" action="/ratings/new" method="post">
@@ -165,14 +175,19 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const itemId = document.querySelector('input[name="ratedId"]').value;
-            loadRatings(itemId);
+            loadRatings(itemId, 'PRODUCT', 'item-ratings-list');
+
+            const ownerIdInput = document.querySelector('#ownerRatingForm input[name="ratedId"]');
+            if (ownerIdInput) {
+                loadRatings(ownerIdInput.value, 'OWNER', 'owner-ratings-list');
+            }
         });
 
-        function loadRatings(itemId) {
-            fetch(`/api/ratings/search?type=PRODUCT&rated=${itemId}`)
+        function loadRatings(ratedId, type, containerId) {
+            fetch(`/api/ratings/search?type=${type}&rated=${ratedId}`)
                 .then(response => response.json())
                 .then(ratings => {
-                    const container = document.getElementById('item-ratings-list'); // Fixed ID
+                    const container = document.getElementById(containerId);
                     container.innerHTML = '';
 
                     if (ratings.length === 0) {
@@ -194,7 +209,7 @@
                 })
                 .catch(err => {
                     console.error('Error loading ratings:', err);
-                    document.getElementById('item-ratings-list').innerHTML = '<p style="color: #c0392b;">Error loading ratings.</p>';
+                    document.getElementById(containerId).innerHTML = '<p style="color: #c0392b;">Error loading ratings.</p>';
                 });
         }
     </script>
