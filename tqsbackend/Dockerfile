@@ -31,6 +31,9 @@ RUN apk add --no-cache curl
 # Set working directory
 WORKDIR /app
 
+# Download Sentry OpenTelemetry agent
+ADD --chmod=644 https://repo1.maven.org/maven2/io/sentry/sentry-opentelemetry-agent/8.28.0/sentry-opentelemetry-agent-8.28.0.jar /app/sentry-agent.jar
+
 # Create non-root user for security
 RUN addgroup --system spring && adduser --system spring --ingroup spring
 USER spring:spring
@@ -45,5 +48,6 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
   CMD curl -f http://localhost:8080/actuator/health || exit 1
 
-# Run the application
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+# Run the application with Sentry agent
+ENV SENTRY_AUTO_INIT=false
+ENTRYPOINT ["java", "-javaagent:/app/sentry-agent.jar", "-jar", "/app/app.jar"]
