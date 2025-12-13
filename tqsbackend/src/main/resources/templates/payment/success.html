@@ -2,38 +2,20 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <title>Payment Successful</title>
+    <title>Payment Successful - PartyShare</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
         .success-container {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
             max-width: 500px;
-            width: 100%;
+            margin: 100px auto;
             text-align: center;
-            padding: 50px 30px;
+            padding: 40px;
         }
 
         .success-icon {
             width: 80px;
             height: 80px;
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            background: #d4edda;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -44,34 +26,32 @@
         .success-icon svg {
             width: 40px;
             height: 40px;
-            stroke: white;
+            stroke: #155724;
             stroke-width: 3;
-        }
-
-        h1 {
-            color: #2c3e50;
-            font-size: 1.8em;
-            margin-bottom: 10px;
         }
 
         .message {
             color: #666;
             font-size: 1.1em;
             margin-bottom: 30px;
+            line-height: 1.6;
         }
 
         .booking-ref {
             background: #f8f9fa;
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 20px;
             margin-bottom: 30px;
+            border: 1px solid #eee;
         }
 
         .booking-ref label {
-            color: #666;
+            color: #7f8c8d;
             font-size: 0.9em;
             display: block;
             margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .booking-ref .ref-number {
@@ -80,41 +60,29 @@
             color: #2c3e50;
             font-family: monospace;
         }
-
-        .btn-primary {
-            display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            text-decoration: none;
-            padding: 15px 40px;
-            border-radius: 10px;
-            font-weight: 600;
-            transition: transform 0.2s;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-        }
     </style>
 </head>
 
 <body>
-    <div class="success-container">
-        <div class="success-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
+    <div class="container">
+        <div class="card success-container">
+            <div class="success-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+
+            <h1 style="color: #2c3e50; margin-bottom: 15px;">Payment Successful!</h1>
+            <p class="message">Your booking has been confirmed. You will receive a confirmation email shortly.</p>
+
+            <div class="booking-ref">
+                <label>Booking Reference</label>
+                <div class="ref-number" th:text="${booking.paymentReference ?: 'BK-' + booking.id}">REF-123456</div>
+            </div>
+
+            <a th:href="@{/bookings}" class="btn btn-primary" style="display: inline-block; padding: 12px 30px;">View My
+                Bookings</a>
         </div>
-
-        <h1>Payment Successful!</h1>
-        <p class="message">Your booking has been confirmed. You will receive a confirmation email shortly.</p>
-
-        <div class="booking-ref">
-            <label>Booking Reference</label>
-            <div class="ref-number" th:text="${booking.paymentReference ?: 'BK-' + booking.id}">REF-123456</div>
-        </div>
-
-        <a th:href="@{/bookings}" class="btn-primary">View My Bookings</a>
     </div>
 </body>
 

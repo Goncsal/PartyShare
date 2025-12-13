@@ -2,76 +2,28 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <title>Messages</title>
+    <title>Messages - PartyShare</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
     <style>
+        /* Specific styles for chat layout */
         body {
-            font-family: sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f7f9fb;
             height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
+            /* Prevent body scroll */
         }
 
-        .header {
-            background: white;
-            padding: 15px 20px;
-            border-bottom: 1px solid #e0e0e0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .back-link {
-            color: #3498db;
-            text-decoration: none;
-            font-size: 0.95em;
-        }
-
-        .back-link:hover {
-            text-decoration: underline;
-        }
-
-        h1 {
-            color: #2c3e50;
-            margin: 10px 0 5px 0;
-            font-size: 1.5em;
-        }
-
-        .item-context {
-            font-size: 0.9em;
-            color: #666;
-            padding: 8px 12px;
-            background: #f8f9fa;
-            border-radius: 4px;
-            display: inline-block;
-            margin-top: 5px;
-        }
-
-        .alert {
-            padding: 10px 16px;
-            border-radius: 6px;
-            margin: 10px 20px;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .chat-container {
+        .chat-layout {
             flex: 1;
             display: flex;
             flex-direction: column;
             max-width: 900px;
             width: 100%;
-            margin: 0 auto;
+            margin: 20px auto;
             background: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
             overflow: hidden;
         }
 
@@ -81,6 +33,7 @@
             padding: 20px;
             display: flex;
             flex-direction: column;
+            background: #fff;
         }
 
         .message {
@@ -89,140 +42,90 @@
             border-radius: 12px;
             max-width: 70%;
             word-wrap: break-word;
+            position: relative;
         }
 
         .message.sent {
-            background: #e8f4f8;
+            background: #d35400;
+            /* Primary color */
+            color: white;
             align-self: flex-end;
-            border-bottom-right-radius: 4px;
+            border-bottom-right-radius: 2px;
         }
 
         .message.received {
-            background: #f0f0f0;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-        }
-
-        .message-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-        }
-
-        .message-sender {
-            font-weight: 600;
-            font-size: 0.85em;
+            background: #f0f2f5;
             color: #2c3e50;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
         }
 
         .message-time {
-            font-size: 0.75em;
-            color: #888;
-            margin-left: 10px;
-        }
-
-        .message-content {
-            color: #333;
-            line-height: 1.5;
-        }
-
-        .no-messages {
-            text-align: center;
-            padding: 60px 20px;
-            color: #888;
-            font-size: 1.1em;
+            font-size: 0.7em;
+            opacity: 0.7;
+            margin-left: 8px;
         }
 
         .input-area {
-            padding: 15px 20px;
+            padding: 20px;
             background: #fafafa;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        .message-form {
-            display: flex;
-            gap: 10px;
-            align-items: flex-end;
-        }
-
-        .message-form textarea {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            font-size: 1em;
-            resize: none;
-            min-height: 45px;
-            max-height: 120px;
-            font-family: sans-serif;
-        }
-
-        .message-form textarea:focus {
-            outline: none;
-            border-color: #3498db;
-        }
-
-        .btn-send {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 600;
-            transition: background-color 0.2s;
-        }
-
-        .btn-send:hover {
-            background: #2980b9;
-        }
-
-        .btn-send:active {
-            background: #21618c;
+            border-top: 1px solid #eee;
         }
     </style>
 </head>
 
 <body>
-    <div class="header">
-        <a href="/messages/conversations" class="back-link">&larr; Back to Conversations</a>
-        <h1>Messages</h1>
-        <div th:if="${item}" class="item-context">
-            <strong>About:</strong> <span th:text="${item.name}">Item Name</span>
+    <div class="header" style="margin: 0; border-radius: 0;">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1 style="font-size: 1.5em;">💬 Messages</h1>
+                <div th:if="${item}" style="font-size: 0.9em; color: #7f8c8d;">
+                    Regarding: <strong th:text="${item.name}">Item Name</strong>
+                </div>
+            </div>
+            <a href="/messages/conversations" class="btn btn-secondary">Back to Conversations</a>
         </div>
     </div>
 
-    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+    <div th:if="${success}" style="text-align: center; padding: 10px; background: #d4edda; color: #155724;">
+        <span th:text="${success}"></span>
+    </div>
+    <div th:if="${error}" style="text-align: center; padding: 10px; background: #f8d7da; color: #721c24;">
+        <span th:text="${error}"></span>
+    </div>
 
-    <div class="chat-container">
+    <div class="chat-layout">
         <div class="messages-area" id="messagesArea">
-            <div th:if="${messages == null or messages.empty}" class="no-messages">
+            <div th:if="${messages == null or messages.empty}"
+                style="text-align: center; padding: 50px; color: #95a5a6;">
                 No messages yet. Start the conversation!
             </div>
 
             <div th:if="${messages != null and !messages.empty}">
                 <div th:each="msg : ${messages}"
                     th:class="${msg.senderId == userId} ? 'message sent' : 'message received'">
-                    <div class="message-header">
-                        <span class="message-sender"
+                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                        <span style="font-weight: bold; font-size: 0.8em;"
                             th:text="${msg.senderId == userId} ? 'You' : 'Other User'">Sender</span>
                         <span class="message-time" th:text="${#temporals.format(msg.sentAt, 'HH:mm')}">Time</span>
                     </div>
-                    <div class="message-content" th:text="${msg.content}">Message content</div>
+                    <div style="margin-top: 5px; line-height: 1.4;" th:text="${msg.content}">Message content</div>
                 </div>
             </div>
         </div>
 
         <div class="input-area">
-            <form th:action="@{/messages}" method="post" class="message-form">
+            <form th:action="@{/messages}" method="post" style="display: flex; gap: 10px;">
                 <input type="hidden" name="receiverId" th:value="${receiverId}" />
                 <input type="hidden" name="itemId" th:value="${item?.id}" />
-                <textarea id="messageContent" name="content" required placeholder="Type your message..."
-                    rows="1"></textarea>
-                <button type="submit" class="btn-send">Send</button>
+
+                <textarea id="messageContent" name="content" required placeholder="Type your message..." rows="1"
+                    class="form-control" style="resize: none; border-radius: 25px; padding: 12px 20px;"></textarea>
+
+                <button type="submit" class="btn btn-primary"
+                    style="border-radius: 50%; width: 50px; height: 50px; padding: 0; display: flex; align-items: center; justify-content: center;">
+                    ➤
+                </button>
             </form>
         </div>
     </div>

@@ -43,17 +43,24 @@ public class ItemControllerTest {
                 Item item = new Item();
                 item.setId(1L);
                 item.setName("Test Item");
+                item.setOwnerId(2L); // Set owner ID
                 tqs.backend.tqsbackend.entity.Category category = new tqs.backend.tqsbackend.entity.Category();
                 category.setName("Test Category");
                 item.setCategory(category);
 
+                tqs.backend.tqsbackend.entity.User owner = new tqs.backend.tqsbackend.entity.User();
+                owner.setId(2L);
+                owner.setName("Owner Name");
+                owner.setRole(tqs.backend.tqsbackend.entity.UserRoles.OWNER);
+
                 given(itemService.getItemById(1L)).willReturn(item);
-                given(userService.getUserById(Mockito.anyLong())).willReturn(java.util.Optional.empty());
+                given(userService.getUserById(2L)).willReturn(java.util.Optional.of(owner)); // Mock owner retrieval
 
                 mockMvc.perform(get("/items/1"))
                                 .andExpect(status().isOk())
                                 .andExpect(view().name("item_details"))
-                                .andExpect(model().attribute("item", item));
+                                .andExpect(model().attribute("item", item))
+                                .andExpect(model().attribute("owner", owner)); // Expect owner in model
         }
 
         @Test
@@ -61,22 +68,31 @@ public class ItemControllerTest {
                 Item item = new Item();
                 item.setId(1L);
                 item.setName("Test Item");
+                item.setOwnerId(2L); // Set owner ID
                 tqs.backend.tqsbackend.entity.Category category = new tqs.backend.tqsbackend.entity.Category();
                 category.setName("Test Category");
                 item.setCategory(category);
 
                 tqs.backend.tqsbackend.entity.User user = new tqs.backend.tqsbackend.entity.User();
+                user.setId(1L);
                 user.setRole(tqs.backend.tqsbackend.entity.UserRoles.RENTER);
+
+                tqs.backend.tqsbackend.entity.User owner = new tqs.backend.tqsbackend.entity.User();
+                owner.setId(2L);
+                owner.setName("Owner Name");
+                owner.setRole(tqs.backend.tqsbackend.entity.UserRoles.OWNER);
 
                 given(itemService.getItemById(1L)).willReturn(item);
                 given(userService.getUserById(1L)).willReturn(java.util.Optional.of(user));
+                given(userService.getUserById(2L)).willReturn(java.util.Optional.of(owner)); // Mock owner retrieval
 
                 mockMvc.perform(get("/items/1")
                                 .sessionAttr("userId", 1L))
                                 .andExpect(status().isOk())
                                 .andExpect(view().name("item_details"))
                                 .andExpect(model().attribute("item", item))
-                                .andExpect(model().attribute("userRole", "RENTER"));
+                                .andExpect(model().attribute("userRole", "RENTER"))
+                                .andExpect(model().attribute("owner", owner)); // Expect owner in model
         }
 
         @Test
