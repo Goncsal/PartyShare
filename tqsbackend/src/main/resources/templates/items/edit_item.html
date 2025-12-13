@@ -3,94 +3,60 @@
 
 <head>
     <title>Edit Item - PartyShare</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        input,
-        textarea,
-        select {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-
-        button {
-            padding: 10px 15px;
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #2980b9;
-        }
-
-        .error {
-            color: red;
-            font-size: 0.9em;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
 <body>
-    <div style="margin-bottom: 20px;">
-        <a href="/items/my-items">Back to My Items</a>
+    <div class="container" style="max-width: 600px;">
+        <div class="header" style="text-align: center; display: block;">
+            <h1>✏️ Edit Item</h1>
+            <p>Update your item details</p>
+        </div>
+
+        <div class="card">
+            <form th:action="@{/items/{id}/edit(id=${item.id})}" th:object="${item}" method="post">
+                <div class="form-group">
+                    <label for="name" class="form-label">Item Name</label>
+                    <input type="text" id="name" th:field="*{name}" required class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea id="description" th:field="*{description}" rows="4" class="form-control"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="price" class="form-label">Price per Day (€)</label>
+                    <input type="number" id="price" th:field="*{price}" step="0.01" min="0" required
+                        class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="category" class="form-label">Category</label>
+                    <select id="category" name="categoryId" required class="form-control">
+                        <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"
+                            th:selected="${cat.id == item.category.id}">Category</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="location" class="form-label">Location</label>
+                    <input type="text" id="location" th:field="*{location}" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="imageUrl" class="form-label">Image URL (optional)</label>
+                    <input type="url" id="imageUrl" th:field="*{imageUrl}" placeholder="https://example.com/image.jpg"
+                        class="form-control">
+                </div>
+
+                <div style="margin-top: 30px; display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Update Item</button>
+                    <a href="/items/my-items" class="btn btn-secondary" style="flex: 1; text-align: center;">Cancel</a>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <h1>Edit Item</h1>
-
-    <form th:action="@{/items/{id}/edit(id=${item.id})}" th:object="${item}" method="post">
-        <div class="form-group">
-            <label for="name">Item Name:</label>
-            <input type="text" id="name" th:field="*{name}" required>
-        </div>
-
-        <div class="form-group">
-            <label for="description">Description:</label>
-            <textarea id="description" th:field="*{description}" rows="4"></textarea>
-        </div>
-
-        <div class="form-group">
-            <label for="price">Price per Day (€):</label>
-            <input type="number" id="price" th:field="*{price}" step="0.01" min="0" required>
-        </div>
-
-        <div class="form-group">
-            <label for="category">Category:</label>
-            <select id="category" name="categoryId" required>
-                <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"
-                    th:selected="${cat.id == item.category.id}">Category</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="location">Location:</label>
-            <input type="text" id="location" th:field="*{location}">
-        </div>
-
-        <div class="form-group">
-            <label for="imageUrl">Image URL (optional):</label>
-            <input type="url" id="imageUrl" th:field="*{imageUrl}" placeholder="https://example.com/image.jpg">
-        </div>
-
-        <button type="submit">Update Item</button>
-    </form>
 </body>
 
 </html>

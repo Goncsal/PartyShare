@@ -3,105 +3,60 @@
 
 <head>
     <title>Add New Item - PartyShare</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        input,
-        select,
-        textarea {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        button {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #2980b9;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
 <body>
-    <div
-        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
-        <a href="/items/search"
-            style="text-decoration: none; color: #333; font-size: 1.5em; font-weight: bold;">PartyShare</a>
-        <div>
-            <a href="/items/search">Search</a> |
-            <span th:if="${userRole == 'OWNER'}">
-                <a href="/items/new">Add Item</a> |
-                <a href="/items/my-items">My Items</a> |
-            </span>
-            <a href="/favorites">My Favorites</a> |
-            <a href="/bookings">My Bookings</a> |
-            <a href="/reports">My Reports</a> |
-            <a href="/users/profile">Profile</a> |
-            <a href="/users/logout" style="color: #c0392b;">Logout</a>
+    <div class="container" style="max-width: 600px;">
+        <div class="header" style="text-align: center; display: block;">
+            <h1>✨ Add New Item</h1>
+            <p>List a new item for others to rent</p>
+        </div>
+
+        <div class="card">
+            <form th:action="@{/items}" method="post" th:object="${item}">
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" field="*{name}" name="name" required class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea field="*{description}" name="description" required class="form-control"
+                        rows="4"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Price per Day (€)</label>
+                    <input type="number" step="0.01" field="*{price}" name="price" required class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select name="categoryId" required class="form-control">
+                        <option value="">Select Category</option>
+                        <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Location</label>
+                    <input type="text" field="*{location}" name="location" required class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Image URL (Optional)</label>
+                    <input type="url" field="*{imageUrl}" name="imageUrl" placeholder="https://example.com/image.jpg"
+                        class="form-control" />
+                </div>
+
+                <div style="margin-top: 30px; display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Create Item</button>
+                    <a href="/items/my-items" class="btn btn-secondary" style="flex: 1; text-align: center;">Cancel</a>
+                </div>
+            </form>
         </div>
     </div>
-
-    <h1>Add New Item</h1>
-
-    <form th:action="@{/items}" method="post" th:object="${item}">
-        <div class="form-group">
-            <label>Name</label>
-            <input type="text" field="*{name}" name="name" required />
-        </div>
-
-        <div class="form-group">
-            <label>Description</label>
-            <textarea field="*{description}" name="description" required></textarea>
-        </div>
-
-        <div class="form-group">
-            <label>Price per Day (€)</label>
-            <input type="number" step="0.01" field="*{price}" name="price" required />
-        </div>
-
-        <div class="form-group">
-            <label>Category</label>
-            <select name="categoryId" required>
-                <option value="">Select Category</option>
-                <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>Location</label>
-            <input type="text" field="*{location}" name="location" required />
-        </div>
-
-        <div class="form-group">
-            <label>Image URL (Optional)</label>
-            <input type="url" field="*{imageUrl}" name="imageUrl" placeholder="https://example.com/image.jpg" />
-        </div>
-
-        <button type="submit">Create Item</button>
-    </form>
 </body>
 
 </html>

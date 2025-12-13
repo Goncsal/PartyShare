@@ -2,158 +2,108 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <title>Item Search</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            margin: 20px;
-        }
-
-        .filter-section {
-            margin-bottom: 20px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        .item-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .item-card {
-            border: 1px solid #ccc;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .item-card h3 {
-            margin-top: 0;
-        }
-
-        .price {
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        .rating {
-            color: #f39c12;
-        }
-
-        .actions {
-            margin-top: 10px;
-        }
-
-        button {
-            cursor: pointer;
-            padding: 5px 10px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 3px;
-        }
-
-        button:hover {
-            background-color: #2980b9;
-        }
-
-        input,
-        select {
-            padding: 5px;
-            margin-right: 10px;
-        }
-
-        label {
-            margin-right: 5px;
-        }
-    </style>
+    <title>Item Search - PartyShare</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
 <body>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h1>Find Items</h1>
-        <div>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>🔍 Find Items</h1>
+                <p>Discover amazing items for your party</p>
+            </div>
+            <div class="actions">
+                <span th:if="${isLoggedIn}">
+                    <span th:text="${userName}"
+                        style="margin-right: 15px; font-weight: bold; color: #2c3e50;">User</span>
+
+                    <a th:if="${userRole == 'OWNER'}" href="/owner/dashboard" class="btn btn-secondary">Dashboard</a>
+                    <a th:if="${userRole == 'RENTER'}" href="/favorites" class="btn btn-secondary">Favorites</a>
+                    <a href="/users/logout" class="btn btn-primary">Logout</a>
+                </span>
+                <span th:unless="${isLoggedIn}">
+                    <a href="/users/login" class="btn btn-secondary">Login</a>
+                    <a href="/users/register" class="btn btn-primary">Register</a>
+                </span>
+            </div>
+        </div>
+
+        <!-- Navigation Bar (Simplified for now, can be improved) -->
+        <div class="nav-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 20px;">
+            <a href="/items/search" class="nav-card">🏠 Home</a>
             <span th:if="${isLoggedIn}">
-                Welcome, <span th:text="${userName}">User</span>! |
-                <span th:if="${userRole == 'OWNER'}">
-                    <a href="/owner/dashboard">My Dashboard</a> |
-                    <a href="/bookings/requests">Booking Requests</a> |
-                </span>
-                <span th:if="${userRole == 'RENTER'}">
-                    <a href="/favorites">My Favorites</a> |
-                    <a href="/bookings">My Bookings</a> |
-                </span>
-                <a href="/messages/conversations">Messages</a> |
-                <a href="/reports">My Reports</a> |
-                <a href="/users/profile">Profile</a> |
-                <a href="/users/logout" style="color: #c0392b;">Logout</a>
-            </span>
-            <span th:unless="${isLoggedIn}">
-                <a href="/users/login">Login</a> |
-                <a href="/users/register">Register</a>
+                <a th:if="${userRole == 'OWNER'}" href="/bookings/requests" class="nav-card">📅 My BookingRequests</a>
+                <a th:if="${userRole == 'RENTER'}" href="/bookings" class="nav-card">📅 Bookings</a>
+                <a href="/messages/conversations" class="nav-card">💬 Messages</a>
+                <a href="/users/profile" class="nav-card">👤 Profile</a>
             </span>
         </div>
-    </div>
 
-    <div class="filter-section">
-        <form action="/items/search" method="get">
-            <input type="text" name="q" placeholder="Search items..." th:value="${q}">
+        <div class="card" style="margin-bottom: 30px;">
+            <form action="/items/search" method="get"
+                style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+                <div class="form-group" style="flex: 2; margin-bottom: 0;">
+                    <label class="form-label">Search</label>
+                    <input type="text" name="q" class="form-control" placeholder="What are you looking for?"
+                        th:value="${q}">
+                </div>
 
-            <select name="category">
-                <option value="">All Categories</option>
-                <option th:each="cat : ${categories}" th:value="${cat.name}" th:text="${cat.name}"
-                    th:selected="${cat.name == selectedCategory}">Category</option>
-            </select>
+                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                    <label class="form-label">Category</label>
+                    <select name="category" class="form-control">
+                        <option value="">All Categories</option>
+                        <option th:each="cat : ${categories}" th:value="${cat.name}" th:text="${cat.name}"
+                            th:selected="${cat.name == selectedCategory}">Category</option>
+                    </select>
+                </div>
 
-            <input type="number" name="minPrice" placeholder="Min Price" step="0.01" th:value="${minPrice}">
-            <input type="number" name="maxPrice" placeholder="Max Price" step="0.01" th:value="${maxPrice}">
-            <input type="number" name="minRating" placeholder="Min Rating" step="0.1" max="5" th:value="${minRating}">
-            <input type="text" name="location" placeholder="Location" th:value="${location}">
+                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                    <label class="form-label">Max Price</label>
+                    <input type="number" name="maxPrice" class="form-control" placeholder="€" step="0.01"
+                        th:value="${maxPrice}">
+                </div>
 
-            <button type="submit">Filter</button>
-            <a href="/items/search" style="margin-left: 10px; text-decoration: none; color: #7f8c8d;">Clear</a>
-        </form>
-    </div>
+                <button type="submit" class="btn btn-primary" style="height: 42px;">Filter</button>
+                <a href="/items/search" class="btn btn-secondary" style="height: 42px; line-height: 20px;">Clear</a>
+            </form>
+        </div>
 
-    <div class="item-list">
-        <div th:each="item : ${items}" class="item-card">
-            <img th:src="${item.imageUrl}" alt="Item Image"
-                style="width: 100%; height: 200px; object-fit: cover; border-radius: 5px; margin-bottom: 10px;">
-            <h3 th:text="${item.name}">Item Name</h3>
-            <p th:text="${item.description}">Description</p>
-            <p>Category: <span th:text="${item.category.name}">Category</span></p>
-            <p class="price" th:text="'€' + ${item.price}">€0.00</p>
-            <p class="rating" th:text="'Rating: ' + ${item.averageRating} + '/5.0'">Rating: 0.0</p>
-            <p>Location: <span th:text="${item.location}">Location</span></p>
+        <div class="stats-grid">
+            <div th:each="item : ${items}" class="card" style="text-align: left; overflow: hidden; padding: 0;">
+                <img th:src="${item.imageUrl}" alt="Item Image" style="width: 100%; height: 200px; object-fit: cover;">
 
-            <!-- Owner Information -->
-            <div th:if="${ownerMap[item.ownerId] != null}"
-                style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
-                <p style="font-size: 0.9em; color: #666;">
-                    <strong>Owner:</strong> <span th:text="${ownerMap[item.ownerId].name}">Owner Name</span>
-                    <span th:if="${ownerMap[item.ownerId].averageRating != null}" style="color: #f39c12;">
-                        (★ <span th:text="${ownerMap[item.ownerId].averageRating}">0.0</span>/5.0)
-                    </span>
-                    <span th:if="${ownerMap[item.ownerId].averageRating == null}" style="color: #999;">
-                        (No ratings)
-                    </span>
-                </p>
-            </div>
+                <div style="padding: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <h3 th:text="${item.name}" style="margin: 0 0 10px 0; color: #2c3e50;">Item Name</h3>
+                        <span class="price" th:text="'€' + ${item.price}"
+                            style="font-size: 1.2em; color: #d35400; font-weight: bold;">€0.00</span>
+                    </div>
 
-            <div class="actions">
-                <form action="#" th:action="@{/favorites/{itemId}(itemId=${item.id})}" method="post">
-                    <button type="submit">Add to Favorites</button>
-                </form>
-                <div style="margin-top:8px;">
-                    <a th:href="@{/bookings/rent/{itemId}(itemId=${item.id})}">Rent this item</a>
-                    <a th:href="@{/items/{itemId}(itemId=${item.id})}" style="margin-left: 10px;">View Details</a>
+                    <p th:text="${item.description}"
+                        style="color: #7f8c8d; font-size: 0.9em; margin-bottom: 15px; height: 40px; overflow: hidden;">
+                        Description</p>
+
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; color: #95a5a6; margin-bottom: 15px;">
+                        <span>📍 <span th:text="${item.location}">Location</span></span>
+                        <span>⭐ <span th:text="${item.averageRating}">0.0</span></span>
+                    </div>
+
+                    <div class="actions" style="display: flex; gap: 10px;">
+                        <a th:href="@{/items/{itemId}(itemId=${item.id})}" class="btn btn-secondary"
+                            style="flex: 1; text-align: center; font-size: 0.9em;">Details</a>
+                        <form action="#" th:action="@{/favorites/{itemId}(itemId=${item.id})}" method="post"
+                            style="display: inline;">
+                            <button type="submit" class="btn btn-primary" style="padding: 10px 15px;">❤️</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-        <div th:if="${items.empty}">
+
+        <div th:if="${items.empty}" class="loading">
             <p>No items found matching your criteria.</p>
         </div>
     </div>
