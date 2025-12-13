@@ -4,6 +4,7 @@
 <head>
     <title>Item Search - PartyShare</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
@@ -11,7 +12,7 @@
     <div class="container">
         <div class="header">
             <div>
-                <h1>🔍 Find Items</h1>
+                <h1><i class="fas fa-search"></i> Find Items</h1>
                 <p>Discover amazing items for your party</p>
             </div>
             <div class="actions">
@@ -19,6 +20,7 @@
                     <span th:text="${userName}"
                         style="margin-right: 15px; font-weight: bold; color: #2c3e50;">User</span>
 
+                    <a th:if="${userRole == 'ADMIN'}" href="/admin/dashboard" class="btn btn-secondary">Dashboard</a>
                     <a th:if="${userRole == 'OWNER'}" href="/owner/dashboard" class="btn btn-secondary">Dashboard</a>
                     <a th:if="${userRole == 'RENTER'}" href="/favorites" class="btn btn-secondary">Favorites</a>
                     <a href="/users/logout" class="btn btn-primary">Logout</a>
@@ -32,12 +34,16 @@
 
         <!-- Navigation Bar (Simplified for now, can be improved) -->
         <div class="nav-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 20px;">
-            <a href="/items/search" class="nav-card">🏠 Home</a>
             <span th:if="${isLoggedIn}">
-                <a th:if="${userRole == 'OWNER'}" href="/bookings/requests" class="nav-card">📅 My BookingRequests</a>
-                <a th:if="${userRole == 'RENTER'}" href="/bookings" class="nav-card">📅 Bookings</a>
-                <a href="/messages/conversations" class="nav-card">💬 Messages</a>
-                <a href="/users/profile" class="nav-card">👤 Profile</a>
+                <a style="margin-bottom: 10px;" th:if="${userRole == 'OWNER'}" href="/bookings/requests"
+                    class="nav-card"><i class="fas fa-calendar-check"></i>
+                    My BookingRequests</a>
+                <a style="margin-bottom: 10px;" th:if="${userRole == 'RENTER'}" href="/bookings" class="nav-card"><i
+                        class="fas fa-calendar-alt"></i>
+                    Bookings</a>
+                <a style="margin-bottom: 10px;" href="/messages/conversations" class="nav-card"><i
+                        class="fas fa-comments"></i> Messages</a>
+                <a href="/users/profile" class="nav-card"><i class="fas fa-user"></i> Profile</a>
             </span>
         </div>
 
@@ -87,8 +93,9 @@
 
                     <div
                         style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; color: #95a5a6; margin-bottom: 15px;">
-                        <span>📍 <span th:text="${item.location}">Location</span></span>
-                        <span>⭐ <span th:text="${item.averageRating}">0.0</span></span>
+                        <span><i class="fas fa-map-marker-alt"></i> <span
+                                th:text="${item.location}">Location</span></span>
+                        <span><i class="fas fa-star"></i> <span th:text="${item.averageRating}">0.0</span></span>
                     </div>
 
                     <div class="actions" style="display: flex; gap: 10px;">
@@ -96,7 +103,8 @@
                             style="flex: 1; text-align: center; font-size: 0.9em;">Details</a>
                         <form action="#" th:action="@{/favorites/{itemId}(itemId=${item.id})}" method="post"
                             style="display: inline;">
-                            <button type="submit" class="btn btn-primary" style="padding: 10px 15px;">❤️</button>
+                            <button type="submit" class="btn btn-primary" style="padding: 10px 15px;"><i
+                                    class="fas fa-heart"></i></button>
                         </form>
                     </div>
                 </div>

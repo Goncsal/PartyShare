@@ -4,6 +4,7 @@
 <head>
     <title>Messages - PartyShare</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* Specific styles for chat layout */
         body {
@@ -78,7 +79,7 @@
     <div class="header" style="margin: 0; border-radius: 0;">
         <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <h1 style="font-size: 1.5em;">💬 Messages</h1>
+                <h1 style="font-size: 1.5em;"><i class="fas fa-comments"></i> Messages</h1>
                 <div th:if="${item}" style="font-size: 0.9em; color: #7f8c8d;">
                     Regarding: <strong th:text="${item.name}">Item Name</strong>
                 </div>
@@ -124,7 +125,7 @@
 
                 <button type="submit" class="btn btn-primary"
                     style="border-radius: 50%; width: 50px; height: 50px; padding: 0; display: flex; align-items: center; justify-content: center;">
-                    ➤
+                    <i class="fas fa-paper-plane"></i>
                 </button>
             </form>
         </div>
