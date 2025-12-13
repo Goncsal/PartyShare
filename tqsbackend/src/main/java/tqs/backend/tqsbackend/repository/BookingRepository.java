@@ -44,4 +44,5 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                         @Param("date") LocalDate date);
 
     List<Booking> findByItem_OwnerIdAndStatus(Long ownerId, BookingStatus status);
+    List<Booking> findByStatus(BookingStatus status);
 }
