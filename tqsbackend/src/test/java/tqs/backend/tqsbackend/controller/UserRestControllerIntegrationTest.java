@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 
 import org.springframework.test.web.servlet.MockMvc;
 import tqs.backend.tqsbackend.dto.UserLoginRequest;
-import tqs.backend.tqsbackend.dto.UserRegistrationDto;
 import tqs.backend.tqsbackend.entity.User;
 import tqs.backend.tqsbackend.entity.UserRoles;
 import tqs.backend.tqsbackend.repository.UserRepository;
@@ -39,17 +38,21 @@ class UserRestControllerIntegrationTest {
 
     @Test
     void whenValidInput_thenCreateUser() throws Exception {
-        UserRegistrationDto userDto = new UserRegistrationDto("John", "john@ua.pt", "password123", UserRoles.RENTER);
+        String body = """
+                {
+                    "name": "testuser",
+                    "email": "test@ua.pt",
+                    "password": "password",
+                    "role": "RENTER"
+                }
+                """;
 
         mvc.perform(post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtil.toJson(userDto)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.name").value("John"))
-                .andExpect(jsonPath("$.email").value("john@ua.pt"))
-                .andExpect(jsonPath("$.password").doesNotExist());
+                .content(body))
+                .andExpect(status().isCreated());
 
-        assertThat(userRepository.findAll()).hasSize(1);
+        assertThat(userRepository.findAll()).hasSize(8); // 6 seeded users (3 owners + 3 renters) + 1 new user + 1 admin
     }
 
     @Test

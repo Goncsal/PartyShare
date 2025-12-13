@@ -17,11 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.mockito.Mockito;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import tqs.backend.tqsbackend.entity.Booking;
@@ -36,7 +33,6 @@ import tqs.backend.tqsbackend.service.PaymentService;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-@ActiveProfiles("dev")
 class BookingRestControllerIntegrationTest {
 
   @Autowired
@@ -48,25 +44,14 @@ class BookingRestControllerIntegrationTest {
   @Autowired
   private BookingRepository bookingRepository;
 
-  @Autowired
+  @MockitoBean
   private PaymentService paymentService;
-
-  @TestConfiguration
-  static class TestConfig {
-    @Bean
-    public PaymentService paymentService() {
-      return Mockito.mock(PaymentService.class);
-    }
-  }
 
   @Test
   void shouldCreateBookingViaApi() throws Exception {
     Item item = itemRepository.findAll().get(0);
     String start = LocalDate.now().plusDays(1).toString();
     String end = LocalDate.now().plusDays(3).toString();
-
-    when(paymentService.charge(anyLong(), any(Item.class), any(), anyLong()))
-        .thenReturn(PaymentResult.success("ref-int-1"));
 
     mockMvc.perform(post("/api/bookings")
         .contentType(MediaType.APPLICATION_JSON)
@@ -79,9 +64,8 @@ class BookingRestControllerIntegrationTest {
             }
             """.formatted(item.getId(), start, end)))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.status", is("CONFIRMED")))
-        .andExpect(jsonPath("$.paymentStatus", is("PAID")))
-        .andExpect(jsonPath("$.paymentReference", is("ref-int-1")))
+        .andExpect(jsonPath("$.status", is("REQUESTED")))
+        .andExpect(jsonPath("$.paymentStatus", is("PENDING")))
         .andExpect(jsonPath("$.totalPrice", notNullValue()));
   }
 
@@ -92,12 +76,9 @@ class BookingRestControllerIntegrationTest {
     LocalDate end = LocalDate.now().plusDays(7);
 
     Booking existing = new Booking(item, 10L, start, end, BigDecimal.valueOf(item.getPrice()),
-        BigDecimal.valueOf(item.getPrice()).multiply(BigDecimal.valueOf(2)), BookingStatus.CONFIRMED,
+        BigDecimal.valueOf(item.getPrice()).multiply(BigDecimal.valueOf(2)), BookingStatus.ACCEPTED,
         PaymentStatus.PAID);
     bookingRepository.save(existing);
-
-    when(paymentService.charge(anyLong(), any(Item.class), any(), anyLong()))
-        .thenReturn(PaymentResult.success("ref-int-2"));
 
     mockMvc.perform(post("/api/bookings")
         .contentType(MediaType.APPLICATION_JSON)
@@ -110,32 +91,6 @@ class BookingRestControllerIntegrationTest {
             }
             """.formatted(item.getId(), start.plusDays(1), end.plusDays(1))))
         .andExpect(status().isConflict());
-  }
-
-  @Test
-  void shouldReturnPaymentRequiredWhenPaymentFails() throws Exception {
-    Item item = itemRepository.findAll().get(0);
-    String start = LocalDate.now().plusDays(2).toString();
-    String end = LocalDate.now().plusDays(4).toString();
-
-    when(paymentService.charge(anyLong(), any(Item.class), any(), anyLong()))
-        .thenReturn(PaymentResult.failure("gateway-error"));
-
-    mockMvc.perform(post("/api/bookings")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("""
-            {
-              "itemId": %d,
-              "renterId": 999,
-              "startDate": "%s",
-              "endDate": "%s"
-            }
-            """.formatted(item.getId(), start, end)))
-        .andExpect(status().isPaymentRequired());
-
-    List<Booking> bookings = bookingRepository.findAll();
-    assertThat(bookings).isNotEmpty();
-    assertThat(bookings.get(0).getStatus()).isEqualTo(BookingStatus.REJECTED);
   }
 
   @Test

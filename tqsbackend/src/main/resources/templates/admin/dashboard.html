@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Admin Dashboard - PartyShare</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>🎉 Admin Dashboard</h1>
+                <p>Platform Overview & Statistics</p>
+            </div>
+            <div class="actions">
+                <a href="/items/search" class="btn btn-secondary">Back to App</a>
+                <a href="/users/logout" class="btn btn-primary">Logout</a>
+            </div>
+        </div>
+
+        <div class="nav-grid">
+            <a href="/admin/users" class="nav-card">
+                <span class="icon">👥</span>
+                User Management
+            </a>
+            <a href="/admin/categories" class="nav-card">
+                <span class="icon">🏷️</span>
+                Categories
+            </a>
+            <a href="/admin/reports" class="nav-card">
+                <span class="icon">🚩</span>
+                Reports
+            </a>
+        </div>
+
+        <!-- Initial Loading State -->
+        <div id="loading" class="loading">Loading crazy statistics...</div>
+
+        <div id="dashboard-content" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-card users">
+                    <h3>Total Users</h3>
+                    <div class="value" id="totalUsers">0</div>
+                </div>
+                <div class="stat-card bookings">
+                    <h3>Total Bookings</h3>
+                    <div class="value" id="totalBookings">0</div>
+                </div>
+                <div class="stat-card revenue">
+                    <h3>Total Revenue</h3>
+                    <div class="value" id="totalRevenue">€0.00</div>
+                </div>
+                <div class="stat-card reports">
+                    <h3>Pending Reports</h3>
+                    <div class="value" id="pendingReports">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Avg Rating</h3>
+                    <div class="value" id="averageUserRating">0.0</div>
+                </div>
+            </div>
+
+            <div class="charts-container">
+                <div class="chart-card">
+                    <canvas id="bookingsChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            fetch('/api/admin/stats')
+                .then(response => response.json())
+                .then(data => {
+                    // Update Stat Cards
+                    document.getElementById('totalUsers').textContent = data.totalUsers;
+                    document.getElementById('totalBookings').textContent = data.totalBookings;
+                    document.getElementById('totalRevenue').textContent = '€' + data.totalRevenue.toFixed(2);
+                    document.getElementById('pendingReports').textContent = data.pendingReports;
+                    document.getElementById('averageUserRating').textContent = data.averageUserRating.toFixed(1) + ' ⭐';
+
+                    // Show Content
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('dashboard-content').style.display = 'block';
+
+                    // Initialize Charts
+                    initCharts(data);
+                })
+                .catch(err => {
+                    console.error('Error fetching stats:', err);
+                    document.getElementById('loading').textContent = 'Error loading dashboard data.';
+                });
+        });
+
+        function initCharts(data) {
+            // Bookings vs Reports Chart
+            new Chart(document.getElementById('bookingsChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed Bookings', 'Pending Reports'],
+                    datasets: [{
+                        data: [data.totalBookings, data.pendingReports], // Simplified logic for demo
+                        backgroundColor: ['#8e44ad', '#c0392b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        title: { display: true, text: 'Activity Distribution' }
+                    }
+                }
+            });
+
+            // Revenue Visual (Mocking progression for "Crazy" look)
+            new Chart(document.getElementById('revenueChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Users', 'Avg Rating (x100)', 'Revenue (Scaled)'],
+                    datasets: [{
+                        label: 'Key Metrics',
+                        data: [data.totalUsers, data.averageUserRating * 20, data.totalRevenue / 10], // Scaling for visual
+                        backgroundColor: ['#2980b9', '#f1c40f', '#27ae60'],
+                        borderRadius: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    },
+                    plugins: {
+                        title: { display: true, text: 'System Health Metrics' }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

@@ -38,6 +38,13 @@ public class UserService {
             throw new IllegalArgumentException("Failed to register user: Password too short.");
         }
 
+        // Check if email already exists
+        String safeEmail = email.replaceAll("[\\n\\r]", "_");
+        if (userRepository.findByEmail(email).isPresent()) {
+            logger.warn("Failed to register user: Email {} already exists.", safeEmail);
+            throw new IllegalArgumentException("Failed to register user: Email already exists.");
+        }
+
         UserRoles sanitizedRole = resolveSelfServiceRole(role);
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
         User user = new User(name, email, hashedPassword, sanitizedRole);
@@ -66,6 +73,10 @@ public class UserService {
             return false;
         }
         User user = userOpt.get();
+        if (!user.isActive()) {
+            logger.warn("Authentication failed: User with email {} is deactivated.", safeEmail);
+            return false;
+        }
         if (BCrypt.checkpw(password, user.getPassword())) {
             logger.info("User with email {} authenticated successfully.", safeEmail);
             return true;
@@ -147,6 +158,15 @@ public class UserService {
         userRepository.save(user);
         logger.info("User with ID {} activated successfully.", id);
         return true;
+    }
+
+    public List<User> searchUsers(String keyword, UserRoles role, java.time.LocalDateTime startDate,
+            java.time.LocalDateTime endDate) {
+        return userRepository.searchUsers(keyword, role, startDate, endDate);
+    }
+
+    public User saveUser(User user) {
+        return userRepository.save(user);
     }
 
 }

@@ -20,4 +20,15 @@ public class CategoryService {
     public Category getCategoryByName(String name) {
         return categoryRepository.findByName(name);
     }
+
+    public Category getCategoryById(Long id) {
+        return categoryRepository.findById(id).orElse(null);
+    }
+
+    public Category createCategory(String name) {
+        if (categoryRepository.findByName(name) != null) {
+            throw new IllegalArgumentException("Category already exists");
+        }
+        return categoryRepository.save(new Category(name));
+    }
 }

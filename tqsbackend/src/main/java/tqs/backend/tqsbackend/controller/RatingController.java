@@ -26,8 +26,7 @@ public class RatingController {
             @RequestParam Integer rate,
             @RequestParam(required = false) String comment,
             HttpServletRequest request,
-            RedirectAttributes redirectAttributes
-    ) {
+            RedirectAttributes redirectAttributes) {
         try {
             ratingService.createRating(senderId, ratingType, ratedId, rate, comment);
             redirectAttributes.addFlashAttribute("successMessage", "Rating submitted successfully!");

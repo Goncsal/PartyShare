@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Payment Successful - PartyShare</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .success-container {
+            max-width: 500px;
+            margin: 100px auto;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #d4edda;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+        }
+
+        .success-icon svg {
+            width: 40px;
+            height: 40px;
+            stroke: #155724;
+            stroke-width: 3;
+        }
+
+        .message {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .booking-ref {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid #eee;
+        }
+
+        .booking-ref label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            display: block;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .booking-ref .ref-number {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card success-container">
+            <div class="success-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+
+            <h1 style="color: #2c3e50; margin-bottom: 15px;">Payment Successful!</h1>
+            <p class="message">Your booking has been confirmed. You will receive a confirmation email shortly.</p>
+
+            <div class="booking-ref">
+                <label>Booking Reference</label>
+                <div class="ref-number" th:text="${booking.paymentReference ?: 'BK-' + booking.id}">REF-123456</div>
+            </div>
+
+            <a th:href="@{/bookings}" class="btn btn-primary" style="display: inline-block; padding: 12px 30px;">View My
+                Bookings</a>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -32,6 +32,10 @@ public class BookingController {
 
     private final ItemService itemService;
 
+    private final tqs.backend.tqsbackend.service.UserService userService;
+
+
+
     @GetMapping("/rent/{itemId}")
     public String showRentForm(@PathVariable Long itemId, Model model, HttpSession session) {
         if (session.getAttribute("userId") == null) {
@@ -77,12 +81,12 @@ public class BookingController {
         }
 
         try {
-            Booking booking = bookingService.createBooking(request);
-            redirectAttributes.addFlashAttribute("success",
-                    "Booking confirmed! Ref: " + booking.getPaymentReference());
+            bookingService.createBooking(request);
+            redirectAttributes.addFlashAttribute("success", "Booking request sent! Waiting for owner approval.");
+            return "redirect:/bookings";
         } catch (AvailabilityException e) {
             redirectAttributes.addFlashAttribute("error", "Dates unavailable for this item");
-        } catch (PaymentException | BookingValidationException e) {
+        } catch (BookingValidationException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
 
@@ -99,5 +103,90 @@ public class BookingController {
         List<Booking> bookings = bookingService.getBookingsForRenter(userId);
         model.addAttribute("bookings", bookings);
         return "bookings/list";
+    }
+
+    @PostMapping("/{id}/cancel")
+    public String cancelBooking(@PathVariable Long id, HttpSession session, RedirectAttributes redirectAttributes) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+
+        try {
+            bookingService.cancelBooking(id, userId);
+            redirectAttributes.addFlashAttribute("success", "Booking cancelled successfully");
+        } catch (BookingValidationException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/bookings";
+    }
+
+
+    @GetMapping("/requests")
+    public String getBookingRequests(Model model, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+
+        tqs.backend.tqsbackend.entity.User user = userService.getUserById(userId).orElse(null);
+        if (user == null || user.getRole() != tqs.backend.tqsbackend.entity.UserRoles.OWNER) {
+            return "redirect:/items/search";
+        }
+
+        List<Booking> bookings = bookingService.getPendingBookingsByOwner(userId);
+        model.addAttribute("bookings", bookings);
+        return "bookings/requests";
+    }
+
+    @PostMapping("/{id}/accept")
+    public String acceptBooking(@PathVariable Long id, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+        bookingService.acceptBooking(id, userId);
+        return "redirect:/bookings/requests";
+    }
+
+    @PostMapping("/{id}/decline")
+    public String declineBooking(@PathVariable Long id, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+        bookingService.declineBooking(id, userId);
+        return "redirect:/bookings/requests";
+    }
+
+    @PostMapping("/{id}/counter-offer")
+    public String counterOfferBooking(@PathVariable Long id, @org.springframework.web.bind.annotation.RequestParam Double price, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+        bookingService.counterOfferBooking(id, price, userId);
+        return "redirect:/bookings/requests";
+    }
+
+    @PostMapping("/{id}/accept-counter-offer")
+    public String acceptCounterOffer(@PathVariable Long id, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+        bookingService.acceptCounterOffer(id, userId);
+        return "redirect:/bookings";
+    }
+
+    @PostMapping("/{id}/decline-counter-offer")
+    public String declineCounterOffer(@PathVariable Long id, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/users/login";
+        }
+        bookingService.declineCounterOffer(id, userId);
+        return "redirect:/bookings";
     }
 }

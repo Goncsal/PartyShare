@@ -86,6 +86,18 @@ class UserServiceTest {
     }
 
     @Test
+    void testRegisterUserWithDuplicateEmail() {
+        // Mock that email already exists
+        when(userRepository.findByEmail("existing@ua.pt")).thenReturn(Optional.of(validUser));
+
+        // Attempt to register with existing email should throw exception
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> userService.registerUser("Jane Doe", "existing@ua.pt", plainPassword, UserRoles.RENTER));
+
+        assertThat(exception.getMessage()).contains("Email already exists");
+    }
+
+    @Test
     void testAuthenticate() {
         when(userRepository.findByEmail(validUser.getEmail())).thenReturn(Optional.of(validUser));
         when(userRepository.findByEmail("sample@ua.pt")).thenReturn(Optional.empty());
@@ -98,6 +110,18 @@ class UserServiceTest {
 
         boolean loginGhost = userService.authenticate("sample@ua.pt", plainPassword);
         assertThat(loginGhost).isFalse();
+    }
+
+    @Test
+    void testAuthenticate_DeactivatedUser_ReturnsFalse() {
+        // Arrange
+        when(userRepository.findByEmail(inactiveUser.getEmail())).thenReturn(Optional.of(inactiveUser));
+
+        // Act
+        boolean loginResult = userService.authenticate("inactive@ua.pt", plainPassword);
+
+        // Assert
+        assertThat(loginResult).isFalse();
     }
 
     @Test
@@ -167,5 +191,15 @@ class UserServiceTest {
 
         boolean actNotFound = userService.activateUser(99L);
         assertThat(actNotFound).isFalse();
+    }
+
+    @Test
+    void testSearchUsers() {
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        when(userRepository.searchUsers("John", null, now, now.plusDays(1))).thenReturn(List.of(validUser));
+
+        List<User> result = userService.searchUsers("John", null, now, now.plusDays(1));
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getName()).isEqualTo("John Doe");
     }
 }

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Manage Reports - PartyShare Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .filter-form {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .filter-form select {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 1em;
+        }
+
+        .filter-form button {
+            padding: 10px 20px;
+            background-color: #d35400;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .filter-form button:hover {
+            background-color: #e67e22;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>Manage Reports</h1>
+                <p>Admin Dashboard</p>
+            </div>
+            <div class="actions">
+                <a href="/admin/dashboard" class="btn btn-secondary">Dashboard</a>
+                <a href="/users/logout" class="btn btn-secondary"
+                    style="margin-left: 10px; background: #e74c3c; color: white;">Logout</a>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 30px;">
+            <h2 style="margin-top: 0; margin-bottom: 20px; color: #2c3e50;">Filter Reports</h2>
+            <form action="/admin/reports" method="get" class="filter-form">
+                <select name="state">
+                    <option value="">All States</option>
+                    <option value="NEW" th:selected="${param.state != null and param.state[0] == 'NEW'}">New</option>
+                    <option value="IN_PROGRESS"
+                        th:selected="${param.state != null and param.state[0] == 'IN_PROGRESS'}">In Progress</option>
+                    <option value="CLOSED" th:selected="${param.state != null and param.state[0] == 'CLOSED'}">Closed
+                    </option>
+                </select>
+                <button type="submit">Filter</button>
+                <a href="/admin/reports" class="btn btn-secondary"
+                    style="padding: 10px 20px; text-decoration: none; background: #95a5a6;">Clear</a>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-top: 0; margin-bottom: 20px; color: #2c3e50;">Reports List</h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Sender ID</th>
+                            <th>Description</th>
+                            <th>State</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="report : ${reports}">
+                            <td th:text="${report.id}">1</td>
+                            <td th:text="${report.title}">Issue Title</td>
+                            <td th:text="${report.senderId}">10</td>
+                            <td th:text="${report.description}">Description...</td>
+                            <td>
+                                <span th:text="${report.state}"
+                                    th:class="'status-badge status-' + ${report.state}">NEW</span>
+                            </td>
+                            <td>
+                                <form th:action="@{/admin/reports/{id}/update-state(id=${report.id})}" method="post"
+                                    th:if="${report.state.name() != 'CLOSED'}">
+                                    <button type="submit" class="btn btn-secondary"
+                                        style="padding: 5px 10px; background-color: #f39c12; color: white; font-size: 0.85em;">
+                                        Advance State
+                                    </button>
+                                </form>
+                                <span th:if="${report.state.name() == 'CLOSED'}" style="color: #999;">-</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

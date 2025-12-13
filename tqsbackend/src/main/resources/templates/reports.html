@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>My Reports - PartyShare</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .report-card {
+            border: 1px solid #eee;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-NEW {
+            background-color: #e3f2fd;
+            color: #3498db;
+        }
+
+        .status-IN_PROGRESS {
+            background-color: #fff3e0;
+            color: #f39c12;
+        }
+
+        .status-CLOSED {
+            background-color: #f5f5f5;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>📢 My Reports</h1>
+                <p>Submit and track your reports</p>
+            </div>
+            <div class="actions">
+                <a href="/items/search" class="btn btn-secondary">Back to Search</a>
+                <a href="/users/logout" class="btn btn-secondary"
+                    style="margin-left: 10px; background: #e74c3c; color: white;">Logout</a>
+            </div>
+        </div>
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+        <div class="card" style="margin-bottom: 40px;">
+            <h2 style="margin-top: 0; margin-bottom: 20px; color: #2c3e50;">Submit a New Report</h2>
+            <form action="/reports/new" method="post">
+                <div class="form-group">
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" id="title" name="title" required placeholder="Brief summary of the issue"
+                        class="form-control" th:value="${param.title}">
+                </div>
+                <div class="form-group">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea id="description" name="description" rows="4" required
+                        placeholder="Detailed description..." class="form-control"
+                        th:text="${param.description}"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Report</button>
+            </form>
+        </div>
+
+        <h2 style="color: #2c3e50; margin-bottom: 20px;">Report History</h2>
+        <div th:if="${reports.empty}"
+            style="padding: 40px; text-align: center; color: #95a5a6; background: white; border-radius: 8px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);">
+            <p>You haven't submitted any reports yet.</p>
+        </div>
+
+        <div th:each="report : ${reports}" class="report-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3 th:text="${report.title}" style="margin: 0; color: #2c3e50; font-size: 1.2em;">Report Title</h3>
+                <span th:text="${report.state}" th:class="'status-badge status-' + ${report.state}">NEW</span>
+            </div>
+            <p th:text="${report.description}" style="color: #555; line-height: 1.6; margin-bottom: 15px;">Description
+            </p>
+            <div style="font-size: 0.85em; color: #95a5a6; border-top: 1px solid #eee; padding-top: 10px;">
+                Report ID: <span th:text="${report.id}" style="font-family: monospace;">#</span>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

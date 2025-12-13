@@ -73,8 +73,8 @@ class UserControllerTest {
         mvc.perform(get("/users/register"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("users/register"))
-            .andExpect(model().attributeExists("user"))
-            .andExpect(model().attribute("user", instanceOf(UserRegistrationDto.class)));
+                .andExpect(model().attributeExists("user"))
+                .andExpect(model().attribute("user", instanceOf(UserRegistrationDto.class)));
     }
 
     @Test
@@ -107,10 +107,25 @@ class UserControllerTest {
     }
 
     @Test
+    void register_Post_DuplicateEmail() throws Exception {
+        doThrow(new IllegalArgumentException("Failed to register user: Email already exists."))
+                .when(userService).registerUser("John", "duplicate@ua.pt", "password123", UserRoles.RENTER);
+
+        mvc.perform(post("/users/register")
+                .param("name", "John")
+                .param("email", "duplicate@ua.pt")
+                .param("password", "password123")
+                .param("role", "RENTER"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("users/register"))
+                .andExpect(model().attribute("error", "Failed to register user: Email already exists."));
+    }
+
+    @Test
     void profile_View_LoggedIn() throws Exception {
         mvc.perform(get("/users/profile").sessionAttr("userId", 1L))
-                .andExpect(status().isOk())
-                .andExpect(view().name("users/profile"));
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/1"));
     }
 
     @Test

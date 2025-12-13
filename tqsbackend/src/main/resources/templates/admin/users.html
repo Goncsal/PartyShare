@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Manage Users - PartyShare Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .search-form {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .search-form input,
+        .search-form select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            flex: 1;
+            font-size: 1em;
+        }
+
+        .search-form button {
+            padding: 10px 20px;
+            background-color: #d35400;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .search-form button:hover {
+            background-color: #e67e22;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>Manage Users</h1>
+                <p>Admin Dashboard</p>
+            </div>
+            <div class="actions">
+                <a href="/admin/dashboard" class="btn btn-secondary">Dashboard</a>
+                <a href="/users/logout" class="btn btn-secondary"
+                    style="margin-left: 10px; background: #e74c3c; color: white;">Logout</a>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 30px;">
+            <h2 style="margin-top: 0; margin-bottom: 20px; color: #2c3e50;">Search & Filter</h2>
+            <form class="search-form" action="/admin/users" method="get">
+                <input type="text" name="keyword" placeholder="Search by name or email" th:value="${param.keyword}">
+                <select name="role">
+                    <option value="">All Roles</option>
+                    <option value="RENTER" th:selected="${param.role != null and param.role[0] == 'RENTER'}">Renter
+                    </option>
+                    <option value="OWNER" th:selected="${param.role != null and param.role[0] == 'OWNER'}">Owner
+                    </option>
+                    <option value="ADMIN" th:selected="${param.role != null and param.role[0] == 'ADMIN'}">Admin
+                    </option>
+                </select>
+                <input type="datetime-local" name="startDate" placeholder="Start Date" th:value="${param.startDate}">
+                <input type="datetime-local" name="endDate" placeholder="End Date" th:value="${param.endDate}">
+                <button type="submit">Search</button>
+                <a href="/admin/users" class="btn btn-secondary"
+                    style="padding: 10px 20px; text-decoration: none; background: #95a5a6;">Clear</a>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-top: 0; margin-bottom: 20px; color: #2c3e50;">Users List</h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Registered At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="user : ${users}">
+                            <td th:text="${user.id}">1</td>
+                            <td th:text="${user.name}">John Doe</td>
+                            <td th:text="${user.email}">john@example.com</td>
+                            <td th:text="${user.role}">RENTER</td>
+                            <td>
+                                <span th:if="${user.active}" class="status-badge status-active">Active</span>
+                                <span th:unless="${user.active}" class="status-badge status-inactive">Inactive</span>
+                            </td>
+                            <td th:text="${user.createdAt}">2023-01-01</td>
+                            <td>
+                                <a th:href="@{/users/{id}(id=${user.id})}" class="btn btn-secondary"
+                                    style="padding: 5px 10px; font-size: 0.85em; background: #3498db; color: white;">View
+                                    Profile</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

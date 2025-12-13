@@ -3,172 +3,171 @@
 
 <head>
     <title th:text="${item.name} + ' - Details'">Item Details</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            margin: 20px;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            color: #333;
-        }
-
-        .price {
-            font-size: 1.5em;
-            color: #2c3e50;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-
-        .category {
-            color: #7f8c8d;
-            font-style: italic;
-        }
-
-        .description {
-            margin: 20px 0;
-            line-height: 1.6;
-        }
-
-        .meta {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-            color: #666;
-        }
-
-        .actions {
-            margin-top: 30px;
-            display: flex;
-            gap: 10px;
-        }
-
-        button,
-        a.button {
-            cursor: pointer;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            border: none;
-            font-size: 1em;
-            display: inline-block;
-        }
-
-        .btn-primary {
-            background-color: #3498db;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #2980b9;
-        }
-
-        .btn-secondary {
-            background-color: #95a5a6;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background-color: #7f8c8d;
-        }
-
-        .btn-success {
-            background-color: #2ecc71;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background-color: #27ae60;
-        }
-
-        .back-link {
-            display: inline-block;
-            margin-bottom: 20px;
-            text-decoration: none;
-            color: #3498db;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
 <body>
 
     <div class="container">
-        <a href="/items/search" class="back-link">← Back to Search</a>
-
-        <h1 th:text="${item.name}">Item Name</h1>
-        <p class="category" th:text="${item.category.name}">Category</p>
-
-        <div class="price" th:text="'€' + ${item.price}">€0.00</div>
-
-        <div class="description">
-            <h3>Description</h3>
-            <p th:text="${item.description}">Item description goes here.</p>
+        <div class="header">
+            <div>
+                <h1 th:text="${item.name}">Item Name</h1>
+                <p th:text="${item.category.name}" style="color: #7f8c8d; font-style: italic;">Category</p>
+            </div>
+            <div class="actions">
+                <a href="/items/search" class="btn btn-secondary">Back to Search</a>
+            </div>
         </div>
 
-        <div class="meta">
-            <p><strong>Location:</strong> <span th:text="${item.location}">Location</span></p>
-            <p><strong>Rating:</strong> <span th:text="${item.averageRating} + '/5.0'">0.0/5.0</span></p>
-            <!-- Assuming Owner entity has a name or username, adjust as needed -->
-            <!-- <p><strong>Owner:</strong> <span th:text="${item.owner.name}">Owner Name</span></p> -->
+        <div class="card" style="margin-top: 20px;">
+            <img th:src="${item.imageUrl}" alt="Item Image"
+                style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 15px; margin-bottom: 20px;">
+
+            <div class="price" th:text="'€' + ${item.price}"
+                style="font-size: 2em; color: #d35400; font-weight: bold; margin-bottom: 20px;">€0.00</div>
+
+            <div class="description" style="margin-bottom: 30px;">
+                <h3 style="color: #2c3e50; border-bottom: 2px solid #fcefe9; padding-bottom: 10px;">Description</h3>
+                <p th:text="${item.description}" style="line-height: 1.6; color: #4a4a4a;">Item description goes here.
+                </p>
+            </div>
+
+            <div class="meta" style="background: #f9f9f9; padding: 20px; border-radius: 15px; margin-bottom: 30px;">
+                <p><strong>📍 Location:</strong> <span th:text="${item.location}">Location</span></p>
+                <p><strong>⭐ Item Rating:</strong> <span th:text="${item.averageRating} + '/5.0'">0.0/5.0</span></p>
+
+                <!-- Owner Information -->
+                <div th:if="${owner != null}" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+                    <p><strong>👤 Owner:</strong> <span th:text="${owner.name}">Owner Name</span></p>
+                    <p><strong>⭐ Owner Rating:</strong>
+                        <span th:if="${owner.averageRating != null}"
+                            th:text="${owner.averageRating} + '/5.0'">0.0/5.0</span>
+                        <span th:if="${owner.averageRating == null}">No ratings yet</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="actions" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <th:block th:if="${userRole != null and userRole == 'RENTER'}">
+                    <!-- Rent Button (only for renters) -->
+                    <a th:href="@{/bookings/rent/{itemId}(itemId=${item.id})}" class="btn btn-primary"
+                        style="background-color: #27ae60;">Rent this Item</a>
+
+                    <!-- Add to Favorites Form -->
+                    <form action="#" th:action="@{/favorites/1/{itemId}(itemId=${item.id})}" method="post"
+                        style="display: inline;">
+                        <button type="submit" class="btn btn-primary">Add to Favorites</button>
+                    </form>
+                </th:block>
+
+                <!-- Message Owner Button -->
+                <a th:if="${session.userId != item.ownerId}"
+                    th:href="@{/messages/new(receiverId=${item.ownerId}, itemId=${item.id})}"
+                    class="btn btn-secondary">Message Owner</a>
+
+                <!-- Report Owner Button -->
+                <a th:if="${session.userId != item.ownerId}"
+                    th:href="@{/reports(title='Report Owner: ' + ${owner.name}, description='I want to report the owner of item ' + ${item.name} + ' (ID: ' + ${item.id} + ') because...')}"
+                    class="btn btn-secondary" style="background: #e74c3c; color: white;">Report Owner</a>
+            </div>
         </div>
 
-        <div class="actions">
-            <!-- Rent Button -->
-            <a th:href="@{/bookings/rent/{itemId}(itemId=${item.id})}" class="button btn-success">Rent this Item</a>
+        <div class="card" style="margin-top: 30px;">
+            <h2 style="color: #2c3e50; margin-top: 0;">Item Ratings</h2>
 
-            <!-- Add to Favorites Form -->
-            <form action="#" th:action="@{/favorites/1/{itemId}(itemId=${item.id})}" method="post"
-                style="display: inline;">
-                <button type="submit" class="btn-primary">Add to Favorites</button>
-            </form>
-        </div>
+            <!-- Item Rating Form -->
+            <div id="item-rating-form-container" th:if="${userRole != null and userRole == 'RENTER'}"
+                style="margin-bottom: 20px; padding: 20px; background-color: #fcefe9; border-radius: 15px;">
+                <h3 style="margin-top: 0;">Rate this Item</h3>
 
-        <div class="ratings-section" style="margin-top: 40px; border-top: 1px solid #ddd; padding-top: 20px;">
-            <h2>Ratings</h2>
+                <!-- Error/Success messages -->
+                <div th:if="${errorMessage}" class="alert alert-danger"
+                    style="padding: 10px; margin-bottom: 10px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; color: #721c24;">
+                    <span th:text="${errorMessage}">Error message</span>
+                </div>
+                <div th:if="${successMessage}" class="alert alert-success"
+                    style="padding: 10px; margin-bottom: 10px; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; color: #155724;">
+                    <span th:text="${successMessage}">Success message</span>
+                </div>
 
-            <div id="rating-form-container"
-                style="margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 5px;">
-                <h3>Leave a Rating</h3>
-                <form id="ratingForm" action="/ratings/new" method="post">
+                <form id="itemRatingForm" action="/ratings/new" method="post">
                     <input type="hidden" name="ratedId" th:value="${item.id}">
-                    <!-- Hardcoded senderId for demo purposes, in real app should be from session -->
-                    <input type="hidden" name="senderId" value="1">
+                    <input type="hidden" name="senderId" th:value="${session.userId}">
                     <input type="hidden" name="ratingType" value="PRODUCT">
 
-                    <div style="margin-bottom: 10px;">
-                        <label for="rate">Rating (1-5):</label>
-                        <select id="rate" name="rate" required style="padding: 5px;">
+                    <div class="form-group">
+                        <label for="itemRate" class="form-label">Rating (1-5):</label>
+                        <select id="itemRate" name="rate" required class="form-control">
                             <option value="5">5 - Excellent</option>
                             <option value="4">4 - Good</option>
-                            <option value="3">3 - Average</option>
+                            <option value="3" selected>3 - Average</option>
                             <option value="2">2 - Poor</option>
                             <option value="1">1 - Terrible</option>
                         </select>
                     </div>
 
-                    <div style="margin-bottom: 10px;">
-                        <label for="comment">Comment:</label><br>
-                        <textarea id="comment" name="comment" rows="3"
-                            style="width: 100%; padding: 5px; margin-top: 5px;"
+                    <div class="form-group">
+                        <label for="itemComment" class="form-label">Comment:</label>
+                        <textarea id="itemComment" name="comment" rows="3" class="form-control"
                             placeholder="Share your experience..."></textarea>
                     </div>
 
-                    <button type="submit" class="btn-primary">Submit Rating</button>
+                    <button type="submit" class="btn btn-primary">Submit Item Rating</button>
                 </form>
             </div>
 
-            <div id="ratings-list">
-                <!-- Ratings will be loaded here -->
-                <p>Loading ratings...</p>
+            <div id="item-ratings-list">
+                <p class="loading" style="padding: 20px;">Loading item ratings...</p>
+            </div>
+        </div>
+
+        <!-- Owner Rating Section -->
+        <div th:if="${owner != null}" class="card" style="margin-top: 30px;">
+            <h2 style="color: #2c3e50; margin-top: 0;">Owner Ratings</h2>
+
+            <!-- Owner Rating Form -->
+            <div id="owner-rating-form-container" th:if="${userRole != null and userRole == 'RENTER'}"
+                style="margin-bottom: 20px; padding: 20px; background-color: #fcefe9; border-radius: 15px;">
+                <h3 style="margin-top: 0;">Rate the Owner</h3>
+
+                <!-- Error/Success messages -->
+                <div th:if="${errorMessage}" class="alert alert-danger"
+                    style="padding: 10px; margin-bottom: 10px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; color: #721c24;">
+                    <span th:text="${errorMessage}">Error message</span>
+                </div>
+                <div th:if="${successMessage}" class="alert alert-success"
+                    style="padding: 10px; margin-bottom: 10px; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; color: #155724;">
+                    <span th:text="${successMessage}">Success message</span>
+                </div>
+
+                <form id="ownerRatingForm" action="/ratings/new" method="post">
+                    <input type="hidden" name="ratedId" th:value="${owner.id}">
+                    <input type="hidden" name="senderId" th:value="${session.userId}">
+                    <input type="hidden" name="ratingType" value="OWNER">
+
+                    <div class="form-group">
+                        <label for="ownerRate" class="form-label">Rating (1-5):</label>
+                        <select id="ownerRate" name="rate" required class="form-control">
+                            <option value="5">5 - Excellent</option>
+                            <option value="4">4 - Good</option>
+                            <option value="3" selected>3 - Average</option>
+                            <option value="2">2 - Poor</option>
+                            <option value="1">1 - Terrible</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ownerComment" class="form-label">Comment:</label>
+                        <textarea id="ownerComment" name="comment" rows="3" class="form-control"
+                            placeholder="Share your experience with this owner..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Submit Owner Rating</button>
+                </form>
+            </div>
+
+            <div id="owner-ratings-list">
+                <p class="loading" style="padding: 20px;">Loading owner ratings...</p>
             </div>
         </div>
     </div>
@@ -176,14 +175,19 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const itemId = document.querySelector('input[name="ratedId"]').value;
-            loadRatings(itemId);
+            loadRatings(itemId, 'PRODUCT', 'item-ratings-list');
+
+            const ownerIdInput = document.querySelector('#ownerRatingForm input[name="ratedId"]');
+            if (ownerIdInput) {
+                loadRatings(ownerIdInput.value, 'OWNER', 'owner-ratings-list');
+            }
         });
 
-        function loadRatings(itemId) {
-            fetch(`/api/ratings/search?type=PRODUCT&rated=${itemId}`)
+        function loadRatings(ratedId, type, containerId) {
+            fetch(`/api/ratings/search?type=${type}&rated=${ratedId}`)
                 .then(response => response.json())
                 .then(ratings => {
-                    const container = document.getElementById('ratings-list');
+                    const container = document.getElementById(containerId);
                     container.innerHTML = '';
 
                     if (ratings.length === 0) {
@@ -194,16 +198,19 @@
                     ratings.forEach(rating => {
                         const div = document.createElement('div');
                         div.style.borderBottom = '1px solid #eee';
-                        div.style.padding = '10px 0';
+                        div.style.padding = '15px 0';
                         div.innerHTML = `
-                            <div style="font-weight: bold; color: #f39c12;">${'★'.repeat(rating.rate)}${'☆'.repeat(5 - rating.rate)}</div>
-                            <p style="margin: 5px 0;">${rating.comment || ''}</p>
-                            <small style="color: #999;">User ID: ${rating.senderId}</small>
+                            <div style="font-weight: bold; color: #f39c12; font-size: 1.2em;">${'★'.repeat(rating.rate)}${'☆'.repeat(5 - rating.rate)}</div>
+                            <p style="margin: 10px 0; color: #4a4a4a;">${rating.comment || ''}</p>
+                            <small style="color: #95a5a6;">User ID: ${rating.senderId}</small>
                         `;
                         container.appendChild(div);
                     });
                 })
-                .catch(err => console.error('Error loading ratings:', err));
+                .catch(err => {
+                    console.error('Error loading ratings:', err);
+                    document.getElementById(containerId).innerHTML = '<p style="color: #c0392b;">Error loading ratings.</p>';
+                });
         }
     </script>
 

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Manage Categories - PartyShare Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .form-group {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 10px;
+        }
+
+        .form-group input[type="text"] {
+            flex: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>Manage Categories</h1>
+                <p>Admin Dashboard</p>
+            </div>
+            <div class="actions">
+                <a href="/admin/dashboard" class="btn btn-secondary">Dashboard</a>
+                <a href="/users/logout" class="btn btn-secondary"
+                    style="margin-left: 10px; background: #e74c3c; color: white;">Logout</a>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 30px;">
+            <h2 style="margin-top: 0; margin-bottom: 20px; color: #2c3e50;">Add New Category</h2>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <form th:action="@{/admin/categories}" method="post">
+                <div class="form-group">
+                    <input type="text" name="name" placeholder="Category Name" required class="form-control">
+                    <button type="submit" class="btn btn-primary">Add Category</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-top: 0; margin-bottom: 20px; color: #2c3e50;">Existing Categories</h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="category : ${categories}">
+                            <td th:text="${category.id}">1</td>
+                            <td th:text="${category.name}">Electronics</td>
+                        </tr>
+                        <tr th:if="${categories.empty}">
+                            <td colspan="2" style="text-align: center; color: #777;">No categories found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

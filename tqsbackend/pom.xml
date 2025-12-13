@@ -32,13 +32,10 @@
 		<sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     	<sonar.organization>goncsal</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
-		<!-- <sonar.exclusions>
-			src/main/java/tqs/backend/tqsbackend/controller/UserController.java,
-			src/main/java/tqs/backend/tqsbackend/controller/UserRestController.java,
-			src/main/java/tqs/backend/tqsbackend/service/UserService.java,
-			src/main/java/tqs/backend/tqsbackend/dto/UserLoginRequest.java,
-			src/main/java/tqs/backend/tqsbackend/dto/UserRegistrationDto.java
-		</sonar.exclusions> -->
+		<sonar.projectKey>Goncsal_PartyShare</sonar.projectKey>
+
+		<!-- Skip Sentry source upload by default (enable via -Dsentry.skip=false when token is available) -->
+		<sentry.skip>true</sentry.skip>
 
 	</properties>
 	<dependencies>
@@ -103,6 +100,16 @@
 			<artifactId>jbcrypt</artifactId>
 			<version>0.4</version>
 		</dependency>
+		<dependency>
+			<groupId>com.stripe</groupId>
+			<artifactId>stripe-java</artifactId>
+			<version>24.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.thymeleaf.extras</groupId>
+			<artifactId>thymeleaf-extras-java8time</artifactId>
+			<version>3.0.4.RELEASE</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -166,7 +173,31 @@
 			<plugin>
 				<groupId>org.sonarsource.scanner.maven</groupId>
 				<artifactId>sonar-maven-plugin</artifactId>
-				<version>4.0.0.4121</version>
+				<version>5.5.0.6356</version>
+			</plugin>
+
+			<!-- Sentry Maven Plugin for source context -->
+			<plugin>
+				<groupId>io.sentry</groupId>
+				<artifactId>sentry-maven-plugin</artifactId>
+				<version>0.10.0</version>
+				<extensions>true</extensions>
+				<configuration>
+					<debugSentryCli>true</debugSentryCli>
+					<org>tqs-partyshare</org>
+					<project>java-spring-boot</project>
+					<authToken>${env.SENTRY_AUTH_TOKEN}</authToken>
+				</configuration>
+				<executions>
+					<execution>
+						<!-- Bind to 'none' phase to disable automatic execution -->
+						<!-- Run manually with: mvn sentry:uploadSourceBundle when token is available -->
+						<phase>none</phase>
+						<goals>
+							<goal>uploadSourceBundle</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

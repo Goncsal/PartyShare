@@ -2,9 +2,9 @@ name: Code Quality
 
 on:
   push:
-    branches: [ develop, "feature/**" ]
+    branches: [ main, develop, "feature/**" ]
   pull_request:
-    branches: [ develop ]
+    branches: [ main, develop ]
 
 jobs:
   sonarcloud:

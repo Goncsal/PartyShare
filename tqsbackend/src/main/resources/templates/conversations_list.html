@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>My Conversations - PartyShare</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>💬 My Conversations</h1>
+                <p>View and reply to your messages</p>
+            </div>
+            <div class="actions">
+                <a href="/items/search" class="btn btn-secondary">Back to Search</a>
+            </div>
+        </div>
+
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div th:if="${conversations != null and !conversations.empty}">
+                <a th:each="conv : ${conversations}"
+                    th:href="@{/messages/new(receiverId=${conv.otherUserId}, itemId=${conv.itemId})}"
+                    style="display: block; padding: 20px; border-bottom: 1px solid #eee; text-decoration: none; color: inherit; transition: background-color 0.2s;"
+                    onmouseover="this.style.backgroundColor='#f8f9fa'"
+                    onmouseout="this.style.backgroundColor='transparent'">
+
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span style="font-weight: bold; color: #2c3e50; font-size: 1.1em;"
+                            th:text="${conv.otherUserName}">User Name</span>
+                        <span style="font-size: 0.85em; color: #95a5a6;"
+                            th:text="${#temporals.format(conv.lastMessageTime, 'dd/MM/yyyy HH:mm')}">Time</span>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 10px; color: #555;">
+                        <span style="flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            <span th:if="${conv.lastMessageFromMe}"
+                                style="font-weight: 500; color: #7f8c8d;">You:</span>
+                            <span th:text="${conv.lastMessageContent}">Message preview</span>
+                        </span>
+                        <span th:if="${conv.itemId != null}"
+                            style="background: #e8f4f8; color: #3498db; padding: 2px 8px; border-radius: 4px; font-size: 0.8em;">Item
+                            Inquiry</span>
+                    </div>
+                </a>
+            </div>
+
+            <div th:if="${conversations == null or conversations.empty}"
+                style="padding: 60px 20px; text-align: center;">
+                <div style="font-size: 4em; margin-bottom: 15px;">💬</div>
+                <h3 style="color: #7f8c8d; margin-top: 0;">No conversations yet</h3>
+
+                <!-- Message for RENTER -->
+                <div th:if="${userRole != null and userRole.toString() == 'RENTER'}">
+                    <p style="color: #95a5a6; margin-bottom: 20px;">
+                        Start a conversation by sending a message to an item owner!<br>
+                        Browse items and click "Contact Owner" to begin.
+                    </p>
+                    <a href="/items/search" class="btn btn-primary">Browse Items</a>
+                </div>
+
+                <!-- Message for OWNER -->
+                <div th:if="${userRole != null and userRole.toString() == 'OWNER'}">
+                    <p style="color: #95a5a6; margin-bottom: 20px;">
+                        You don't have any conversations with renters yet.<br>
+                        When someone messages you about your items, they'll appear here.
+                    </p>
+                    <a href="/owner/dashboard" class="btn btn-primary">Go to Dashboard</a>
+                </div>
+
+                <!-- Fallback message -->
+                <div th:if="${userRole == null}">
+                    <p style="color: #95a5a6; margin-bottom: 20px;">
+                        Start a conversation by sending a message to an item owner!
+                    </p>
+                    <a href="/items/search" class="btn btn-primary">Browse Items</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

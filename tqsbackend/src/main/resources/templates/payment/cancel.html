@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Payment Cancelled - PartyShare</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .cancel-container {
+            max-width: 500px;
+            margin: 100px auto;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .cancel-icon {
+            width: 80px;
+            height: 80px;
+            background: #f8d7da;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+        }
+
+        .cancel-icon svg {
+            width: 40px;
+            height: 40px;
+            stroke: #721c24;
+            stroke-width: 3;
+        }
+
+        .message {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card cancel-container">
+            <div class="cancel-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </div>
+
+            <h1 style="color: #2c3e50; margin-bottom: 15px;">Payment Cancelled</h1>
+            <p class="message">Your payment was not completed. Your booking is still pending - you can try again
+                anytime.</p>
+
+            <div class="actions" style="display: flex; gap: 15px; justify-content: center;">
+                <a th:href="@{/payment/{id}(id=${booking.id})}" class="btn btn-primary">Try Again</a>
+                <a th:href="@{/bookings}" class="btn btn-secondary">View Bookings</a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

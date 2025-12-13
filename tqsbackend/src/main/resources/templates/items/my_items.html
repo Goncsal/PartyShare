@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>My Items - PartyShare</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>📦 My Items</h1>
+                <p>Manage your listed items</p>
+            </div>
+            <div class="actions">
+                <a href="/items/new" class="btn btn-primary">Add New Item</a>
+                <a href="/items/search" class="btn btn-secondary" style="margin-left: 10px;">Back to Search</a>
+            </div>
+        </div>
+
+        <div th:if="${items.empty}"
+            style="padding: 40px; text-align: center; color: #95a5a6; background: white; border-radius: 8px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);">
+            <p>You haven't listed any items yet.</p>
+            <a href="/items/new" class="btn btn-primary" style="margin-top: 10px;">List Your First Item</a>
+        </div>
+
+        <div th:each="item : ${items}" class="card"
+            style="display: flex; align-items: center; margin-bottom: 15px; padding: 15px;">
+            <img th:src="${item.imageUrl}" alt="Item Image"
+                style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; margin-right: 20px; border: 1px solid #eee;">
+
+            <div class="item-info" style="flex-grow: 1;">
+                <h3 th:text="${item.name}" style="margin: 0 0 5px 0; color: #2c3e50;">Item Name</h3>
+                <div style="color: #7f8c8d; font-size: 0.95em;">
+                    <span th:text="${'€' + item.price + '/day'}"
+                        style="font-weight: bold; color: #d35400;">€10.00/day</span>
+                    <span th:if="${!item.isActive}"
+                        style="color: #e74c3c; margin-left: 10px; font-weight: 600;">(Inactive)</span>
+                </div>
+            </div>
+
+            <div class="actions" style="display: flex; gap: 8px;">
+                <a th:href="@{/items/{id}(id=${item.id})}" class="btn btn-secondary"
+                    style="font-size: 0.9em; padding: 6px 12px;">View</a>
+                <a th:href="@{/items/{id}/edit(id=${item.id})}" class="btn btn-primary"
+                    style="font-size: 0.9em; padding: 6px 12px;">Edit</a>
+
+                <form th:action="@{/items/{id}/toggle-status(id=${item.id})}" method="post" style="display: inline;">
+                    <input type="hidden" name="active" th:value="${!item.isActive}" />
+                    <button type="submit" class="btn"
+                        th:classappend="${item.isActive ? 'btn-secondary' : 'btn-primary'}"
+                        th:style="${item.isActive ? 'background-color: #e74c3c; color: white; border: none;' : 'background-color: #2ecc71; color: white; border: none;'}"
+                        th:text="${item.isActive ? 'Deactivate' : 'Activate'}"
+                        style="cursor: pointer; font-size: 0.9em; padding: 6px 12px;">
+                        Toggle
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

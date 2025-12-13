@@ -31,7 +31,7 @@ public class UserController {
 
     @PostMapping("/login")
     public String login(@RequestParam String email, @RequestParam String password, Model model,
-            RedirectAttributes redirectAttributes, HttpSession session , HttpServletRequest request) {
+            RedirectAttributes redirectAttributes, HttpSession session, HttpServletRequest request) {
         if (userService.authenticate(email, password)) {
             User user = userService.getUserByEmail(email).orElseThrow();
             session.invalidate();
@@ -40,8 +40,11 @@ public class UserController {
             newSession.setAttribute("userId", user.getId());
             newSession.setAttribute("userRole", user.getRole());
             newSession.setAttribute("userName", user.getName());
-            
+
             redirectAttributes.addFlashAttribute("success", "Login successful!");
+            if (user.getRole() == tqs.backend.tqsbackend.entity.UserRoles.ADMIN) {
+                return "redirect:/admin/dashboard";
+            }
             return "redirect:/items/search";
         } else {
             model.addAttribute("error", "Invalid credentials");
@@ -76,12 +79,21 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    public String profile(Model model, HttpSession session) {
+    public String profile(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return "redirect:/users/login";
         }
-        // Placeholder for profile logic
+        return "redirect:/users/" + userId;
+    }
+
+    @GetMapping("/{id}")
+    public String getUserProfile(@org.springframework.web.bind.annotation.PathVariable Long id, Model model) {
+        java.util.Optional<User> userOpt = userService.getUserById(id);
+        if (userOpt.isEmpty()) {
+            return "redirect:/items/search";
+        }
+        model.addAttribute("user", userOpt.get());
         return "users/profile";
     }
 }

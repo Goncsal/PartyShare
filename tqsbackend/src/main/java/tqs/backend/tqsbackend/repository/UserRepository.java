@@ -10,15 +10,35 @@ import tqs.backend.tqsbackend.entity.UserRoles;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsById(Long id);
+
     boolean existsByEmail(String email);
 
     Optional<User> findById(Long id);
-    List<User> findByNameContainingIgnoreCase(String name); 
+
+    List<User> findByNameContainingIgnoreCase(String name);
+
     Optional<User> findByEmail(String email);
-    List<User> findByRole(UserRoles role); 
+
+    List<User> findByRole(UserRoles role);
+
     List<User> findByIsActive(boolean isActive);
+
     List<User> findByNameContainingIgnoreCaseAndIsActive(String name, boolean isActive);
+
     List<User> findByNameContainingIgnoreCaseAndRole(String name, UserRoles role);
+
     List<User> findByRoleAndIsActive(UserRoles role, boolean isActive);
+
     List<User> findByNameContainingIgnoreCaseAndRoleAndIsActive(String name, UserRoles role, boolean isActive);
+
+    @org.springframework.data.jpa.repository.Query("SELECT u FROM User u WHERE " +
+            "(:keyword IS NULL OR LOWER(u.name) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%'))) "
+            +
+            "AND (:role IS NULL OR u.role = :role) " +
+            "AND (u.createdAt >= COALESCE(:startDate, u.createdAt)) " +
+            "AND (u.createdAt <= COALESCE(:endDate, u.createdAt))")
+    List<User> searchUsers(@org.springframework.data.repository.query.Param("keyword") String keyword,
+            @org.springframework.data.repository.query.Param("role") UserRoles role,
+            @org.springframework.data.repository.query.Param("startDate") java.time.LocalDateTime startDate,
+            @org.springframework.data.repository.query.Param("endDate") java.time.LocalDateTime endDate);
 }
