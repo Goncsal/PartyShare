@@ -177,4 +177,34 @@ class AdminControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/users/login"));
     }
+
+    @Test
+    void whenUpdateReportState_Success_thenRedirectWithSuccess() throws Exception {
+        when(reportService.updateReportState(1L)).thenReturn(true);
+
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/admin/reports/1/update-state")
+                .sessionAttr("userRole", UserRoles.ADMIN))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/reports"))
+                .andExpect(flash().attributeExists("success"));
+    }
+
+    @Test
+    void whenUpdateReportState_Failure_thenRedirectWithError() throws Exception {
+        when(reportService.updateReportState(1L)).thenReturn(false);
+
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/admin/reports/1/update-state")
+                .sessionAttr("userRole", UserRoles.ADMIN))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/reports"))
+                .andExpect(flash().attributeExists("error"));
+    }
+
+    @Test
+    void whenUpdateReportStateAsNonAdmin_thenRedirect() throws Exception {
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/admin/reports/1/update-state")
+                .sessionAttr("userRole", UserRoles.RENTER))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/login"));
+    }
 }
