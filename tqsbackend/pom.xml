@@ -34,6 +34,9 @@
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<sonar.projectKey>Goncsal_PartyShare</sonar.projectKey>
 
+		<!-- Skip Sentry source upload by default (enable via -Dsentry.skip=false when token is available) -->
+		<sentry.skip>true</sentry.skip>
+
 	</properties>
 	<dependencies>
 		<dependency>
