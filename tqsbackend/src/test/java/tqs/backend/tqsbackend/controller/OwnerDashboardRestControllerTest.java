@@ -15,7 +15,6 @@ import tqs.backend.tqsbackend.entity.*;
 import tqs.backend.tqsbackend.repository.BookingRepository;
 import tqs.backend.tqsbackend.service.ItemService;
 import tqs.backend.tqsbackend.service.RatingService;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import tqs.backend.tqsbackend.service.ReportService;
 import tqs.backend.tqsbackend.service.UserService;
 
@@ -46,14 +45,11 @@ public class OwnerDashboardRestControllerTest {
         @MockitoBean
         private UserService userService;
 
-        @MockBean
+        @MockitoBean
         private ReportService reportService;
 
-        @MockBean
+        @MockitoBean
         private BookingRepository bookingRepository;
-
-        @Autowired
-        private ObjectMapper objectMapper;
 
         private MockHttpSession session;
         private User ownerUser;

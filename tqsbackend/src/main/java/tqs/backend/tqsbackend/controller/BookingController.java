@@ -17,7 +17,6 @@ import tqs.backend.tqsbackend.entity.Item;
 import java.util.List;
 import tqs.backend.tqsbackend.exception.AvailabilityException;
 import tqs.backend.tqsbackend.exception.BookingValidationException;
-import tqs.backend.tqsbackend.exception.PaymentException;
 import tqs.backend.tqsbackend.service.BookingService;
 import tqs.backend.tqsbackend.service.ItemService;
 
@@ -33,8 +32,6 @@ public class BookingController {
     private final ItemService itemService;
 
     private final tqs.backend.tqsbackend.service.UserService userService;
-
-
 
     @GetMapping("/rent/{itemId}")
     public String showRentForm(@PathVariable Long itemId, Model model, HttpSession session) {
@@ -122,7 +119,6 @@ public class BookingController {
         return "redirect:/bookings";
     }
 
-
     @GetMapping("/requests")
     public String getBookingRequests(Model model, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -161,7 +157,8 @@ public class BookingController {
     }
 
     @PostMapping("/{id}/counter-offer")
-    public String counterOfferBooking(@PathVariable Long id, @org.springframework.web.bind.annotation.RequestParam Double price, HttpSession session) {
+    public String counterOfferBooking(@PathVariable Long id,
+            @org.springframework.web.bind.annotation.RequestParam Double price, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return "redirect:/users/login";

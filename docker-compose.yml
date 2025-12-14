@@ -39,6 +39,9 @@ services:
 
       # Admin Configuration
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
+      # Sentry Configuration - Enable auto-init for production
+      SENTRY_AUTO_INIT: 'true'
     ports:
       - "8080:8080"
     volumes:

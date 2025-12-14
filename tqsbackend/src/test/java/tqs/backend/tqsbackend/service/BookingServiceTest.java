@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
-import static org.mockito.ArgumentMatchers.anyLong;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -24,7 +23,6 @@ import tqs.backend.tqsbackend.entity.BookingStatus;
 import tqs.backend.tqsbackend.entity.Item;
 import tqs.backend.tqsbackend.entity.PaymentStatus;
 import tqs.backend.tqsbackend.repository.BookingRepository;
-import tqs.backend.tqsbackend.service.PaymentResult;
 
 @ExtendWith(MockitoExtension.class)
 class BookingServiceTest {
@@ -46,7 +44,7 @@ class BookingServiceTest {
         Booking booking1 = new Booking();
         booking1.setId(1L);
         booking1.setStatus(BookingStatus.REQUESTED);
-        
+
         Booking booking2 = new Booking();
         booking2.setId(2L);
         booking2.setStatus(BookingStatus.REQUESTED);
@@ -114,15 +112,17 @@ class BookingServiceTest {
         Booking result = bookingService.counterOfferBooking(1L, 20.0, 1L);
 
         assertThat(result.getStatus()).isEqualTo(BookingStatus.COUNTER_OFFER);
-        // Assuming we might store the counter offer price somewhere, or update the booking price?
-        // For now, let's assume we don't have a specific field for counter offer price in Booking yet,
+        // Assuming we might store the counter offer price somewhere, or update the
+        // booking price?
+        // For now, let's assume we don't have a specific field for counter offer price
+        // in Booking yet,
         // but the requirement says "Owner pode enviar CONTRA-OFERTA com novo preço".
         // We might need to add a field to Booking or just update the price?
         // Let's assume we update the price for now or add a field.
         // Given I haven't added a field yet, I'll assume we might need to add it.
         // But for this test, I'll just check the status.
     }
-    
+
     @Test
     void createBooking_WithOffer_UsesProposedPrice() {
         BookingCreateRequest request = new BookingCreateRequest();

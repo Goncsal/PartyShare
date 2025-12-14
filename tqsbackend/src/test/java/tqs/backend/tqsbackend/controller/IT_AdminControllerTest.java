@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -82,7 +81,7 @@ class IT_AdminControllerTest {
                 .param("name", "Duplicate Category"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/categories"));
-                // Flash attributes are harder to test with standard MockMvc without more setup, 
-                // but we can verify the redirect and that no new category (or error) occurred.
+        // Flash attributes are harder to test with standard MockMvc without more setup,
+        // but we can verify the redirect and that no new category (or error) occurred.
     }
 }
