@@ -36,6 +36,9 @@ public class ItemSteps {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Autowired
+    private tqs.backend.tqsbackend.service.UserService userService;
+
     private User currentUser;
     private Item createdItem;
     private List<Item> searchResults;
@@ -51,8 +54,7 @@ public class ItemSteps {
     @Given("I am a registered user with email {string}")
     public void i_am_a_registered_user_with_email(String email) {
         if (userRepository.findByEmail(email).isEmpty()) {
-            User user = new User("Owner User", email, "password", UserRoles.OWNER);
-            userRepository.save(user);
+            userService.registerUser("Owner User", email, "password", UserRoles.OWNER);
         }
         currentUser = userRepository.findByEmail(email).get();
     }
@@ -84,6 +86,16 @@ public class ItemSteps {
     @Then("the item should be available in the system")
     public void the_item_should_be_available_in_the_system() {
         assertTrue(itemRepository.findById(createdItem.getId()).isPresent());
+    }
+
+    @Given("the following categories exist:")
+    public void the_following_categories_exist(io.cucumber.datatable.DataTable dataTable) {
+        List<String> categories = dataTable.asList(String.class);
+        for (String categoryName : categories) {
+            if (categoryRepository.findByName(categoryName) == null) {
+                categoryRepository.save(new Category(categoryName));
+            }
+        }
     }
 
     @Given("the following items exist:")
