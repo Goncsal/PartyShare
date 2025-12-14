@@ -1,133 +1,27 @@
-# TQS Project
+# TQS Project - PartyShare
 
 [![TQS Backend CI/CD Pipeline](https://github.com/Goncsal/PartyShare/actions/workflows/ci.yml/badge.svg)](https://github.com/Goncsal/PartyShare/actions/workflows/ci.yml)
 [![Code Quality](https://github.com/Goncsal/PartyShare/actions/workflows/code-quality.yml/badge.svg)](https://github.com/Goncsal/PartyShare/actions/workflows/code-quality.yml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Goncsal_PartyShare&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Goncsal_PartyShare)
 
- 
-This is a TQS project.
+## Project Abstract
 
-Below are instructions for the CI pipeline and how to run the tests (and proj structure)
+**PartyShare** is a peer-to-peer rental platform for party and event equipment. The system enables users to rent and list items such as generators, lighting equipment, sound systems, and decorations. Built with Spring Boot, PostgreSQL, and Thymeleaf, the platform supports the complete rental workflow including item search, booking management, payment processing, and user reviews.
 
-## Project Structure
+## Project Team
 
-- `tqsbackend/` - Spring Boot backend application
-- `docs/` - Project documentation
-## SonarCloud:
+| Name | Role | GitHub |
+|------|------|--------|
+| Margarida Ribeiro (119876) | QA Engineer & Developer | [amaccr](https://github.com/amaccr) |
+| João Barreira (120054) | Team Coordinator & Developer | [@joaobarreira05](https://github.com/joaobarreira05) |
+| Gonçalo Almeida (119792)| DevOps & Developer | [@Goncsal](https://github.com/Goncsal) |
+| Rodrigo Santos (119198) | Product Owner & Developer | [@rodrigo-mvs](https://github.com/rodrigo-mvs) |
 
-https://sonarcloud.io/project/roles?id=Goncsal_PartyShare
+## Project Bookmarks
 
-
-## Backend (Spring Boot)
-
-The backend is built with:
-- Java 21
-- Spring Boot 3.5.7
-- Spring Data JPA
-- Spring Boot Actuator
-- Thymeleaf (for frontend templating)
-- H2 Database (for development)
-- PostgreSQL (for production)
-- Maven for build management
-
-### Quick Start with Docker
-
-The easiest way to run the application is using the provided Docker setup:
-
-```bash
-# Development environment (H2 database, hot reload, debug port)
-./docker.sh dev
-
-# Production environment (PostgreSQL, optimized)
-./docker.sh prod
-
-# View logs
-./docker.sh logs
-
-# Stop all containers
-./docker.sh stop
-
-# Clean up everything
-./docker.sh clean
-```
-
-### Manual Setup
-
-#### Running the Backend Locally
-
-```bash
-cd tqsbackend
-./mvnw spring-boot:run
-```
-
-#### Running Tests
-
-```bash
-cd tqsbackend
-./mvnw test
-```
-
-#### Building the Application
-
-```bash
-cd tqsbackend
-./mvnw clean package
-```
-
-### Docker Environments
-
-#### Development Environment
-- **URL**: http://localhost:8080
-- **H2 Console**: http://localhost:8080/h2-console
-- **SonarQube**: http://localhost:9000 (admin/admin)
-- **Debug Port**: 5005
-- **Features**: Hot reload, detailed logging, all actuator endpoints enabled
-
-#### Production Environment
-- **URL**: http://localhost:8080
-- **Database**: PostgreSQL (localhost:5432)
-- **SonarQube**: http://localhost:9000 (admin/admin)
-- **Features**: Optimized for performance and security
-
-### Available Endpoints
-
-- `/` - Home page (Thymeleaf template)
-- `/health` - Custom health page
-- `/actuator/health` - Spring Boot health endpoint
-- `/actuator/info` - Application information
-- `/actuator/metrics` - Application metrics
-- `/h2-console` - H2 database console (dev profile only)
-
-### Code Quality with SonarQube
-
-Run SonarQube analysis:
-
-```bash
-# Start environment with SonarQube
-./docker.sh dev  # or ./docker.sh prod
-
-# Run analysis
-./docker.sh sonar
-```
-
-Access SonarQube dashboard at http://localhost:9000
-
-For detailed SonarQube setup and CI integration, see [SONARQUBE_SETUP.md](SONARQUBE_SETUP.md)
-
-## CI/CD
-
-This project uses GitHub Actions for continuous integration. The pipeline:
-
-1. **Build & Test Pipeline** (`ci.yml`):
-   - Runs on push to `main`, `develop`, and `feature/**` branches
-   - Runs on pull requests to `main` and `develop`
-   - Compiles the code
-   - Runs all tests
-   - Packages the application
-   - Uploads test results and JAR artifacts
-
-2. **Code Quality Pipeline** (`code-quality.yml`):
-   - Runs Checkstyle for code style verification
-   - Runs SpotBugs for static code analysis
-
-All tests must pass before code can be merged into the main branches.
+- **Live Application**: [PartyShare (deti-tqs-08.ua.pt)](http://deti-tqs-08.ua.pt:8080/items/search)
+- **Project Backlog**: [Jira Board](https://ua-team-pjkn2g78.atlassian.net/jira/software/projects/PS/boards/1/backlog)
+- **Repository**: [GitHub - Goncsal/PartyShare](https://github.com/Goncsal/PartyShare)
+- **CI/CD Pipeline**: [GitHub Actions](https://github.com/Goncsal/PartyShare/actions)
+- **Static Analysis Dashboard**: [SonarCloud](https://sonarcloud.io/project/overview?id=Goncsal_PartyShare)
+- **API Documentation**: _(To be added)_
