@@ -17,7 +17,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 @CucumberContextConfiguration
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserSteps {
 
     @Autowired
@@ -72,8 +72,14 @@ public class UserSteps {
     @Given("a user exists with email {string}")
     public void a_user_exists_with_email(String email) {
         if (userRepository.findByEmail(email).isEmpty()) {
-            User user = new User("Existing User", email, "password", UserRoles.RENTER);
-            userRepository.save(user);
+            userService.registerUser("Existing User", email, "password", UserRoles.RENTER);
+        }
+    }
+
+    @Given("an owner exists with email {string}")
+    public void an_owner_exists_with_email(String email) {
+        if (userRepository.findByEmail(email).isEmpty()) {
+            userService.registerUser("Owner User", email, "password", UserRoles.OWNER);
         }
     }
 
