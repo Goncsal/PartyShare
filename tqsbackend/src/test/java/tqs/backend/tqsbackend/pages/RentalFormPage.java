@@ -11,11 +11,13 @@ public class RentalFormPage {
     }
 
     public void fillStartDate(String date) {
-        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Start date")).fill(date);
+        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Start date"))
+                .evaluate("(el, date) => el.value = date", date);
     }
 
     public void fillEndDate(String date) {
-        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("End Date")).fill(date);
+        page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("End Date"))
+                .evaluate("(el, date) => el.value = date", date);
     }
 
     public void fillOffer(String amount) {
