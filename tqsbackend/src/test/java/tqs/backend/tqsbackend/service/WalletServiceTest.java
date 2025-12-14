@@ -12,6 +12,7 @@ import tqs.backend.tqsbackend.repository.WalletRepository;
 import tqs.backend.tqsbackend.repository.WalletTransactionRepository;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -222,5 +223,146 @@ class WalletServiceTest {
         assertThatThrownBy(() -> walletService.withdrawAll(1L))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("No available balance");
+    }
+
+    @Test
+    void getWalletByOwnerId_ReturnsWallet() {
+        when(walletRepository.findByOwnerId(1L)).thenReturn(Optional.of(wallet));
+
+        Optional<Wallet> result = walletService.getWalletByOwnerId(1L);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getId()).isEqualTo(1L);
+    }
+
+    @Test
+    void getWalletByOwnerId_NotFound_ReturnsEmpty() {
+        when(walletRepository.findByOwnerId(99L)).thenReturn(Optional.empty());
+
+        Optional<Wallet> result = walletService.getWalletByOwnerId(99L);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getTransactionsByOwnerId_ReturnsTransactions() {
+        WalletTransaction tx = new WalletTransaction(wallet, booking, new BigDecimal("100.00"));
+        tx.setId(1L);
+
+        when(walletRepository.findByOwnerId(1L)).thenReturn(Optional.of(wallet));
+        when(transactionRepository.findByWalletId(1L)).thenReturn(List.of(tx));
+
+        List<WalletTransaction> result = walletService.getTransactionsByOwnerId(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getAmount()).isEqualByComparingTo(new BigDecimal("100.00"));
+    }
+
+    @Test
+    void getTransactionsByOwnerId_NoWallet_ReturnsEmpty() {
+        when(walletRepository.findByOwnerId(99L)).thenReturn(Optional.empty());
+
+        List<WalletTransaction> result = walletService.getTransactionsByOwnerId(99L);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void createWallet_UserNotFound_Throws() {
+        when(walletRepository.existsByOwnerId(99L)).thenReturn(false);
+        when(userService.getUserById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> walletService.createWallet(99L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("User not found");
+    }
+
+    @Test
+    void holdFunds_CreatesWalletIfNotExists() {
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+        when(walletRepository.findByOwnerId(1L)).thenReturn(Optional.empty());
+        when(userService.getUserById(1L)).thenReturn(Optional.of(owner));
+        when(walletRepository.save(any(Wallet.class))).thenReturn(wallet);
+        when(transactionRepository.save(any(WalletTransaction.class))).thenAnswer(inv -> {
+            WalletTransaction tx = inv.getArgument(0);
+            tx.setId(1L);
+            return tx;
+        });
+
+        WalletTransaction result = walletService.holdFunds(1L);
+
+        assertThat(result).isNotNull();
+        verify(walletRepository, times(2)).save(any(Wallet.class)); // Once for create, once for update
+    }
+
+    @Test
+    void releaseFunds_TransactionNotFound_ReturnsFalse() {
+        when(transactionRepository.findByBookingId(99L)).thenReturn(Optional.empty());
+
+        boolean result = walletService.releaseFunds(99L);
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void releaseFunds_TransactionNotPending_ReturnsFalse() {
+        WalletTransaction transaction = new WalletTransaction(wallet, booking, new BigDecimal("100.00"));
+        transaction.setId(1L);
+        transaction.release(); // Already released
+
+        when(transactionRepository.findByBookingId(1L)).thenReturn(Optional.of(transaction));
+
+        boolean result = walletService.releaseFunds(1L);
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void refundFunds_TransactionNotFound_ReturnsFalse() {
+        when(transactionRepository.findByBookingId(99L)).thenReturn(Optional.empty());
+
+        boolean result = walletService.refundFunds(99L);
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void refundFunds_TransactionNotPending_ReturnsFalse() {
+        WalletTransaction transaction = new WalletTransaction(wallet, booking, new BigDecimal("100.00"));
+        transaction.setId(1L);
+        transaction.refund(); // Already refunded
+
+        when(transactionRepository.findByBookingId(1L)).thenReturn(Optional.of(transaction));
+
+        boolean result = walletService.refundFunds(1L);
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void withdraw_WalletNotFound_Throws() {
+        when(walletRepository.findByOwnerId(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> walletService.withdraw(99L, new BigDecimal("100.00")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Wallet not found");
+    }
+
+    @Test
+    void withdraw_InvalidAmount_Throws() {
+        when(walletRepository.findByOwnerId(1L)).thenReturn(Optional.of(wallet));
+
+        assertThatThrownBy(() -> walletService.withdraw(1L, new BigDecimal("-10.00")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("positive");
+    }
+
+    @Test
+    void withdrawAll_WalletNotFound_Throws() {
+        when(walletRepository.findByOwnerId(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> walletService.withdrawAll(99L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Wallet not found");
     }
 }

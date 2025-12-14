@@ -136,4 +136,73 @@ class ConfirmationServiceTest {
 
         assertThat(result).isFalse();
     }
+
+    @Test
+    void isFullyConfirmed_BookingNotFound_ReturnsFalse() {
+        when(bookingRepository.findById(99L)).thenReturn(Optional.empty());
+
+        boolean result = confirmationService.isFullyConfirmed(99L);
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void confirmByOwner_BookingNotFound_ReturnsFalse() {
+        when(bookingRepository.findById(99L)).thenReturn(Optional.empty());
+
+        boolean result = confirmationService.confirmByOwner(99L, 1L);
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void confirmByRenter_AlreadyConfirmed_ReturnsTrue() {
+        booking.setRenterConfirmed(true);
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+
+        boolean result = confirmationService.confirmByRenter(1L, 2L);
+
+        assertThat(result).isTrue();
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
+    void confirmByOwner_AlreadyConfirmed_ReturnsTrue() {
+        booking.setOwnerConfirmed(true);
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+
+        boolean result = confirmationService.confirmByOwner(1L, 1L);
+
+        assertThat(result).isTrue();
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
+    void confirmByRenter_WithExistingReturnedAt_DoesNotOverwrite() {
+        java.time.LocalDateTime existingTime = java.time.LocalDateTime.now().minusDays(1);
+        booking.setReturnedAt(existingTime);
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+        when(bookingRepository.save(any(Booking.class))).thenReturn(booking);
+
+        boolean result = confirmationService.confirmByRenter(1L, 2L);
+
+        assertThat(result).isTrue();
+        assertThat(booking.getReturnedAt()).isEqualTo(existingTime);
+    }
+
+    @Test
+    void dualConfirmation_RenterFirst_ThenOwner() {
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+        when(bookingRepository.save(any(Booking.class))).thenReturn(booking);
+        when(walletService.releaseFunds(1L)).thenReturn(true);
+
+        // Renter confirms first
+        boolean renterResult = confirmationService.confirmByRenter(1L, 2L);
+        assertThat(renterResult).isTrue();
+
+        // Owner confirms second - should trigger release
+        boolean ownerResult = confirmationService.confirmByOwner(1L, 1L);
+        assertThat(ownerResult).isTrue();
+        verify(walletService).releaseFunds(1L);
+    }
 }
