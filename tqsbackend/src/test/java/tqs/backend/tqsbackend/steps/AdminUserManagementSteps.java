@@ -44,7 +44,7 @@ public class AdminUserManagementSteps {
         this.playwrightSteps = playwrightSteps;
     }
 
-    @Before("@admin_user_management")
+    @Before(value = "@admin_user_management", order = 2)
     public void setup() {
         userRepository.deleteAll();
         this.page = playwrightSteps.getPage();

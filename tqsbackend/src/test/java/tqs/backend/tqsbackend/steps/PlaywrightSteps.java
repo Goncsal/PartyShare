@@ -26,7 +26,7 @@ public class PlaywrightSteps {
     private BrowserContext context;
     private Page page;
 
-    @Before("@owner_flow or @renter_search or @admin_user_management")
+    @Before(value = "@owner_flow or @renter_search or @admin_user_management", order = 1)
     public void setUp() {
         if (playwright == null) {
             playwright = Playwright.create();
