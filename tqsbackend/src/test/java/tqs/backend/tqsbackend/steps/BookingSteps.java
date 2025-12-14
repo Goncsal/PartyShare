@@ -61,6 +61,14 @@ public class BookingSteps {
             categoryRepository.save(category);
         }
 
+        // Cleanup existing items with same name
+        java.util.List<Item> existingItems = itemRepository.findByName(name);
+        for (Item existing : existingItems) {
+            java.util.List<Booking> bookings = bookingRepository.findByItemId(existing.getId());
+            bookingRepository.deleteAll(bookings);
+            itemRepository.delete(existing);
+        }
+
         item = new Item();
         item.setName(name);
         item.setPrice(price);
