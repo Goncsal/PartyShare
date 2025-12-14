@@ -1,7 +1,7 @@
 package tqs.backend.tqsbackend.steps;
 
-import com.microsoft.playwright.*;
-import io.cucumber.java.After;
+import com.microsoft.playwright.Page;
+
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -19,36 +19,25 @@ public class RentalSteps {
     @LocalServerPort
     private int port;
 
-    private static Playwright playwright;
-    private static Browser browser;
-    private BrowserContext context;
     private Page page;
+    private final PlaywrightSteps playwrightSteps;
 
     private SearchPage searchPage;
     private DetailPage detailPage;
     private RentalFormPage rentalFormPage;
     private LoginPage loginPage;
 
-    @Before("@rental")
-    public void setUp() {
-        if (playwright == null) {
-            playwright = Playwright.create();
-            browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(true));
-        }
-        context = browser.newContext();
-        page = context.newPage();
+    public RentalSteps(PlaywrightSteps playwrightSteps) {
+        this.playwrightSteps = playwrightSteps;
+    }
 
+    @Before(value = "@rental", order = 2)
+    public void setUp() {
+        this.page = playwrightSteps.getPage();
         searchPage = new SearchPage(page);
         detailPage = new DetailPage(page);
         rentalFormPage = new RentalFormPage(page);
         loginPage = new LoginPage(page);
-    }
-
-    @After
-    public void tearDown() {
-        if (context != null) {
-            context.close();
-        }
     }
 
     @Given("I am logged in as a renter with email {string} and password {string}")
