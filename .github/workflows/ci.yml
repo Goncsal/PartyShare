@@ -45,13 +45,6 @@ jobs:
       run: |
         cd tqsbackend
         ./mvnw test jacoco:report
-# ... existing steps up to Run tests with coverage ...
-
-    - name: Run tests with coverage
-      run: |
-        cd tqsbackend
-        ./mvnw test jacoco:report
-
 
     - name: "Import results to Xray"
       uses: mikepenz/xray-action@v3
@@ -71,7 +64,6 @@ jobs:
         projectKey: "PS" 
         
 
-    # ... existing steps for artifacts and summary ...
         
     - name: Package application
       run: |
