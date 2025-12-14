@@ -37,6 +37,9 @@
 		<!-- Skip Sentry source upload by default (enable via -Dsentry.skip=false when token is available) -->
 		<sentry.skip>true</sentry.skip>
 
+		<!-- Exclude HomeController from SonarCloud analysis (contains Sentry test endpoint) -->
+		<sonar.exclusions>**/controller/HomeController.java</sonar.exclusions>
+
 	</properties>
 	<dependencies>
 		<dependency>
