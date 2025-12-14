@@ -16,8 +16,8 @@ services:
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
 
-      # JPA Configuration
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      # JPA Configuration (Flyway handles schema migrations, Hibernate only validates)
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
       SPRING_JPA_SHOW_SQL: 'false'
       SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
 
@@ -39,8 +39,16 @@ services:
 
       # Admin Configuration
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
+      # Sentry Configuration - Enable auto-init for production
+      SENTRY_AUTO_INIT: 'true'
+
+      # Flyway Configuration - Enable for production PostgreSQL
+      SPRING_FLYWAY_ENABLED: 'true'
+      SPRING_FLYWAY_BASELINE_ON_MIGRATE: 'true'
+      SPRING_FLYWAY_BASELINE_VERSION: '0'
     ports:
-      - "8080:8080"
+      - "80:8080"
     volumes:
       - ./data:/app/data
     networks:
