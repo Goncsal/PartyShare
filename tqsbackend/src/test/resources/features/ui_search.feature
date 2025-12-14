@@ -1,3 +1,4 @@
+@renter_search
 @PS-37
 Feature: UI Search Functionality
 
