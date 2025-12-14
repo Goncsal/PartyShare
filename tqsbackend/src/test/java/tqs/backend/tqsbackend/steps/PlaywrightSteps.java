@@ -26,7 +26,7 @@ public class PlaywrightSteps {
     private BrowserContext context;
     private Page page;
 
-    @Before("@owner_flow or @renter_search")
+    @Before("@owner_flow or @renter_search or @admin_user_management")
     public void setUp() {
         if (playwright == null) {
             playwright = Playwright.create();
@@ -116,5 +116,9 @@ public class PlaywrightSteps {
         assertTrue(page.url().contains("/items/"));
         assertTrue(page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Details")).isVisible() ||
                 page.getByText("Description").isVisible());
+    }
+
+    public Page getPage() {
+        return page;
     }
 }
