@@ -22,11 +22,10 @@ jobs:
           echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> .env
           echo "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}" >> .env
 
-      # TODO: Remove this step once the database schema is stable!
-      # This wipes ALL data on every deployment.
-      - name: Stop existing containers and remove database volume
+      # Stop existing containers (Flyway handles schema migrations, data persists)
+      - name: Stop existing containers
         run: |
-          docker-compose down -v || true
+          docker-compose down || true
 
       - name: Deploy with Docker Compose
         run: |

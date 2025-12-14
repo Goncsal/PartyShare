@@ -24,6 +24,7 @@ import tqs.backend.tqsbackend.entity.Category;
 import tqs.backend.tqsbackend.entity.Item;
 import tqs.backend.tqsbackend.entity.PaymentStatus;
 import tqs.backend.tqsbackend.service.BookingService;
+import tqs.backend.tqsbackend.service.WalletService;
 
 @WebMvcTest(PaymentController.class)
 class PaymentControllerTest {
@@ -33,6 +34,9 @@ class PaymentControllerTest {
 
     @MockitoBean
     private BookingService bookingService;
+
+    @MockitoBean
+    private WalletService walletService;
 
     private Booking createTestBooking() {
         Category category = new Category();
@@ -91,8 +95,9 @@ class PaymentControllerTest {
                 .andExpect(view().name("payment/success"))
                 .andExpect(model().attributeExists("booking"));
         
-        // Verify confirmPayment was called to update booking status
+        // Verify confirmPayment and holdFunds were called
         org.mockito.Mockito.verify(bookingService).confirmPayment(1L);
+        org.mockito.Mockito.verify(walletService).holdFunds(1L);
     }
 
     @Test

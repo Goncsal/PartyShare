@@ -52,6 +52,16 @@ public class Booking {
 
     private LocalDateTime updatedAt;
 
+    // Dual confirmation for wallet release
+    @Column(nullable = false)
+    private boolean renterConfirmed = false;
+
+    @Column(nullable = false)
+    private boolean ownerConfirmed = false;
+
+    @Column
+    private LocalDateTime returnedAt;
+
     public Booking(Item item, Long renterId, LocalDate startDate, LocalDate endDate, BigDecimal dailyPrice,
             BigDecimal totalPrice, BookingStatus status, PaymentStatus paymentStatus) {
         this.item = item;
