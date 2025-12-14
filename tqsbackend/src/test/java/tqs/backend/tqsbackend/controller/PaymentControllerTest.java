@@ -24,6 +24,7 @@ import tqs.backend.tqsbackend.entity.Category;
 import tqs.backend.tqsbackend.entity.Item;
 import tqs.backend.tqsbackend.entity.PaymentStatus;
 import tqs.backend.tqsbackend.service.BookingService;
+import tqs.backend.tqsbackend.service.WalletService;
 
 @WebMvcTest(PaymentController.class)
 class PaymentControllerTest {
@@ -33,6 +34,9 @@ class PaymentControllerTest {
 
     @MockitoBean
     private BookingService bookingService;
+
+    @MockitoBean
+    private WalletService walletService;
 
     private Booking createTestBooking() {
         Category category = new Category();

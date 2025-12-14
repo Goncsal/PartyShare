@@ -23,6 +23,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import tqs.backend.tqsbackend.entity.Booking;
 import tqs.backend.tqsbackend.service.BookingService;
+import tqs.backend.tqsbackend.service.WalletService;
 
 @Controller
 @RequestMapping("/payment")
@@ -30,6 +31,7 @@ import tqs.backend.tqsbackend.service.BookingService;
 public class PaymentController {
 
     private final BookingService bookingService;
+    private final WalletService walletService;
 
     @Value("${stripe.api.secret-key:}")
     private String stripeSecretKey;
@@ -99,7 +101,17 @@ public class PaymentController {
 
     @GetMapping("/success/{bookingId}")
     public String paymentSuccess(@PathVariable Long bookingId, Model model) {
+        // Confirm payment status on booking
         bookingService.confirmPayment(bookingId);
+        
+        // Hold funds in owner's wallet (pending release until dual confirmation)
+        try {
+            walletService.holdFunds(bookingId);
+        } catch (Exception e) {
+            // Log but don't fail - payment already succeeded
+            System.err.println("Warning: Could not hold funds for booking " + bookingId + ": " + e.getMessage());
+        }
+        
         Booking booking = bookingService.getBooking(bookingId);
         model.addAttribute("booking", booking);
         return "payment/success";
