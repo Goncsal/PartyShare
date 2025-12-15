@@ -23,6 +23,7 @@
                     <a th:if="${userRole == 'ADMIN'}" href="/admin/dashboard" class="btn btn-secondary">Dashboard</a>
                     <a th:if="${userRole == 'OWNER'}" href="/owner/dashboard" class="btn btn-secondary">Dashboard</a>
                     <a th:if="${userRole == 'RENTER'}" href="/favorites" class="btn btn-secondary">Favorites</a>
+                    <a th:if="${userRole != 'ADMIN'}" href="/reports" class="btn btn-secondary" style="margin-left: 5px;">Reports</a>
                     <a href="/users/logout" class="btn btn-primary">Logout</a>
                 </span>
                 <span th:unless="${isLoggedIn}">
