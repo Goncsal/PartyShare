@@ -1,0 +1,13 @@
+# Booking Creation PICT Model
+# Parameters: itemId, renterId, startDate, endDate, dailyPrice
+# Generated test cases will cover all pairwise combinations
+
+itemId: "valid", "invalid", "NULL"
+renterId: "valid", "invalid", "NULL"
+startDate: "past", "today", "future", "invalid"
+endDate: "before_start", "equals_start", "after_start", "far_future"
+dailyPrice: "NULL", "lower", "equal", "higher"
+
+# Constraints to avoid impossible combinations
+IF [endDate] = "before_start" THEN [startDate] <> "past";
+

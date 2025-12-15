@@ -1,0 +1,7 @@
+# User Search PICT Model (Admin Feature)
+# Parameters: name, role, active
+# Generated test cases will cover all pairwise combinations
+
+name: NULL, "TestUser", "Partial", "NonExistent"
+role: NULL, "RENTER", "OWNER", "ADMIN"
+active: NULL, "true", "false"

@@ -1,0 +1,14 @@
+# Item Search PICT Model
+# Parameters: keyword, category, minPrice, maxPrice, minRating, location
+# Generated test cases will cover all pairwise combinations
+
+keyword: NULL, "Party", "", "Special!@#"
+category: NULL, "Lighting", "Party", "Electronics", "InvalidCategory"
+minPrice: NULL, "0", "50", "100"
+maxPrice: NULL, "100", "200", "500"
+minRating: NULL, "0.0", "2.5", "4.0", "5.5"
+location: NULL, "Lisbon", "Porto", "Aveiro", ""
+
+# Constraints to avoid invalid combinations
+IF [minRating] = "5.5" THEN [keyword] = "Special!@#";
+

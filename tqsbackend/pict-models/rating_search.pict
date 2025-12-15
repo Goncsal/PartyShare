@@ -1,0 +1,10 @@
+# Rating Search PICT Model
+# Parameters: sender, type, rated
+# Generated test cases will cover all pairwise combinations
+
+sender: "NULL", "valid", "invalid"
+type: "NULL", "RENTER", "OWNER", "ITEM"
+rated: "NULL", "valid", "invalid"
+
+# Constraint: if type is specified, rated should also be specified
+IF [type] <> "NULL" THEN [rated] <> "NULL";

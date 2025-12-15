@@ -1,0 +1,13 @@
+sender	type	rated
+"NULL"	"OWNER"	"invalid"
+"invalid"	"NULL"	"valid"
+"valid"	"RENTER"	"NULL"
+"valid"	"ITEM"	"valid"
+"valid"	"OWNER"	"valid"
+"invalid"	"RENTER"	"invalid"
+"NULL"	"RENTER"	"valid"
+"NULL"	"NULL"	"NULL"
+"invalid"	"ITEM"	"NULL"
+"valid"	"NULL"	"invalid"
+"invalid"	"OWNER"	"NULL"
+"NULL"	"ITEM"	"invalid"
