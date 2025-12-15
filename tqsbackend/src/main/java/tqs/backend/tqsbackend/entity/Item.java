@@ -26,7 +26,7 @@ public class Item {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    private Double averageRating;
+    private Double averageRating = 0.0;
 
     private String location;
 
@@ -116,6 +116,7 @@ public class Item {
     public void setLocation(String location) {
         this.location = location;
     }
+
     @Column(name = "image_url")
     private String imageUrl = "https://placehold.co/600x400?text=No+Image";
 
