@@ -24,4 +24,4 @@
 - **Repository**: [GitHub - Goncsal/PartyShare](https://github.com/Goncsal/PartyShare)
 - **CI/CD Pipeline**: [GitHub Actions](https://github.com/Goncsal/PartyShare/actions)
 - **Static Analysis Dashboard**: [SonarCloud](https://sonarcloud.io/project/overview?id=Goncsal_PartyShare)
-- **API Documentation**: _(To be added)_
+- **API Documentation**: [Swagger](http://deti-tqs-08.ua.pt/swagger-ui/index.html)
